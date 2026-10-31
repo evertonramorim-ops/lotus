@@ -1,0 +1,11 @@
+node_modules/
+*.pem
+*.key
+*.p8
+*.der
+.env
+.env.*
+secrets/
+*secret*
+*private*
+.DS_Store

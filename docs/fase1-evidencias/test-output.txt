@@ -1,0 +1,566 @@
+LOTUS Fase 1 — saída bruta dos testes
+Data: 2026-10-31 18:59:28 -03 (UTC-03:00)
+Node: v24.22.1
+Comando: node --test --test-reporter=tap test/*.test.js
+
+TAP version 13
+# Subtest: C(60,6)=50063860
+ok 1 - C(60,6)=50063860
+  ---
+  duration_ms: 0.992152
+  type: 'test'
+  ...
+# Subtest: C(25,15)=3268760
+ok 2 - C(25,15)=3268760
+  ---
+  duration_ms: 0.147017
+  type: 'test'
+  ...
+# Subtest: C(80,5)=24040016
+ok 3 - C(80,5)=24040016
+  ---
+  duration_ms: 0.112916
+  type: 'test'
+  ...
+# Subtest: C(100,20)=535983370403809682970
+ok 4 - C(100,20)=535983370403809682970
+  ---
+  duration_ms: 0.108179
+  type: 'test'
+  ...
+# Subtest: C(100,50) = n!/(k!(n-k)!) independente
+ok 5 - C(100,50) = n!/(k!(n-k)!) independente
+  ---
+  duration_ms: 0.179306
+  type: 'test'
+  ...
+# Subtest: C(n,0)=C(n,n)=1 para n=0..100
+ok 6 - C(n,0)=C(n,n)=1 para n=0..100
+  ---
+  duration_ms: 0.241254
+  type: 'test'
+  ...
+# Subtest: C(n,k)=0 quando k>n
+ok 7 - C(n,k)=0 quando k>n
+  ---
+  duration_ms: 0.111254
+  type: 'test'
+  ...
+# Subtest: simetria C(n,k)=C(n,n-k) e Pascal, n<=80
+ok 8 - simetria C(n,k)=C(n,n-k) e Pascal, n<=80
+  ---
+  duration_ms: 23.369226
+  type: 'test'
+  ...
+# Subtest: binomial vs fórmula fatorial para n<=60 todos k
+ok 9 - binomial vs fórmula fatorial para n<=60 todos k
+  ---
+  duration_ms: 9.006752
+  type: 'test'
+  ...
+# Subtest: binomial aceita bigint
+ok 10 - binomial aceita bigint
+  ---
+  duration_ms: 0.2319
+  type: 'test'
+  ...
+# Subtest: entradas inválidas lançam erro
+ok 11 - entradas inválidas lançam erro
+  ---
+  duration_ms: 0.411592
+  type: 'test'
+  ...
+# Subtest: factorial(0)=factorial(1)=1
+ok 12 - factorial(0)=factorial(1)=1
+  ---
+  duration_ms: 0.080091
+  type: 'test'
+  ...
+# Subtest: 25! = 15511210043330985984000000
+ok 13 - 25! = 15511210043330985984000000
+  ---
+  duration_ms: 0.050988
+  type: 'test'
+  ...
+# Subtest: 20! = 2432902008176640000
+ok 14 - 20! = 2432902008176640000
+  ---
+  duration_ms: 0.038947
+  type: 'test'
+  ...
+# Subtest: permutations P(10,3)=720, P(n,n)=n!, k>n=0
+ok 15 - permutations P(10,3)=720, P(n,n)=n!, k>n=0
+  ---
+  duration_ms: 0.062563
+  type: 'test'
+  ...
+# Subtest: gcd
+ok 16 - gcd
+  ---
+  duration_ms: 0.167828
+  type: 'test'
+  ...
+# Subtest: Fraction reduz e normaliza sinal
+ok 17 - Fraction reduz e normaliza sinal
+  ---
+  duration_ms: 0.159489
+  type: 'test'
+  ...
+# Subtest: Fraction add/sub/mul/div/compare/equals
+ok 18 - Fraction add/sub/mul/div/compare/equals
+  ---
+  duration_ms: 0.263638
+  type: 'test'
+  ...
+# Subtest: toDecimalString truncado e controlado
+ok 19 - toDecimalString truncado e controlado
+  ---
+  duration_ms: 0.195303
+  type: 'test'
+  ...
+# Subtest: toNumber precisão relativa < 1e-15
+ok 20 - toNumber precisão relativa < 1e-15
+  ---
+  duration_ms: 0.172118
+  type: 'test'
+  ...
+# Subtest: força bruta N=10,K=3,n=3: contagens = enumeração
+ok 21 - força bruta N=10,K=3,n=3: contagens = enumeração
+  ---
+  duration_ms: 1.53132
+  type: 'test'
+  ...
+# Subtest: força bruta N=10,K=4,n=3: contagens = enumeração
+ok 22 - força bruta N=10,K=4,n=3: contagens = enumeração
+  ---
+  duration_ms: 0.353344
+  type: 'test'
+  ...
+# Subtest: força bruta N=10,K=7,n=3: contagens = enumeração
+ok 23 - força bruta N=10,K=7,n=3: contagens = enumeração
+  ---
+  duration_ms: 0.281321
+  type: 'test'
+  ...
+# Subtest: força bruta N=12,K=5,n=4: contagens = enumeração
+ok 24 - força bruta N=12,K=5,n=4: contagens = enumeração
+  ---
+  duration_ms: 1.583197
+  type: 'test'
+  ...
+# Subtest: força bruta N=9,K=9,n=4: contagens = enumeração
+ok 25 - força bruta N=9,K=9,n=4: contagens = enumeração
+  ---
+  duration_ms: 0.179492
+  type: 'test'
+  ...
+# Subtest: força bruta N=8,K=0,n=3: contagens = enumeração
+ok 26 - força bruta N=8,K=0,n=3: contagens = enumeração
+  ---
+  duration_ms: 0.127081
+  type: 'test'
+  ...
+# Subtest: força bruta N=11,K=6,n=6: contagens = enumeração
+ok 27 - força bruta N=11,K=6,n=6: contagens = enumeração
+  ---
+  duration_ms: 0.248422
+  type: 'test'
+  ...
+# Subtest: suporte e P=0 fora do suporte
+ok 28 - suporte e P=0 fora do suporte
+  ---
+  duration_ms: 1.206739
+  type: 'test'
+  ...
+# Subtest: variância = fórmula fechada (vários casos)
+ok 29 - variância = fórmula fechada (vários casos)
+  ---
+  duration_ms: 3.779546
+  type: 'test'
+  ...
+# Subtest: parâmetros inválidos lançam
+ok 30 - parâmetros inválidos lançam
+  ---
+  duration_ms: 0.568304
+  type: 'test'
+  ...
+# Subtest: soma da distribuição=1 para todo K,n com N=20
+ok 31 - soma da distribuição=1 para todo K,n com N=20
+  ---
+  duration_ms: 10.351414
+  type: 'test'
+  ...
+# Subtest: megasena aposta 6: soma=1, E=Kn/N, suporte, fora=0
+ok 32 - megasena aposta 6: soma=1, E=Kn/N, suporte, fora=0
+  ---
+  duration_ms: 3.348486
+  type: 'test'
+  ...
+# Subtest: megasena aposta 7: soma=1, E=Kn/N, suporte, fora=0
+ok 33 - megasena aposta 7: soma=1, E=Kn/N, suporte, fora=0
+  ---
+  duration_ms: 0.440783
+  type: 'test'
+  ...
+# Subtest: megasena aposta 8: soma=1, E=Kn/N, suporte, fora=0
+ok 34 - megasena aposta 8: soma=1, E=Kn/N, suporte, fora=0
+  ---
+  duration_ms: 0.285954
+  type: 'test'
+  ...
+# Subtest: megasena aposta 9: soma=1, E=Kn/N, suporte, fora=0
+ok 35 - megasena aposta 9: soma=1, E=Kn/N, suporte, fora=0
+  ---
+  duration_ms: 0.176802
+  type: 'test'
+  ...
+# Subtest: megasena aposta 10: soma=1, E=Kn/N, suporte, fora=0
+ok 36 - megasena aposta 10: soma=1, E=Kn/N, suporte, fora=0
+  ---
+  duration_ms: 0.176696
+  type: 'test'
+  ...
+# Subtest: megasena aposta 11: soma=1, E=Kn/N, suporte, fora=0
+ok 37 - megasena aposta 11: soma=1, E=Kn/N, suporte, fora=0
+  ---
+  duration_ms: 0.193939
+  type: 'test'
+  ...
+# Subtest: megasena aposta 12: soma=1, E=Kn/N, suporte, fora=0
+ok 38 - megasena aposta 12: soma=1, E=Kn/N, suporte, fora=0
+  ---
+  duration_ms: 0.397184
+  type: 'test'
+  ...
+# Subtest: megasena aposta 13: soma=1, E=Kn/N, suporte, fora=0
+ok 39 - megasena aposta 13: soma=1, E=Kn/N, suporte, fora=0
+  ---
+  duration_ms: 0.291484
+  type: 'test'
+  ...
+# Subtest: megasena aposta 14: soma=1, E=Kn/N, suporte, fora=0
+ok 40 - megasena aposta 14: soma=1, E=Kn/N, suporte, fora=0
+  ---
+  duration_ms: 0.441312
+  type: 'test'
+  ...
+# Subtest: megasena aposta 15: soma=1, E=Kn/N, suporte, fora=0
+ok 41 - megasena aposta 15: soma=1, E=Kn/N, suporte, fora=0
+  ---
+  duration_ms: 0.435211
+  type: 'test'
+  ...
+# Subtest: megasena aposta 16: soma=1, E=Kn/N, suporte, fora=0
+ok 42 - megasena aposta 16: soma=1, E=Kn/N, suporte, fora=0
+  ---
+  duration_ms: 0.356724
+  type: 'test'
+  ...
+# Subtest: megasena aposta 17: soma=1, E=Kn/N, suporte, fora=0
+ok 43 - megasena aposta 17: soma=1, E=Kn/N, suporte, fora=0
+  ---
+  duration_ms: 0.288565
+  type: 'test'
+  ...
+# Subtest: megasena aposta 18: soma=1, E=Kn/N, suporte, fora=0
+ok 44 - megasena aposta 18: soma=1, E=Kn/N, suporte, fora=0
+  ---
+  duration_ms: 0.79465
+  type: 'test'
+  ...
+# Subtest: megasena aposta 19: soma=1, E=Kn/N, suporte, fora=0
+ok 45 - megasena aposta 19: soma=1, E=Kn/N, suporte, fora=0
+  ---
+  duration_ms: 0.169507
+  type: 'test'
+  ...
+# Subtest: megasena aposta 20: soma=1, E=Kn/N, suporte, fora=0
+ok 46 - megasena aposta 20: soma=1, E=Kn/N, suporte, fora=0
+  ---
+  duration_ms: 0.126671
+  type: 'test'
+  ...
+# Subtest: megasena: rejeita tamanhos inválidos
+ok 47 - megasena: rejeita tamanhos inválidos
+  ---
+  duration_ms: 0.421496
+  type: 'test'
+  ...
+# Subtest: lotofacil aposta 15: soma=1, E=Kn/N, suporte, fora=0
+ok 48 - lotofacil aposta 15: soma=1, E=Kn/N, suporte, fora=0
+  ---
+  duration_ms: 0.266581
+  type: 'test'
+  ...
+# Subtest: lotofacil aposta 16: soma=1, E=Kn/N, suporte, fora=0
+ok 49 - lotofacil aposta 16: soma=1, E=Kn/N, suporte, fora=0
+  ---
+  duration_ms: 0.320151
+  type: 'test'
+  ...
+# Subtest: lotofacil aposta 17: soma=1, E=Kn/N, suporte, fora=0
+ok 50 - lotofacil aposta 17: soma=1, E=Kn/N, suporte, fora=0
+  ---
+  duration_ms: 0.404428
+  type: 'test'
+  ...
+# Subtest: lotofacil aposta 18: soma=1, E=Kn/N, suporte, fora=0
+ok 51 - lotofacil aposta 18: soma=1, E=Kn/N, suporte, fora=0
+  ---
+  duration_ms: 0.372316
+  type: 'test'
+  ...
+# Subtest: lotofacil aposta 19: soma=1, E=Kn/N, suporte, fora=0
+ok 52 - lotofacil aposta 19: soma=1, E=Kn/N, suporte, fora=0
+  ---
+  duration_ms: 0.337734
+  type: 'test'
+  ...
+# Subtest: lotofacil aposta 20: soma=1, E=Kn/N, suporte, fora=0
+ok 53 - lotofacil aposta 20: soma=1, E=Kn/N, suporte, fora=0
+  ---
+  duration_ms: 0.326328
+  type: 'test'
+  ...
+# Subtest: lotofacil: rejeita tamanhos inválidos
+ok 54 - lotofacil: rejeita tamanhos inválidos
+  ---
+  duration_ms: 0.123231
+  type: 'test'
+  ...
+# Subtest: quina aposta 5: soma=1, E=Kn/N, suporte, fora=0
+ok 55 - quina aposta 5: soma=1, E=Kn/N, suporte, fora=0
+  ---
+  duration_ms: 0.150557
+  type: 'test'
+  ...
+# Subtest: quina aposta 6: soma=1, E=Kn/N, suporte, fora=0
+ok 56 - quina aposta 6: soma=1, E=Kn/N, suporte, fora=0
+  ---
+  duration_ms: 0.08795
+  type: 'test'
+  ...
+# Subtest: quina aposta 7: soma=1, E=Kn/N, suporte, fora=0
+ok 57 - quina aposta 7: soma=1, E=Kn/N, suporte, fora=0
+  ---
+  duration_ms: 0.098642
+  type: 'test'
+  ...
+# Subtest: quina aposta 8: soma=1, E=Kn/N, suporte, fora=0
+ok 58 - quina aposta 8: soma=1, E=Kn/N, suporte, fora=0
+  ---
+  duration_ms: 0.305075
+  type: 'test'
+  ...
+# Subtest: quina aposta 9: soma=1, E=Kn/N, suporte, fora=0
+ok 59 - quina aposta 9: soma=1, E=Kn/N, suporte, fora=0
+  ---
+  duration_ms: 0.093172
+  type: 'test'
+  ...
+# Subtest: quina aposta 10: soma=1, E=Kn/N, suporte, fora=0
+ok 60 - quina aposta 10: soma=1, E=Kn/N, suporte, fora=0
+  ---
+  duration_ms: 0.154414
+  type: 'test'
+  ...
+# Subtest: quina aposta 11: soma=1, E=Kn/N, suporte, fora=0
+ok 61 - quina aposta 11: soma=1, E=Kn/N, suporte, fora=0
+  ---
+  duration_ms: 0.090799
+  type: 'test'
+  ...
+# Subtest: quina aposta 12: soma=1, E=Kn/N, suporte, fora=0
+ok 62 - quina aposta 12: soma=1, E=Kn/N, suporte, fora=0
+  ---
+  duration_ms: 0.220564
+  type: 'test'
+  ...
+# Subtest: quina aposta 13: soma=1, E=Kn/N, suporte, fora=0
+ok 63 - quina aposta 13: soma=1, E=Kn/N, suporte, fora=0
+  ---
+  duration_ms: 0.10389
+  type: 'test'
+  ...
+# Subtest: quina aposta 14: soma=1, E=Kn/N, suporte, fora=0
+ok 64 - quina aposta 14: soma=1, E=Kn/N, suporte, fora=0
+  ---
+  duration_ms: 0.094101
+  type: 'test'
+  ...
+# Subtest: quina aposta 15: soma=1, E=Kn/N, suporte, fora=0
+ok 65 - quina aposta 15: soma=1, E=Kn/N, suporte, fora=0
+  ---
+  duration_ms: 0.100224
+  type: 'test'
+  ...
+# Subtest: quina: rejeita tamanhos inválidos
+ok 66 - quina: rejeita tamanhos inválidos
+  ---
+  duration_ms: 0.138028
+  type: 'test'
+  ...
+# Subtest: lotomania aposta 50: soma=1, E=Kn/N, suporte, fora=0
+ok 67 - lotomania aposta 50: soma=1, E=Kn/N, suporte, fora=0
+  ---
+  duration_ms: 0.890762
+  type: 'test'
+  ...
+# Subtest: lotomania: rejeita tamanhos inválidos
+ok 68 - lotomania: rejeita tamanhos inválidos
+  ---
+  duration_ms: 0.116876
+  type: 'test'
+  ...
+# Subtest: modalidade desconhecida e protótipo
+ok 69 - modalidade desconhecida e protótipo
+  ---
+  duration_ms: 0.115533
+  type: 'test'
+  ...
+# Subtest: regras: sem preços (placeholder null) e objetos congelados
+ok 70 - regras: sem preços (placeholder null) e objetos congelados
+  ---
+  duration_ms: 0.061023
+  type: 'test'
+  ...
+# Subtest: Mega simples: 1 em 50063860
+ok 71 - Mega simples: 1 em 50063860
+  ---
+  duration_ms: 0.052779
+  type: 'test'
+  ...
+# Subtest: Mega 7 números: 7 jogos, 1 em 7151980
+ok 72 - Mega 7 números: 7 jogos, 1 em 7151980
+  ---
+  duration_ms: 0.037738
+  type: 'test'
+  ...
+# Subtest: Mega 15 números: C(15,6)=5005 jogos, prob=5005/50063860
+ok 73 - Mega 15 números: C(15,6)=5005 jogos, prob=5005/50063860
+  ---
+  duration_ms: 0.05285
+  type: 'test'
+  ...
+# Subtest: Mega 20: C(20,6)=38760
+ok 74 - Mega 20: C(20,6)=38760
+  ---
+  duration_ms: 0.033108
+  type: 'test'
+  ...
+# Subtest: Lotofácil simples 1/3268760; 16 números 16 jogos → 2/408595
+ok 75 - Lotofácil simples 1/3268760; 16 números 16 jogos → 2/408595
+  ---
+  duration_ms: 0.038824
+  type: 'test'
+  ...
+# Subtest: Quina simples 1/24040016
+ok 76 - Quina simples 1/24040016
+  ---
+  duration_ms: 0.032078
+  type: 'test'
+  ...
+# Subtest: Lotomania P(20)=P(0)=148/1683150111
+ok 77 - Lotomania P(20)=P(0)=148/1683150111
+  ---
+  duration_ms: 0.084714
+  type: 'test'
+  ...
+# Subtest: Lotomania simetria P(k)=P(20-k), soma=1, E=10
+ok 78 - Lotomania simetria P(k)=P(20-k), soma=1, E=10
+  ---
+  duration_ms: 1.052346
+  type: 'test'
+  ...
+# Subtest: pares/trincas vs fórmula independente N(N-1)/2, N(N-1)(N-2)/6
+ok 79 - pares/trincas vs fórmula independente N(N-1)/2, N(N-1)(N-2)/6
+  ---
+  duration_ms: 0.133079
+  type: 'test'
+  ...
+# Subtest: REF06 C(60,6)
+ok 80 - REF06 C(60,6)
+  ---
+  duration_ms: 0.755859
+  type: 'test'
+  ...
+# Subtest: REF07 C(25,15)
+ok 81 - REF07 C(25,15)
+  ---
+  duration_ms: 0.135069
+  type: 'test'
+  ...
+# Subtest: REF08 C(80,5)
+ok 82 - REF08 C(80,5)
+  ---
+  duration_ms: 0.106347
+  type: 'test'
+  ...
+# Subtest: REF09 pares/trincas Mega
+ok 83 - REF09 pares/trincas Mega
+  ---
+  duration_ms: 0.099882
+  type: 'test'
+  ...
+# Subtest: REF10 P(X=0)=P(X=20)
+ok 84 - REF10 P(X=0)=P(X=20)
+  ---
+  duration_ms: 0.187525
+  type: 'test'
+  ...
+# Subtest: REF11 simetria k=0..20
+ok 85 - REF11 simetria k=0..20
+  ---
+  duration_ms: 0.244812
+  type: 'test'
+  ...
+# Subtest: REF12 soma = 1 (Vandermonde)
+ok 86 - REF12 soma = 1 (Vandermonde)
+  ---
+  duration_ms: 0.117708
+  type: 'test'
+  ...
+# Subtest: REF13 E(X)=10
+ok 87 - REF13 E(X)=10
+  ---
+  duration_ms: 2.29559
+  type: 'test'
+  ...
+# Subtest: REF14 decimal 30 casas de P(20)
+ok 88 - REF14 decimal 30 casas de P(20)
+  ---
+  duration_ms: 0.267248
+  type: 'test'
+  ...
+1..88
+# tests 88
+# suites 0
+# pass 88
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 97.868267
+exit_code=0
+
+=== Re-execução do script de referência original (14 testes) ===
+PASS | JCS vetor RFC8785 §3.2.2 (ordenação/números) | {"\r":"y","a":[1e+21,0.1,0],"b":1,"€":"x"}
+PASS | assinatura P1363 tem 64 bytes (r||s) | len=64
+PASS | WebCrypto verifica assinatura válida
+PASS | rejeita assinatura com 1 byte alterado
+PASS | rejeita manifesto com 1 byte alterado
+PASS | assinatura DER NÃO é aceita pelo WebCrypto | derLen=71
+SPKI(base64)= MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEEb+ZAWQhsXbp3LNUe46lAy3IyVn+V4zxGLnlSD7+WKE+w+A4dw22JUYPQXI2gJQeFd51aGaJSt8Q7LYlYjaV3Q==
+SRI exemplo: sha384-92Sh/aaPI27GGcRXgb3CwbM5yfG/yjI0PYRXUSiBFh34A6HXLpIyLmg1aCKDlWoa
+PASS | C(60,6)=50063860 | 50063860
+PASS | C(25,15)=3268760 | 3268760
+PASS | C(80,5)=24040016 | 24040016
+PASS | Mega pares C(60,2)=1770 trincas C(60,3)=34220
+Lotomania P(X=20)=P(X=0) = C(50,20)/C(100,20) = 47129212243960/535983370403809682970 = 148/1683150111 (reduzida)
+decimal (30 casas, truncado) = 0.000000087930362855199906765772  ≈ 1 em 11372635 (parte inteira)
+PASS | P(X=0)=P(X=20)
+PASS | simetria P(k)=P(20-k), k=0..20
+PASS | soma exata das 21 probabilidades = 1 (Vandermonde)
+PASS | E(X)=Kn/N=50*20/100=10 exato
+TODOS OS TESTES PASSARAM
+exit_code=0
