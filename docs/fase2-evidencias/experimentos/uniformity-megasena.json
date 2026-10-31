@@ -1,0 +1,1121 @@
+{
+  "alpha": 0.05,
+  "data_kind": "SYNTHETIC_DATA",
+  "disclaimer": "SYNTHETIC_DATA: dados artificiais gerados pelo laboratório; não representam nem avaliam sorteios reais; sem previsão.",
+  "draws": 1000,
+  "experiment_id": "exp-7688a0211171e830",
+  "generator": "xoshiro128**/splitmix64",
+  "generator_version": "1.0.0",
+  "hypotheses": {
+    "H0": "mecanismo uniforme, independente entre concursos, sem reposição no concurso",
+    "H1": "desvio do modelo uniforme especificado"
+  },
+  "lottery": "megasena",
+  "mc_replicates": 999,
+  "parameters": {
+    "B": 999,
+    "alpha": 0.05,
+    "draws": 1000,
+    "lottery": "megasena",
+    "seed": "20261031",
+    "type": "uniformity"
+  },
+  "results": {
+    "frequencies": {
+      "ci_confidence": 0.95,
+      "ci_method": "wilson-1927",
+      "data_kind": "SYNTHETIC_DATA",
+      "draws": 1000,
+      "expected_count": 100,
+      "lottery": "megasena",
+      "note": "Dados sintéticos. Desvios são flutuação amostral sob o modelo; não indicam chance futura de nenhuma dezena.",
+      "numbers": [
+        {
+          "absolute": 102,
+          "ci_inclusion_rate": [
+            0.0847391351721,
+            0.122306964587
+          ],
+          "deviation": 2,
+          "expected": 100,
+          "number": 1,
+          "relative": 0.102,
+          "standardized_deviation": 0.210818510678
+        },
+        {
+          "absolute": 104,
+          "ci_inclusion_rate": [
+            0.0865710280854,
+            0.12445976464
+          ],
+          "deviation": 4,
+          "expected": 100,
+          "number": 2,
+          "relative": 0.104,
+          "standardized_deviation": 0.421637021356
+        },
+        {
+          "absolute": 99,
+          "ci_inclusion_rate": [
+            0.0819954413561,
+            0.119073618954
+          ],
+          "deviation": -1,
+          "expected": 100,
+          "number": 3,
+          "relative": 0.099,
+          "standardized_deviation": -0.105409255339
+        },
+        {
+          "absolute": 102,
+          "ci_inclusion_rate": [
+            0.0847391351721,
+            0.122306964587
+          ],
+          "deviation": 2,
+          "expected": 100,
+          "number": 4,
+          "relative": 0.102,
+          "standardized_deviation": 0.210818510678
+        },
+        {
+          "absolute": 81,
+          "ci_inclusion_rate": [
+            0.06564962153,
+            0.099557202086
+          ],
+          "deviation": -19,
+          "expected": 100,
+          "number": 5,
+          "relative": 0.081,
+          "standardized_deviation": -2.00277585144
+        },
+        {
+          "absolute": 102,
+          "ci_inclusion_rate": [
+            0.0847391351721,
+            0.122306964587
+          ],
+          "deviation": 2,
+          "expected": 100,
+          "number": 6,
+          "relative": 0.102,
+          "standardized_deviation": 0.210818510678
+        },
+        {
+          "absolute": 94,
+          "ci_inclusion_rate": [
+            0.0774341735616,
+            0.113673154334
+          ],
+          "deviation": -6,
+          "expected": 100,
+          "number": 7,
+          "relative": 0.094,
+          "standardized_deviation": -0.632455532034
+        },
+        {
+          "absolute": 121,
+          "ci_inclusion_rate": [
+            0.102223782275,
+            0.142676900661
+          ],
+          "deviation": 21,
+          "expected": 100,
+          "number": 8,
+          "relative": 0.121,
+          "standardized_deviation": 2.21359436212
+        },
+        {
+          "absolute": 92,
+          "ci_inclusion_rate": [
+            0.075613899556,
+            0.111508735373
+          ],
+          "deviation": -8,
+          "expected": 100,
+          "number": 9,
+          "relative": 0.092,
+          "standardized_deviation": -0.843274042712
+        },
+        {
+          "absolute": 91,
+          "ci_inclusion_rate": [
+            0.0747047043597,
+            0.110425584087
+          ],
+          "deviation": -9,
+          "expected": 100,
+          "number": 10,
+          "relative": 0.091,
+          "standardized_deviation": -0.948683298051
+        },
+        {
+          "absolute": 101,
+          "ci_inclusion_rate": [
+            0.0838240106397,
+            0.121229742637
+          ],
+          "deviation": 1,
+          "expected": 100,
+          "number": 11,
+          "relative": 0.101,
+          "standardized_deviation": 0.105409255339
+        },
+        {
+          "absolute": 108,
+          "ci_inclusion_rate": [
+            0.0902411985494,
+            0.128758980108
+          ],
+          "deviation": 8,
+          "expected": 100,
+          "number": 12,
+          "relative": 0.108,
+          "standardized_deviation": 0.843274042712
+        },
+        {
+          "absolute": 110,
+          "ci_inclusion_rate": [
+            0.0920793726586,
+            0.130905498965
+          ],
+          "deviation": 10,
+          "expected": 100,
+          "number": 13,
+          "relative": 0.11,
+          "standardized_deviation": 1.05409255339
+        },
+        {
+          "absolute": 101,
+          "ci_inclusion_rate": [
+            0.0838240106397,
+            0.121229742637
+          ],
+          "deviation": 1,
+          "expected": 100,
+          "number": 14,
+          "relative": 0.101,
+          "standardized_deviation": 0.105409255339
+        },
+        {
+          "absolute": 104,
+          "ci_inclusion_rate": [
+            0.0865710280854,
+            0.12445976464
+          ],
+          "deviation": 4,
+          "expected": 100,
+          "number": 15,
+          "relative": 0.104,
+          "standardized_deviation": 0.421637021356
+        },
+        {
+          "absolute": 104,
+          "ci_inclusion_rate": [
+            0.0865710280854,
+            0.12445976464
+          ],
+          "deviation": 4,
+          "expected": 100,
+          "number": 16,
+          "relative": 0.104,
+          "standardized_deviation": 0.421637021356
+        },
+        {
+          "absolute": 83,
+          "ci_inclusion_rate": [
+            0.0674550214316,
+            0.101736495151
+          ],
+          "deviation": -17,
+          "expected": 100,
+          "number": 17,
+          "relative": 0.083,
+          "standardized_deviation": -1.79195734076
+        },
+        {
+          "absolute": 125,
+          "ci_inclusion_rate": [
+            0.105926230621,
+            0.146943838248
+          ],
+          "deviation": 25,
+          "expected": 100,
+          "number": 18,
+          "relative": 0.125,
+          "standardized_deviation": 2.63523138347
+        },
+        {
+          "absolute": 111,
+          "ci_inclusion_rate": [
+            0.0929992104449,
+            0.131978007662
+          ],
+          "deviation": 11,
+          "expected": 100,
+          "number": 19,
+          "relative": 0.111,
+          "standardized_deviation": 1.15950180873
+        },
+        {
+          "absolute": 101,
+          "ci_inclusion_rate": [
+            0.0838240106397,
+            0.121229742637
+          ],
+          "deviation": 1,
+          "expected": 100,
+          "number": 20,
+          "relative": 0.101,
+          "standardized_deviation": 0.105409255339
+        },
+        {
+          "absolute": 104,
+          "ci_inclusion_rate": [
+            0.0865710280854,
+            0.12445976464
+          ],
+          "deviation": 4,
+          "expected": 100,
+          "number": 21,
+          "relative": 0.104,
+          "standardized_deviation": 0.421637021356
+        },
+        {
+          "absolute": 99,
+          "ci_inclusion_rate": [
+            0.0819954413561,
+            0.119073618954
+          ],
+          "deviation": -1,
+          "expected": 100,
+          "number": 22,
+          "relative": 0.099,
+          "standardized_deviation": -0.105409255339
+        },
+        {
+          "absolute": 95,
+          "ci_inclusion_rate": [
+            0.0783452345668,
+            0.114754439811
+          ],
+          "deviation": -5,
+          "expected": 100,
+          "number": 23,
+          "relative": 0.095,
+          "standardized_deviation": -0.527046276695
+        },
+        {
+          "absolute": 97,
+          "ci_inclusion_rate": [
+            0.0801691617779,
+            0.116915205566
+          ],
+          "deviation": -3,
+          "expected": 100,
+          "number": 24,
+          "relative": 0.097,
+          "standardized_deviation": -0.316227766017
+        },
+        {
+          "absolute": 91,
+          "ci_inclusion_rate": [
+            0.0747047043597,
+            0.110425584087
+          ],
+          "deviation": -9,
+          "expected": 100,
+          "number": 25,
+          "relative": 0.091,
+          "standardized_deviation": -0.948683298051
+        },
+        {
+          "absolute": 97,
+          "ci_inclusion_rate": [
+            0.0801691617779,
+            0.116915205566
+          ],
+          "deviation": -3,
+          "expected": 100,
+          "number": 26,
+          "relative": 0.097,
+          "standardized_deviation": -0.316227766017
+        },
+        {
+          "absolute": 115,
+          "ci_inclusion_rate": [
+            0.0966834317738,
+            0.136263172265
+          ],
+          "deviation": 15,
+          "expected": 100,
+          "number": 27,
+          "relative": 0.115,
+          "standardized_deviation": 1.58113883008
+        },
+        {
+          "absolute": 100,
+          "ci_inclusion_rate": [
+            0.0829094435805,
+            0.120151963213
+          ],
+          "deviation": 0,
+          "expected": 100,
+          "number": 28,
+          "relative": 0.1,
+          "standardized_deviation": 0
+        },
+        {
+          "absolute": 87,
+          "ci_inclusion_rate": [
+            0.0710744214407,
+            0.106086481073
+          ],
+          "deviation": -13,
+          "expected": 100,
+          "number": 29,
+          "relative": 0.087,
+          "standardized_deviation": -1.37032031941
+        },
+        {
+          "absolute": 93,
+          "ci_inclusion_rate": [
+            0.0765237256297,
+            0.112591255783
+          ],
+          "deviation": -7,
+          "expected": 100,
+          "number": 30,
+          "relative": 0.093,
+          "standardized_deviation": -0.737864787373
+        },
+        {
+          "absolute": 108,
+          "ci_inclusion_rate": [
+            0.0902411985494,
+            0.128758980108
+          ],
+          "deviation": 8,
+          "expected": 100,
+          "number": 31,
+          "relative": 0.108,
+          "standardized_deviation": 0.843274042712
+        },
+        {
+          "absolute": 108,
+          "ci_inclusion_rate": [
+            0.0902411985494,
+            0.128758980108
+          ],
+          "deviation": 8,
+          "expected": 100,
+          "number": 32,
+          "relative": 0.108,
+          "standardized_deviation": 0.843274042712
+        },
+        {
+          "absolute": 96,
+          "ci_inclusion_rate": [
+            0.0792569000861,
+            0.115835120775
+          ],
+          "deviation": -4,
+          "expected": 100,
+          "number": 33,
+          "relative": 0.096,
+          "standardized_deviation": -0.421637021356
+        },
+        {
+          "absolute": 99,
+          "ci_inclusion_rate": [
+            0.0819954413561,
+            0.119073618954
+          ],
+          "deviation": -1,
+          "expected": 100,
+          "number": 34,
+          "relative": 0.099,
+          "standardized_deviation": -0.105409255339
+        },
+        {
+          "absolute": 88,
+          "ci_inclusion_rate": [
+            0.0719809979306,
+            0.107172251067
+          ],
+          "deviation": -12,
+          "expected": 100,
+          "number": 35,
+          "relative": 0.088,
+          "standardized_deviation": -1.26491106407
+        },
+        {
+          "absolute": 94,
+          "ci_inclusion_rate": [
+            0.0774341735616,
+            0.113673154334
+          ],
+          "deviation": -6,
+          "expected": 100,
+          "number": 36,
+          "relative": 0.094,
+          "standardized_deviation": -0.632455532034
+        },
+        {
+          "absolute": 93,
+          "ci_inclusion_rate": [
+            0.0765237256297,
+            0.112591255783
+          ],
+          "deviation": -7,
+          "expected": 100,
+          "number": 37,
+          "relative": 0.093,
+          "standardized_deviation": -0.737864787373
+        },
+        {
+          "absolute": 93,
+          "ci_inclusion_rate": [
+            0.0765237256297,
+            0.112591255783
+          ],
+          "deviation": -7,
+          "expected": 100,
+          "number": 38,
+          "relative": 0.093,
+          "standardized_deviation": -0.737864787373
+        },
+        {
+          "absolute": 100,
+          "ci_inclusion_rate": [
+            0.0829094435805,
+            0.120151963213
+          ],
+          "deviation": 0,
+          "expected": 100,
+          "number": 39,
+          "relative": 0.1,
+          "standardized_deviation": 0
+        },
+        {
+          "absolute": 93,
+          "ci_inclusion_rate": [
+            0.0765237256297,
+            0.112591255783
+          ],
+          "deviation": -7,
+          "expected": 100,
+          "number": 40,
+          "relative": 0.093,
+          "standardized_deviation": -0.737864787373
+        },
+        {
+          "absolute": 100,
+          "ci_inclusion_rate": [
+            0.0829094435805,
+            0.120151963213
+          ],
+          "deviation": 0,
+          "expected": 100,
+          "number": 41,
+          "relative": 0.1,
+          "standardized_deviation": 0
+        },
+        {
+          "absolute": 89,
+          "ci_inclusion_rate": [
+            0.0728882439012,
+            0.108257351579
+          ],
+          "deviation": -11,
+          "expected": 100,
+          "number": 42,
+          "relative": 0.089,
+          "standardized_deviation": -1.15950180873
+        },
+        {
+          "absolute": 105,
+          "ci_inclusion_rate": [
+            0.0874877826015,
+            0.125535356607
+          ],
+          "deviation": 5,
+          "expected": 100,
+          "number": 43,
+          "relative": 0.105,
+          "standardized_deviation": 0.527046276695
+        },
+        {
+          "absolute": 97,
+          "ci_inclusion_rate": [
+            0.0801691617779,
+            0.116915205566
+          ],
+          "deviation": -3,
+          "expected": 100,
+          "number": 44,
+          "relative": 0.097,
+          "standardized_deviation": -0.316227766017
+        },
+        {
+          "absolute": 108,
+          "ci_inclusion_rate": [
+            0.0902411985494,
+            0.128758980108
+          ],
+          "deviation": 8,
+          "expected": 100,
+          "number": 45,
+          "relative": 0.108,
+          "standardized_deviation": 0.843274042712
+        },
+        {
+          "absolute": 109,
+          "ci_inclusion_rate": [
+            0.0911600333713,
+            0.129832491769
+          ],
+          "deviation": 9,
+          "expected": 100,
+          "number": 46,
+          "relative": 0.109,
+          "standardized_deviation": 0.948683298051
+        },
+        {
+          "absolute": 110,
+          "ci_inclusion_rate": [
+            0.0920793726586,
+            0.130905498965
+          ],
+          "deviation": 10,
+          "expected": 100,
+          "number": 47,
+          "relative": 0.11,
+          "standardized_deviation": 1.05409255339
+        },
+        {
+          "absolute": 96,
+          "ci_inclusion_rate": [
+            0.0792569000861,
+            0.115835120775
+          ],
+          "deviation": -4,
+          "expected": 100,
+          "number": 48,
+          "relative": 0.096,
+          "standardized_deviation": -0.421637021356
+        },
+        {
+          "absolute": 106,
+          "ci_inclusion_rate": [
+            0.08840506685,
+            0.126610418841
+          ],
+          "deviation": 6,
+          "expected": 100,
+          "number": 49,
+          "relative": 0.106,
+          "standardized_deviation": 0.632455532034
+        },
+        {
+          "absolute": 90,
+          "ci_inclusion_rate": [
+            0.0737961493032,
+            0.10934179266
+          ],
+          "deviation": -10,
+          "expected": 100,
+          "number": 50,
+          "relative": 0.09,
+          "standardized_deviation": -1.05409255339
+        },
+        {
+          "absolute": 91,
+          "ci_inclusion_rate": [
+            0.0747047043597,
+            0.110425584087
+          ],
+          "deviation": -9,
+          "expected": 100,
+          "number": 51,
+          "relative": 0.091,
+          "standardized_deviation": -0.948683298051
+        },
+        {
+          "absolute": 106,
+          "ci_inclusion_rate": [
+            0.08840506685,
+            0.126610418841
+          ],
+          "deviation": 6,
+          "expected": 100,
+          "number": 52,
+          "relative": 0.106,
+          "standardized_deviation": 0.632455532034
+        },
+        {
+          "absolute": 103,
+          "ci_inclusion_rate": [
+            0.0856548099923,
+            0.12338363625
+          ],
+          "deviation": 3,
+          "expected": 100,
+          "number": 53,
+          "relative": 0.103,
+          "standardized_deviation": 0.316227766017
+        },
+        {
+          "absolute": 111,
+          "ci_inclusion_rate": [
+            0.0929992104449,
+            0.131978007662
+          ],
+          "deviation": 11,
+          "expected": 100,
+          "number": 54,
+          "relative": 0.111,
+          "standardized_deviation": 1.15950180873
+        },
+        {
+          "absolute": 101,
+          "ci_inclusion_rate": [
+            0.0838240106397,
+            0.121229742637
+          ],
+          "deviation": 1,
+          "expected": 100,
+          "number": 55,
+          "relative": 0.101,
+          "standardized_deviation": 0.105409255339
+        },
+        {
+          "absolute": 91,
+          "ci_inclusion_rate": [
+            0.0747047043597,
+            0.110425584087
+          ],
+          "deviation": -9,
+          "expected": 100,
+          "number": 56,
+          "relative": 0.091,
+          "standardized_deviation": -0.948683298051
+        },
+        {
+          "absolute": 88,
+          "ci_inclusion_rate": [
+            0.0719809979306,
+            0.107172251067
+          ],
+          "deviation": -12,
+          "expected": 100,
+          "number": 57,
+          "relative": 0.088,
+          "standardized_deviation": -1.26491106407
+        },
+        {
+          "absolute": 114,
+          "ci_inclusion_rate": [
+            0.0957616570837,
+            0.135192600472
+          ],
+          "deviation": 14,
+          "expected": 100,
+          "number": 58,
+          "relative": 0.114,
+          "standardized_deviation": 1.47572957475
+        },
+        {
+          "absolute": 98,
+          "ci_inclusion_rate": [
+            0.0810820115109,
+            0.117994702316
+          ],
+          "deviation": -2,
+          "expected": 100,
+          "number": 59,
+          "relative": 0.098,
+          "standardized_deviation": -0.210818510678
+        },
+        {
+          "absolute": 101,
+          "ci_inclusion_rate": [
+            0.0838240106397,
+            0.121229742637
+          ],
+          "deviation": 1,
+          "expected": 100,
+          "number": 60,
+          "relative": 0.101,
+          "standardized_deviation": 0.105409255339
+        }
+      ],
+      "p_inclusion": 0.1,
+      "sample_size": {
+        "approx_ci95_half_width_at_p": 0.0185938509691,
+        "draws": 1000,
+        "expected_count_per_number": 100,
+        "min_draws_for_expected_5": 50,
+        "total_numbers_observed": 6000
+      },
+      "theoretical_sd": 9.48683298051,
+      "theoretical_variance": 90
+    },
+    "hits": {
+      "bet_size": 6,
+      "data_kind": "SYNTHETIC_DATA",
+      "draws": 1000,
+      "lottery": "megasena",
+      "max_cumulative_error": 0.00711558757155,
+      "mean_hits_empirical": 0.59,
+      "mean_hits_exact": 0.6,
+      "sum_abs_diff": 0.0144132865504,
+      "tiers": [
+        {
+          "abs_diff": 0.00711558757155,
+          "count": 523,
+          "empirical": 0.523,
+          "hits": 0,
+          "theoretical": 0.515884412428
+        },
+        {
+          "abs_diff": 0.00501711933519,
+          "count": 374,
+          "empirical": 0.374,
+          "hits": 1,
+          "theoretical": 0.379017119335
+        },
+        {
+          "abs_diff": 0.0017542798338,
+          "count": 93,
+          "empirical": 0.093,
+          "hits": 2,
+          "theoretical": 0.0947542798338
+        },
+        {
+          "abs_diff": 0.0000910557036553,
+          "count": 10,
+          "empirical": 0.01,
+          "hits": 3,
+          "theoretical": 0.00990894429634
+        },
+        {
+          "abs_diff": 0.000428752397438,
+          "count": 0,
+          "empirical": 0,
+          "hits": 4,
+          "theoretical": 0.000428752397438
+        },
+        {
+          "abs_diff": 0.00000647173430095,
+          "count": 0,
+          "empirical": 0,
+          "hits": 5,
+          "theoretical": 0.00000647173430095
+        },
+        {
+          "abs_diff": 1.99744885832e-8,
+          "count": 0,
+          "empirical": 0,
+          "hits": 6,
+          "theoretical": 1.99744885832e-8
+        }
+      ],
+      "total_variation": 0.00720664327521
+    },
+    "multiple_comparisons": {
+      "alpha": 0.05,
+      "criteria": {
+        "bh": "p_bh ≤ alpha (FDR)",
+        "holm": "p_holm ≤ alpha (FWER)",
+        "unadjusted": "p ≤ alpha"
+      },
+      "family": "global-megasena",
+      "kind": "exploratory",
+      "m": 4,
+      "rejections": {
+        "bh": 0,
+        "holm": 0,
+        "unadjusted": 0
+      },
+      "results": [
+        {
+          "id": "freq_pearson",
+          "p": 0.785,
+          "p_bh": 0.941,
+          "p_holm": 1,
+          "reject_bh": false,
+          "reject_holm": false,
+          "reject_unadjusted": false
+        },
+        {
+          "id": "parity_pearson",
+          "p": 0.941,
+          "p_bh": 0.941,
+          "p_holm": 1,
+          "reject_bh": false,
+          "reject_holm": false,
+          "reject_unadjusted": false
+        },
+        {
+          "id": "repetition_pearson",
+          "p": 0.252,
+          "p_bh": 0.941,
+          "p_holm": 1,
+          "reject_bh": false,
+          "reject_holm": false,
+          "reject_unadjusted": false
+        },
+        {
+          "id": "sum_mean_absdev",
+          "p": 0.789,
+          "p_bh": 0.941,
+          "p_holm": 1,
+          "reject_bh": false,
+          "reject_holm": false,
+          "reject_unadjusted": false
+        }
+      ]
+    },
+    "structural": {
+      "amplitude": {
+        "max_abs_diff": 0.0114408261768,
+        "mean_empirical": 43.963,
+        "mean_exact": 43.5714285714,
+        "n": 1000,
+        "outside_support": 0,
+        "total_variation": 0.0811785279841
+      },
+      "bands": [
+        {
+          "band": 0,
+          "from": 1,
+          "max_abs_diff": 0.00597999714764,
+          "mean_empirical": 0.988,
+          "mean_exact": 1,
+          "n": 1000,
+          "outside_support": 0,
+          "to": 10,
+          "total_variation": 0.00623587034639
+        },
+        {
+          "band": 1,
+          "from": 11,
+          "max_abs_diff": 0.0314086057288,
+          "mean_empirical": 1.048,
+          "mean_exact": 1,
+          "n": 1000,
+          "outside_support": 0,
+          "to": 20,
+          "total_variation": 0.0316644789275
+        },
+        {
+          "band": 2,
+          "from": 21,
+          "max_abs_diff": 0.0105913942712,
+          "mean_empirical": 0.978,
+          "mean_exact": 1,
+          "n": 1000,
+          "outside_support": 0,
+          "to": 30,
+          "total_variation": 0.0185857818394
+        },
+        {
+          "band": 3,
+          "from": 31,
+          "max_abs_diff": 0.0125913942712,
+          "mean_empirical": 0.972,
+          "mean_exact": 1,
+          "n": 1000,
+          "outside_support": 0,
+          "to": 40,
+          "total_variation": 0.0125913942712
+        },
+        {
+          "band": 4,
+          "from": 41,
+          "max_abs_diff": 0.023788525695,
+          "mean_empirical": 1.01,
+          "mean_exact": 1,
+          "n": 1000,
+          "outside_support": 0,
+          "to": 50,
+          "total_variation": 0.036531234707
+        },
+        {
+          "band": 5,
+          "from": 51,
+          "max_abs_diff": 0.0219943875682,
+          "mean_empirical": 1.004,
+          "mean_exact": 1,
+          "n": 1000,
+          "outside_support": 0,
+          "to": 60,
+          "total_variation": 0.0247829132632
+        }
+      ],
+      "consecutive_pairs": {
+        "max_abs_diff": 0.0109460676824,
+        "mean_empirical": 0.488,
+        "mean_exact": 0.5,
+        "n": 1000,
+        "outside_support": 0,
+        "total_variation": 0.0117977571046
+      },
+      "data_kind": "SYNTHETIC_DATA",
+      "draws": 1000,
+      "lottery": "megasena",
+      "overlap_by_lag": {
+        "1": {
+          "max_abs_diff": 0.0126721977517,
+          "mean_empirical": 0.567567567568,
+          "mean_exact": 0.6,
+          "n": 999,
+          "outside_support": 0,
+          "total_variation": 0.0180113811493
+        },
+        "2": {
+          "max_abs_diff": 0.0188904244525,
+          "mean_empirical": 0.630260521042,
+          "mean_exact": 0.6,
+          "n": 998,
+          "outside_support": 0,
+          "total_variation": 0.0193256685587
+        },
+        "5": {
+          "max_abs_diff": 0.0322834509935,
+          "mean_empirical": 0.573869346734,
+          "mean_exact": 0.6,
+          "n": 995,
+          "outside_support": 0,
+          "total_variation": 0.034587438391
+        }
+      },
+      "parity_even_count": {
+        "max_abs_diff": 0.00760546589895,
+        "mean_empirical": 3.036,
+        "mean_exact": 3,
+        "n": 1000,
+        "outside_support": 0,
+        "total_variation": 0.0123667180277
+      },
+      "repetition_consecutive": {
+        "max_abs_diff": 0.0126721977517,
+        "mean_empirical": 0.567567567568,
+        "mean_exact": 0.6,
+        "n": 999,
+        "outside_support": 0,
+        "total_variation": 0.0180113811493
+      },
+      "sum": {
+        "max_abs_diff": 0.00844666991319,
+        "mean_empirical": 182.642,
+        "mean_exact": 183,
+        "n": 1000,
+        "outside_support": 0,
+        "total_variation": 0.171667175883
+      }
+    },
+    "structural_vs_simulated_reference": {
+      "amplitude": 0.118,
+      "consecutive": 0.019,
+      "data_kind": "SYNTHETIC_DATA",
+      "parity": 0.023,
+      "repetition": 0.021021021021,
+      "sum": 0.231
+    },
+    "uniformity_test": {
+      "alpha": 0.05,
+      "data_kind": "SYNTHETIC_DATA",
+      "draws": 1000,
+      "effect_size": {
+        "cramers_v_like": 0.0113097128398,
+        "definition": "V=√(X/(D·k·(N−1))); excesso=(X−(N−k))/(N−k), E_H0[X]=N−k",
+        "excess_over_null_mean": -0.161481481481
+      },
+      "hypotheses": {
+        "H0": "uniforme, independente entre concursos, sem reposição no concurso",
+        "H1": "desvio do modelo uniforme especificado"
+      },
+      "lottery": "megasena",
+      "mc_replicates": 999,
+      "p_value_formula": "(b+1)/(B+1)",
+      "p_value_resolution": 0.001,
+      "tests": [
+        {
+          "B": 999,
+          "b": 784,
+          "null_mean_mc": 53.6141741742,
+          "observed": 45.28,
+          "p": 0.785,
+          "p_value_mc_ci95": [
+            0.758234811352,
+            0.809152979601
+          ],
+          "reject": false,
+          "resolution": 0.001,
+          "statistic": "freq_pearson"
+        },
+        {
+          "B": 999,
+          "b": 940,
+          "null_mean_mc": 6.04183585307,
+          "observed": 1.75378534214,
+          "p": 0.941,
+          "p_value_mc_ci95": [
+            0.924564402931,
+            0.953939364784
+          ],
+          "reject": false,
+          "resolution": 0.001,
+          "statistic": "parity_pearson"
+        },
+        {
+          "B": 999,
+          "b": 251,
+          "null_mean_mc": 4.85763954485,
+          "observed": 4.92843165517,
+          "p": 0.252,
+          "p_value_mc_ci95": [
+            0.225342770269,
+            0.279065433415
+          ],
+          "reject": false,
+          "resolution": 0.001,
+          "statistic": "repetition_pearson"
+        },
+        {
+          "B": 999,
+          "b": 788,
+          "null_mean_mc": 1.02158858859,
+          "observed": 0.358,
+          "p": 0.789,
+          "p_value_mc_ci95": [
+            0.762396174188,
+            0.812968949503
+          ],
+          "reject": false,
+          "resolution": 0.001,
+          "statistic": "sum_mean_absdev"
+        }
+      ]
+    }
+  },
+  "seed": "20261031",
+  "simulation": {
+    "bias": {
+      "type": "none"
+    },
+    "data_kind": "SYNTHETIC_DATA",
+    "draws": 1000,
+    "generator": "xoshiro128**/splitmix64",
+    "generator_version": "1.0.0",
+    "lottery": "megasena",
+    "numbers_per_draw": 6,
+    "seed": "13295473793302656831",
+    "universe": 60
+  },
+  "stats_module_version": "2.0.0",
+  "type": "uniformity"
+}

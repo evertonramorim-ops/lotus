@@ -1,0 +1,127 @@
+{
+  "allowed_bet_sizes": [
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15
+  ],
+  "alpha": null,
+  "data_kind": "SYNTHETIC_DATA",
+  "disclaimer": "SYNTHETIC_DATA: dados artificiais gerados pelo laboratório; não representam nem avaliam sorteios reais; sem previsão.",
+  "draws": 100000,
+  "experiment_id": "exp-33eac32a7c55b527",
+  "generator": "xoshiro128**/splitmix64",
+  "generator_version": "1.0.0",
+  "hypotheses": {
+    "H0": "mecanismo uniforme, independente entre concursos, sem reposição no concurso",
+    "H1": "desvio do modelo uniforme especificado"
+  },
+  "lottery": "quina",
+  "mc_replicates": null,
+  "parameters": {
+    "betSizes": [
+      5,
+      15
+    ],
+    "checkpoints": [
+      100,
+      1000,
+      10000,
+      100000
+    ],
+    "draws": 100000,
+    "lottery": "quina",
+    "seed": "20261031",
+    "type": "convergence"
+  },
+  "results": {
+    "checkpoints": [
+      {
+        "draws": 100,
+        "freq_max_abs_rel_dev_x_sqrtD": 0.575,
+        "freq_max_abs_rel_deviation": 0.0575,
+        "hits": [
+          {
+            "bet_size": 5,
+            "max_cumulative_error": 0.0120558022923,
+            "total_variation": 0.0209014769375,
+            "tv_x_sqrtD": 0.209014769375
+          },
+          {
+            "bet_size": 15,
+            "max_cumulative_error": 0.0139652352977,
+            "total_variation": 0.0139652352977,
+            "tv_x_sqrtD": 0.139652352977
+          }
+        ]
+      },
+      {
+        "draws": 1000,
+        "freq_max_abs_rel_dev_x_sqrtD": 0.585021367131,
+        "freq_max_abs_rel_deviation": 0.0185,
+        "hits": [
+          {
+            "bet_size": 5,
+            "max_cumulative_error": 0.0160558022923,
+            "total_variation": 0.0160558022923,
+            "tv_x_sqrtD": 0.507729049051
+          },
+          {
+            "bet_size": 15,
+            "max_cumulative_error": 0.00996523529768,
+            "total_variation": 0.0102745139604,
+            "tv_x_sqrtD": 0.32490865966
+          }
+        ]
+      },
+      {
+        "draws": 10000,
+        "freq_max_abs_rel_dev_x_sqrtD": 0.78,
+        "freq_max_abs_rel_deviation": 0.0078,
+        "hits": [
+          {
+            "bet_size": 5,
+            "max_cumulative_error": 0.00715580229231,
+            "total_variation": 0.00866721865743,
+            "tv_x_sqrtD": 0.866721865743
+          },
+          {
+            "bet_size": 15,
+            "max_cumulative_error": 0.000889122403246,
+            "total_variation": 0.00118173338986,
+            "tv_x_sqrtD": 0.118173338986
+          }
+        ]
+      },
+      {
+        "draws": 100000,
+        "freq_max_abs_rel_dev_x_sqrtD": 0.717837028858,
+        "freq_max_abs_rel_deviation": 0.00227,
+        "hits": [
+          {
+            "bet_size": 5,
+            "max_cumulative_error": 0.00124419770769,
+            "total_variation": 0.00139856465986,
+            "tv_x_sqrtD": 0.442264978017
+          },
+          {
+            "bet_size": 15,
+            "max_cumulative_error": 0.00237912240325,
+            "total_variation": 0.00247984374054,
+            "tv_x_sqrtD": 0.784195446141
+          }
+        ]
+      }
+    ]
+  },
+  "seed": "20261031",
+  "stats_module_version": "2.0.0",
+  "type": "convergence"
+}

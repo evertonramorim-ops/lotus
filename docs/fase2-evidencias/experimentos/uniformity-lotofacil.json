@@ -1,0 +1,753 @@
+{
+  "alpha": 0.05,
+  "data_kind": "SYNTHETIC_DATA",
+  "disclaimer": "SYNTHETIC_DATA: dados artificiais gerados pelo laboratório; não representam nem avaliam sorteios reais; sem previsão.",
+  "draws": 1000,
+  "experiment_id": "exp-6f7868f715c96322",
+  "generator": "xoshiro128**/splitmix64",
+  "generator_version": "1.0.0",
+  "hypotheses": {
+    "H0": "mecanismo uniforme, independente entre concursos, sem reposição no concurso",
+    "H1": "desvio do modelo uniforme especificado"
+  },
+  "lottery": "lotofacil",
+  "mc_replicates": 999,
+  "parameters": {
+    "B": 999,
+    "alpha": 0.05,
+    "draws": 1000,
+    "lottery": "lotofacil",
+    "seed": "20261031",
+    "type": "uniformity"
+  },
+  "results": {
+    "frequencies": {
+      "ci_confidence": 0.95,
+      "ci_method": "wilson-1927",
+      "data_kind": "SYNTHETIC_DATA",
+      "draws": 1000,
+      "expected_count": 600,
+      "lottery": "lotofacil",
+      "note": "Dados sintéticos. Desvios são flutuação amostral sob o modelo; não indicam chance futura de nenhuma dezena.",
+      "numbers": [
+        {
+          "absolute": 632,
+          "ci_inclusion_rate": [
+            0.601657519783,
+            0.661332215975
+          ],
+          "deviation": 32,
+          "expected": 600,
+          "number": 1,
+          "relative": 0.632,
+          "standardized_deviation": 2.06559111798
+        },
+        {
+          "absolute": 621,
+          "ci_inclusion_rate": [
+            0.59052235818,
+            0.650551566265
+          ],
+          "deviation": 21,
+          "expected": 600,
+          "number": 2,
+          "relative": 0.621,
+          "standardized_deviation": 1.35554417117
+        },
+        {
+          "absolute": 593,
+          "ci_inclusion_rate": [
+            0.562251371449,
+            0.623036851471
+          ],
+          "deviation": -7,
+          "expected": 600,
+          "number": 3,
+          "relative": 0.593,
+          "standardized_deviation": -0.451848057058
+        },
+        {
+          "absolute": 597,
+          "ci_inclusion_rate": [
+            0.56628376466,
+            0.626973844193
+          ],
+          "deviation": -3,
+          "expected": 600,
+          "number": 4,
+          "relative": 0.597,
+          "standardized_deviation": -0.19364916731
+        },
+        {
+          "absolute": 609,
+          "ci_inclusion_rate": [
+            0.57839351613,
+            0.638772250519
+          ],
+          "deviation": 9,
+          "expected": 600,
+          "number": 5,
+          "relative": 0.609,
+          "standardized_deviation": 0.580947501931
+        },
+        {
+          "absolute": 574,
+          "ci_inclusion_rate": [
+            0.543125734824,
+            0.60430790492
+          ],
+          "deviation": -26,
+          "expected": 600,
+          "number": 6,
+          "relative": 0.574,
+          "standardized_deviation": -1.67829278336
+        },
+        {
+          "absolute": 600,
+          "ci_inclusion_rate": [
+            0.569309429489,
+            0.629925218812
+          ],
+          "deviation": 0,
+          "expected": 600,
+          "number": 7,
+          "relative": 0.6,
+          "standardized_deviation": 0
+        },
+        {
+          "absolute": 600,
+          "ci_inclusion_rate": [
+            0.569309429489,
+            0.629925218812
+          ],
+          "deviation": 0,
+          "expected": 600,
+          "number": 8,
+          "relative": 0.6,
+          "standardized_deviation": 0
+        },
+        {
+          "absolute": 610,
+          "ci_inclusion_rate": [
+            0.579403519478,
+            0.639754593654
+          ],
+          "deviation": 10,
+          "expected": 600,
+          "number": 9,
+          "relative": 0.61,
+          "standardized_deviation": 0.645497224368
+        },
+        {
+          "absolute": 597,
+          "ci_inclusion_rate": [
+            0.56628376466,
+            0.626973844193
+          ],
+          "deviation": -3,
+          "expected": 600,
+          "number": 10,
+          "relative": 0.597,
+          "standardized_deviation": -0.19364916731
+        },
+        {
+          "absolute": 593,
+          "ci_inclusion_rate": [
+            0.562251371449,
+            0.623036851471
+          ],
+          "deviation": -7,
+          "expected": 600,
+          "number": 11,
+          "relative": 0.593,
+          "standardized_deviation": -0.451848057058
+        },
+        {
+          "absolute": 594,
+          "ci_inclusion_rate": [
+            0.563259274515,
+            0.624021294889
+          ],
+          "deviation": -6,
+          "expected": 600,
+          "number": 12,
+          "relative": 0.594,
+          "standardized_deviation": -0.387298334621
+        },
+        {
+          "absolute": 588,
+          "ci_inclusion_rate": [
+            0.557213801762,
+            0.618112688744
+          ],
+          "deviation": -12,
+          "expected": 600,
+          "number": 13,
+          "relative": 0.588,
+          "standardized_deviation": -0.774596669241
+        },
+        {
+          "absolute": 597,
+          "ci_inclusion_rate": [
+            0.56628376466,
+            0.626973844193
+          ],
+          "deviation": -3,
+          "expected": 600,
+          "number": 14,
+          "relative": 0.597,
+          "standardized_deviation": -0.19364916731
+        },
+        {
+          "absolute": 585,
+          "ci_inclusion_rate": [
+            0.554192811279,
+            0.615156639778
+          ],
+          "deviation": -15,
+          "expected": 600,
+          "number": 15,
+          "relative": 0.585,
+          "standardized_deviation": -0.968245836552
+        },
+        {
+          "absolute": 577,
+          "ci_inclusion_rate": [
+            0.546142492926,
+            0.607268186266
+          ],
+          "deviation": -23,
+          "expected": 600,
+          "number": 16,
+          "relative": 0.577,
+          "standardized_deviation": -1.48464361605
+        },
+        {
+          "absolute": 601,
+          "ci_inclusion_rate": [
+            0.570318246216,
+            0.630908748568
+          ],
+          "deviation": 1,
+          "expected": 600,
+          "number": 17,
+          "relative": 0.601,
+          "standardized_deviation": 0.0645497224368
+        },
+        {
+          "absolute": 613,
+          "ci_inclusion_rate": [
+            0.582434326648,
+            0.642700825933
+          ],
+          "deviation": 13,
+          "expected": 600,
+          "number": 18,
+          "relative": 0.613,
+          "standardized_deviation": 0.839146391678
+        },
+        {
+          "absolute": 614,
+          "ci_inclusion_rate": [
+            0.583444862035,
+            0.643682637029
+          ],
+          "deviation": 14,
+          "expected": 600,
+          "number": 19,
+          "relative": 0.614,
+          "standardized_deviation": 0.903696114115
+        },
+        {
+          "absolute": 589,
+          "ci_inclusion_rate": [
+            0.558221056766,
+            0.619097780222
+          ],
+          "deviation": -11,
+          "expected": 600,
+          "number": 20,
+          "relative": 0.589,
+          "standardized_deviation": -0.710046946805
+        },
+        {
+          "absolute": 601,
+          "ci_inclusion_rate": [
+            0.570318246216,
+            0.630908748568
+          ],
+          "deviation": 1,
+          "expected": 600,
+          "number": 21,
+          "relative": 0.601,
+          "standardized_deviation": 0.0645497224368
+        },
+        {
+          "absolute": 582,
+          "ci_inclusion_rate": [
+            0.551172979727,
+            0.612199431881
+          ],
+          "deviation": -18,
+          "expected": 600,
+          "number": 22,
+          "relative": 0.582,
+          "standardized_deviation": -1.16189500386
+        },
+        {
+          "absolute": 619,
+          "ci_inclusion_rate": [
+            0.588499545083,
+            0.648589686396
+          ],
+          "deviation": 19,
+          "expected": 600,
+          "number": 23,
+          "relative": 0.619,
+          "standardized_deviation": 1.2264447263
+        },
+        {
+          "absolute": 597,
+          "ci_inclusion_rate": [
+            0.56628376466,
+            0.626973844193
+          ],
+          "deviation": -3,
+          "expected": 600,
+          "number": 24,
+          "relative": 0.597,
+          "standardized_deviation": -0.19364916731
+        },
+        {
+          "absolute": 617,
+          "ci_inclusion_rate": [
+            0.586477269859,
+            0.646627268654
+          ],
+          "deviation": 17,
+          "expected": 600,
+          "number": 25,
+          "relative": 0.617,
+          "standardized_deviation": 1.09734528143
+        }
+      ],
+      "p_inclusion": 0.6,
+      "sample_size": {
+        "approx_ci95_half_width_at_p": 0.0303636314852,
+        "draws": 1000,
+        "expected_count_per_number": 600,
+        "min_draws_for_expected_5": 9,
+        "total_numbers_observed": 15000
+      },
+      "theoretical_sd": 15.4919333848,
+      "theoretical_variance": 240
+    },
+    "hits": {
+      "bet_size": 15,
+      "data_kind": "SYNTHETIC_DATA",
+      "draws": 1000,
+      "lottery": "lotofacil",
+      "max_cumulative_error": 0.0138890833221,
+      "mean_hits_empirical": 8.99,
+      "mean_hits_exact": 9,
+      "sum_abs_diff": 0.0473266926908,
+      "tiers": [
+        {
+          "abs_diff": 0,
+          "count": 0,
+          "empirical": 0,
+          "hits": 0,
+          "theoretical": 0
+        },
+        {
+          "abs_diff": 0,
+          "count": 0,
+          "empirical": 0,
+          "hits": 1,
+          "theoretical": 0
+        },
+        {
+          "abs_diff": 0,
+          "count": 0,
+          "empirical": 0,
+          "hits": 2,
+          "theoretical": 0
+        },
+        {
+          "abs_diff": 0,
+          "count": 0,
+          "empirical": 0,
+          "hits": 3,
+          "theoretical": 0
+        },
+        {
+          "abs_diff": 0,
+          "count": 0,
+          "empirical": 0,
+          "hits": 4,
+          "theoretical": 0
+        },
+        {
+          "abs_diff": 0.00091869699825,
+          "count": 0,
+          "empirical": 0,
+          "hits": 5,
+          "theoretical": 0.00091869699825
+        },
+        {
+          "abs_diff": 0.0023116166375,
+          "count": 13,
+          "empirical": 0.013,
+          "hits": 6,
+          "theoretical": 0.0153116166375
+        },
+        {
+          "abs_diff": 0.00141136088303,
+          "count": 90,
+          "empirical": 0.09,
+          "hits": 7,
+          "theoretical": 0.088588639117
+        },
+        {
+          "abs_diff": 0.0017636290214,
+          "count": 238,
+          "empirical": 0.238,
+          "hits": 8,
+          "theoretical": 0.236236370979
+        },
+        {
+          "abs_diff": 0.00654394938754,
+          "count": 315,
+          "empirical": 0.315,
+          "hits": 9,
+          "theoretical": 0.321543949388
+        },
+        {
+          "abs_diff": 0.020488356441,
+          "count": 252,
+          "empirical": 0.252,
+          "hits": 10,
+          "theoretical": 0.231511643559
+        },
+        {
+          "abs_diff": 0.00669380437842,
+          "count": 81,
+          "empirical": 0.081,
+          "hits": 11,
+          "theoretical": 0.0876938043784
+        },
+        {
+          "abs_diff": 0.00570358178637,
+          "count": 11,
+          "empirical": 0.011,
+          "hits": 12,
+          "theoretical": 0.0167035817864
+        },
+        {
+          "abs_diff": 0.00144550226997,
+          "count": 0,
+          "empirical": 0,
+          "hits": 13,
+          "theoretical": 0.00144550226997
+        },
+        {
+          "abs_diff": 0.0000458889609516,
+          "count": 0,
+          "empirical": 0,
+          "hits": 14,
+          "theoretical": 0.0000458889609516
+        },
+        {
+          "abs_diff": 3.05926406344e-7,
+          "count": 0,
+          "empirical": 0,
+          "hits": 15,
+          "theoretical": 3.05926406344e-7
+        }
+      ],
+      "total_variation": 0.0236633463454
+    },
+    "multiple_comparisons": {
+      "alpha": 0.05,
+      "criteria": {
+        "bh": "p_bh ≤ alpha (FDR)",
+        "holm": "p_holm ≤ alpha (FWER)",
+        "unadjusted": "p ≤ alpha"
+      },
+      "family": "global-lotofacil",
+      "kind": "exploratory",
+      "m": 4,
+      "rejections": {
+        "bh": 0,
+        "holm": 0,
+        "unadjusted": 0
+      },
+      "results": [
+        {
+          "id": "freq_pearson",
+          "p": 0.751,
+          "p_bh": 0.751,
+          "p_holm": 1,
+          "reject_bh": false,
+          "reject_holm": false,
+          "reject_unadjusted": false
+        },
+        {
+          "id": "parity_pearson",
+          "p": 0.444,
+          "p_bh": 0.751,
+          "p_holm": 1,
+          "reject_bh": false,
+          "reject_holm": false,
+          "reject_unadjusted": false
+        },
+        {
+          "id": "repetition_pearson",
+          "p": 0.523,
+          "p_bh": 0.751,
+          "p_holm": 1,
+          "reject_bh": false,
+          "reject_holm": false,
+          "reject_unadjusted": false
+        },
+        {
+          "id": "sum_mean_absdev",
+          "p": 0.667,
+          "p_bh": 0.751,
+          "p_holm": 1,
+          "reject_bh": false,
+          "reject_holm": false,
+          "reject_unadjusted": false
+        }
+      ]
+    },
+    "structural": {
+      "amplitude": {
+        "max_abs_diff": 0.033,
+        "mean_empirical": 22.84,
+        "mean_exact": 22.75,
+        "n": 1000,
+        "outside_support": 0,
+        "total_variation": 0.0372718462047
+      },
+      "bands": [
+        {
+          "band": 0,
+          "from": 1,
+          "max_abs_diff": 0.0286245059289,
+          "mean_empirical": 3.052,
+          "mean_exact": 3,
+          "n": 1000,
+          "outside_support": 0,
+          "to": 5,
+          "total_variation": 0.0389644268775
+        },
+        {
+          "band": 1,
+          "from": 6,
+          "max_abs_diff": 0.0147114624506,
+          "mean_empirical": 2.981,
+          "mean_exact": 3,
+          "n": 1000,
+          "outside_support": 0,
+          "to": 10,
+          "total_variation": 0.0213359683794
+        },
+        {
+          "band": 2,
+          "from": 11,
+          "max_abs_diff": 0.0266245059289,
+          "mean_empirical": 2.957,
+          "mean_exact": 3,
+          "n": 1000,
+          "outside_support": 0,
+          "to": 15,
+          "total_variation": 0.0384703557312
+        },
+        {
+          "band": 3,
+          "from": 16,
+          "max_abs_diff": 0.0316245059289,
+          "mean_empirical": 2.994,
+          "mean_exact": 3,
+          "n": 1000,
+          "outside_support": 0,
+          "to": 20,
+          "total_variation": 0.0337075098814
+        },
+        {
+          "band": 4,
+          "from": 21,
+          "max_abs_diff": 0.00862450592885,
+          "mean_empirical": 3.016,
+          "mean_exact": 3,
+          "n": 1000,
+          "outside_support": 0,
+          "to": 25,
+          "total_variation": 0.0169486166008
+        }
+      ],
+      "consecutive_pairs": {
+        "max_abs_diff": 0.0254716650962,
+        "mean_empirical": 8.303,
+        "mean_exact": 8.4,
+        "n": 1000,
+        "outside_support": 0,
+        "total_variation": 0.0492996365594
+      },
+      "data_kind": "SYNTHETIC_DATA",
+      "draws": 1000,
+      "lottery": "lotofacil",
+      "overlap_by_lag": {
+        "1": {
+          "max_abs_diff": 0.0217416096942,
+          "mean_empirical": 9.01101101101,
+          "mean_exact": 9,
+          "n": 999,
+          "outside_support": 0,
+          "total_variation": 0.0250868148095
+        },
+        "2": {
+          "max_abs_diff": 0.0139793384049,
+          "mean_empirical": 8.97795591182,
+          "mean_exact": 9,
+          "n": 998,
+          "outside_support": 0,
+          "total_variation": 0.0227991249696
+        },
+        "5": {
+          "max_abs_diff": 0.0149289488227,
+          "mean_empirical": 8.96582914573,
+          "mean_exact": 9,
+          "n": 995,
+          "outside_support": 0,
+          "total_variation": 0.0328954701431
+        }
+      },
+      "parity_even_count": {
+        "max_abs_diff": 0.0218320096917,
+        "mean_empirical": 7.138,
+        "mean_exact": 7.2,
+        "n": 1000,
+        "outside_support": 0,
+        "total_variation": 0.0302930407861
+      },
+      "repetition_consecutive": {
+        "max_abs_diff": 0.0217416096942,
+        "mean_empirical": 9.01101101101,
+        "mean_exact": 9,
+        "n": 999,
+        "outside_support": 0,
+        "total_variation": 0.0250868148095
+      },
+      "sum": {
+        "max_abs_diff": 0.0113422337522,
+        "mean_empirical": 194.762,
+        "mean_exact": 195,
+        "n": 1000,
+        "outside_support": 0,
+        "total_variation": 0.117696153893
+      }
+    },
+    "structural_vs_simulated_reference": {
+      "amplitude": 0.048,
+      "consecutive": 0.076,
+      "data_kind": "SYNTHETIC_DATA",
+      "parity": 0.073,
+      "repetition": 0.0540540540541,
+      "sum": 0.15
+    },
+    "uniformity_test": {
+      "alpha": 0.05,
+      "data_kind": "SYNTHETIC_DATA",
+      "draws": 1000,
+      "effect_size": {
+        "cramers_v_like": 0.00473951083583,
+        "definition": "V=√(X/(D·k·(N−1))); excesso=(X−(N−k))/(N−k), E_H0[X]=N−k",
+        "excess_over_null_mean": -0.191333333333
+      },
+      "hypotheses": {
+        "H0": "uniforme, independente entre concursos, sem reposição no concurso",
+        "H1": "desvio do modelo uniforme especificado"
+      },
+      "lottery": "lotofacil",
+      "mc_replicates": 999,
+      "p_value_formula": "(b+1)/(B+1)",
+      "p_value_resolution": 0.001,
+      "tests": [
+        {
+          "B": 999,
+          "b": 750,
+          "null_mean_mc": 10.1403770437,
+          "observed": 8.08666666667,
+          "p": 0.751,
+          "p_value_mc_ci95": [
+            0.723000023493,
+            0.776580439192
+          ],
+          "reject": false,
+          "resolution": 0.001,
+          "statistic": "freq_pearson"
+        },
+        {
+          "B": 999,
+          "b": 443,
+          "null_mean_mc": 10.6079330526,
+          "observed": 8.66951782168,
+          "p": 0.444,
+          "p_value_mc_ci95": [
+            0.412912113749,
+            0.474408061334
+          ],
+          "reject": false,
+          "resolution": 0.001,
+          "statistic": "parity_pearson"
+        },
+        {
+          "B": 999,
+          "b": 522,
+          "null_mean_mc": 9.30463950937,
+          "observed": 7.52925987212,
+          "p": 0.523,
+          "p_value_mc_ci95": [
+            0.491521722086,
+            0.553350774562
+          ],
+          "reject": false,
+          "resolution": 0.001,
+          "statistic": "repetition_pearson"
+        },
+        {
+          "B": 999,
+          "b": 666,
+          "null_mean_mc": 0.452458458458,
+          "observed": 0.238,
+          "p": 0.667,
+          "p_value_mc_ci95": [
+            0.636845257133,
+            0.695211218065
+          ],
+          "reject": false,
+          "resolution": 0.001,
+          "statistic": "sum_mean_absdev"
+        }
+      ]
+    }
+  },
+  "seed": "20261031",
+  "simulation": {
+    "bias": {
+      "type": "none"
+    },
+    "data_kind": "SYNTHETIC_DATA",
+    "draws": 1000,
+    "generator": "xoshiro128**/splitmix64",
+    "generator_version": "1.0.0",
+    "lottery": "lotofacil",
+    "numbers_per_draw": 15,
+    "seed": "13295473793302656831",
+    "universe": 25
+  },
+  "stats_module_version": "2.0.0",
+  "type": "uniformity"
+}

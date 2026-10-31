@@ -1,0 +1,331 @@
+{
+  "alpha": null,
+  "data_kind": "SYNTHETIC_DATA",
+  "disclaimer": "SYNTHETIC_DATA: dados artificiais gerados pelo laboratório; não representam nem avaliam sorteios reais; sem previsão.",
+  "draws": 500,
+  "experiment_id": "exp-4f3fc8ff4644d51c",
+  "generator": "xoshiro128**/splitmix64",
+  "generator_version": "1.0.0",
+  "hypotheses": {
+    "H0": "mecanismo uniforme, independente entre concursos, sem reposição no concurso",
+    "H1": "desvio do modelo uniforme especificado",
+    "family_global": "4 testes MC: freq_pearson, parity_pearson, repetition_pearson, sum_mean_absdev",
+    "family_number": "100 testes binomiais exatos bilaterais (um por dezena)"
+  },
+  "lottery": "lotomania",
+  "mc_replicates": 199,
+  "parameters": {
+    "B": 199,
+    "alphas": [
+      0.01,
+      0.05,
+      0.1
+    ],
+    "draws": 500,
+    "lottery": "lotomania",
+    "nullMode": "shared",
+    "reps": 200,
+    "seed": "20261031",
+    "type": "error_rates"
+  },
+  "results": {
+    "alphas": [
+      0.01,
+      0.05,
+      0.1
+    ],
+    "bias": {
+      "type": "none"
+    },
+    "data_kind": "SYNTHETIC_DATA",
+    "draws": 500,
+    "families": {
+      "global_bh": {
+        "0.01": {
+          "ci95": [
+            0,
+            0.0188453264071
+          ],
+          "count": 0,
+          "rate": 0
+        },
+        "0.05": {
+          "ci95": [
+            0.0421521718113,
+            0.114054808899
+          ],
+          "count": 14,
+          "rate": 0.07
+        },
+        "0.1": {
+          "ci95": [
+            0.077863732301,
+            0.166647169032
+          ],
+          "count": 23,
+          "rate": 0.115
+        }
+      },
+      "global_holm": {
+        "0.01": {
+          "ci95": [
+            0,
+            0.0188453264071
+          ],
+          "count": 0,
+          "rate": 0
+        },
+        "0.05": {
+          "ci95": [
+            0.0421521718113,
+            0.114054808899
+          ],
+          "count": 14,
+          "rate": 0.07
+        },
+        "0.1": {
+          "ci95": [
+            0.077863732301,
+            0.166647169032
+          ],
+          "count": 23,
+          "rate": 0.115
+        }
+      },
+      "global_unadjusted": {
+        "0.01": {
+          "ci95": [
+            0.0421521718113,
+            0.114054808899
+          ],
+          "count": 14,
+          "rate": 0.07
+        },
+        "0.05": {
+          "ci95": [
+            0.124279079094,
+            0.228158836335
+          ],
+          "count": 34,
+          "rate": 0.17
+        },
+        "0.1": {
+          "ci95": [
+            0.249989448316,
+            0.377171775719
+          ],
+          "count": 62,
+          "rate": 0.31
+        }
+      },
+      "number_bh": {
+        "0.01": {
+          "ci95": [
+            0.00274665813102,
+            0.0357217617479
+          ],
+          "count": 2,
+          "rate": 0.01
+        },
+        "0.05": {
+          "ci95": [
+            0.0107247196448,
+            0.0571783404419
+          ],
+          "count": 5,
+          "rate": 0.025
+        },
+        "0.1": {
+          "ci95": [
+            0.077863732301,
+            0.166647169032
+          ],
+          "count": 23,
+          "rate": 0.115
+        }
+      },
+      "number_holm": {
+        "0.01": {
+          "ci95": [
+            0.00274665813102,
+            0.0357217617479
+          ],
+          "count": 2,
+          "rate": 0.01
+        },
+        "0.05": {
+          "ci95": [
+            0.00780442641081,
+            0.05028708694
+          ],
+          "count": 4,
+          "rate": 0.02
+        },
+        "0.1": {
+          "ci95": [
+            0.077863732301,
+            0.166647169032
+          ],
+          "count": 23,
+          "rate": 0.115
+        }
+      },
+      "number_unadjusted": {
+        "0.01": {
+          "ci95": [
+            0.416673851665,
+            0.553891508127
+          ],
+          "count": 97,
+          "rate": 0.485
+        },
+        "0.05": {
+          "ci95": [
+            0.964278238252,
+            0.997253341869
+          ],
+          "count": 198,
+          "rate": 0.99
+        },
+        "0.1": {
+          "ci95": [
+            0.981154673593,
+            1
+          ],
+          "count": 200,
+          "rate": 1
+        }
+      }
+    },
+    "family_definitions": {
+      "global": "4 testes MC: freq_pearson, parity_pearson, repetition_pearson, sum_mean_absdev",
+      "number": "100 testes binomiais exatos bilaterais (um por dezena)"
+    },
+    "freq_pvalue_deciles": [
+      13,
+      12,
+      33,
+      7,
+      20,
+      34,
+      21,
+      18,
+      23,
+      19
+    ],
+    "kind": "false_positive_rate",
+    "lottery": "lotomania",
+    "mc_replicates": 199,
+    "null_mode": "shared",
+    "per_statistic": {
+      "freq_pearson": {
+        "0.01": {
+          "ci95": [
+            0.00274665813102,
+            0.0357217617479
+          ],
+          "count": 2,
+          "rate": 0.01
+        },
+        "0.05": {
+          "ci95": [
+            0.0138203143318,
+            0.0638942924908
+          ],
+          "count": 6,
+          "rate": 0.03
+        },
+        "0.1": {
+          "ci95": [
+            0.0383763546331,
+            0.108019079341
+          ],
+          "count": 13,
+          "rate": 0.065
+        }
+      },
+      "parity_pearson": {
+        "0.01": {
+          "ci95": [
+            0.0051142377892,
+            0.0431657288257
+          ],
+          "count": 3,
+          "rate": 0.015
+        },
+        "0.05": {
+          "ci95": [
+            0.0273826455878,
+            0.0895781481786
+          ],
+          "count": 10,
+          "rate": 0.05
+        },
+        "0.1": {
+          "ci95": [
+            0.0459749171664,
+            0.12004361028
+          ],
+          "count": 15,
+          "rate": 0.075
+        }
+      },
+      "repetition_pearson": {
+        "0.01": {
+          "ci95": [
+            0.00274665813102,
+            0.0357217617479
+          ],
+          "count": 2,
+          "rate": 0.01
+        },
+        "0.05": {
+          "ci95": [
+            0.0273826455878,
+            0.0895781481786
+          ],
+          "count": 10,
+          "rate": 0.05
+        },
+        "0.1": {
+          "ci95": [
+            0.077863732301,
+            0.166647169032
+          ],
+          "count": 23,
+          "rate": 0.115
+        }
+      },
+      "sum_mean_absdev": {
+        "0.01": {
+          "ci95": [
+            0.017055541999,
+            0.0704706115596
+          ],
+          "count": 7,
+          "rate": 0.035
+        },
+        "0.05": {
+          "ci95": [
+            0.0273826455878,
+            0.0895781481786
+          ],
+          "count": 10,
+          "rate": 0.05
+        },
+        "0.1": {
+          "ci95": [
+            0.0616631026959,
+            0.143601611694
+          ],
+          "count": 19,
+          "rate": 0.095
+        }
+      }
+    },
+    "reps": 200
+  },
+  "seed": "20261031",
+  "stats_module_version": "2.0.0",
+  "type": "error_rates"
+}

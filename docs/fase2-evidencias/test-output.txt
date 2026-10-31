@@ -1,0 +1,1030 @@
+# LOTUS — saída bruta dos testes (Fase 1 + Fase 2). Fase 2 usa SYNTHETIC_DATA.
+# Data: 2026-10-31 19:39 -03 (UTC-03:00)
+# Node: v24.22.1
+# Commit-base: 5f38d58d654fd4748c087737b3ad5a92d7525352
+
+## FASE 1: node --test test/*.test.js
+TAP version 13
+# Subtest: C(60,6)=50063860
+ok 1 - C(60,6)=50063860
+  ---
+  duration_ms: 1.049932
+  type: 'test'
+  ...
+# Subtest: C(25,15)=3268760
+ok 2 - C(25,15)=3268760
+  ---
+  duration_ms: 0.120372
+  type: 'test'
+  ...
+# Subtest: C(80,5)=24040016
+ok 3 - C(80,5)=24040016
+  ---
+  duration_ms: 0.105471
+  type: 'test'
+  ...
+# Subtest: C(100,20)=535983370403809682970
+ok 4 - C(100,20)=535983370403809682970
+  ---
+  duration_ms: 0.100783
+  type: 'test'
+  ...
+# Subtest: C(100,50) = n!/(k!(n-k)!) independente
+ok 5 - C(100,50) = n!/(k!(n-k)!) independente
+  ---
+  duration_ms: 0.180538
+  type: 'test'
+  ...
+# Subtest: C(n,0)=C(n,n)=1 para n=0..100
+ok 6 - C(n,0)=C(n,n)=1 para n=0..100
+  ---
+  duration_ms: 0.167251
+  type: 'test'
+  ...
+# Subtest: C(n,k)=0 quando k>n
+ok 7 - C(n,k)=0 quando k>n
+  ---
+  duration_ms: 0.094327
+  type: 'test'
+  ...
+# Subtest: simetria C(n,k)=C(n,n-k) e Pascal, n<=80
+ok 8 - simetria C(n,k)=C(n,n-k) e Pascal, n<=80
+  ---
+  duration_ms: 19.204261
+  type: 'test'
+  ...
+# Subtest: binomial vs fórmula fatorial para n<=60 todos k
+ok 9 - binomial vs fórmula fatorial para n<=60 todos k
+  ---
+  duration_ms: 8.114366
+  type: 'test'
+  ...
+# Subtest: binomial aceita bigint
+ok 10 - binomial aceita bigint
+  ---
+  duration_ms: 0.217826
+  type: 'test'
+  ...
+# Subtest: entradas inválidas lançam erro
+ok 11 - entradas inválidas lançam erro
+  ---
+  duration_ms: 0.364883
+  type: 'test'
+  ...
+# Subtest: factorial(0)=factorial(1)=1
+ok 12 - factorial(0)=factorial(1)=1
+  ---
+  duration_ms: 0.068728
+  type: 'test'
+  ...
+# Subtest: 25! = 15511210043330985984000000
+ok 13 - 25! = 15511210043330985984000000
+  ---
+  duration_ms: 0.042947
+  type: 'test'
+  ...
+# Subtest: 20! = 2432902008176640000
+ok 14 - 20! = 2432902008176640000
+  ---
+  duration_ms: 0.036769
+  type: 'test'
+  ...
+# Subtest: permutations P(10,3)=720, P(n,n)=n!, k>n=0
+ok 15 - permutations P(10,3)=720, P(n,n)=n!, k>n=0
+  ---
+  duration_ms: 0.056545
+  type: 'test'
+  ...
+# Subtest: gcd
+ok 16 - gcd
+  ---
+  duration_ms: 0.127696
+  type: 'test'
+  ...
+# Subtest: Fraction reduz e normaliza sinal
+ok 17 - Fraction reduz e normaliza sinal
+  ---
+  duration_ms: 0.204577
+  type: 'test'
+  ...
+# Subtest: Fraction add/sub/mul/div/compare/equals
+ok 18 - Fraction add/sub/mul/div/compare/equals
+  ---
+  duration_ms: 0.193322
+  type: 'test'
+  ...
+# Subtest: toDecimalString truncado e controlado
+ok 19 - toDecimalString truncado e controlado
+  ---
+  duration_ms: 0.202142
+  type: 'test'
+  ...
+# Subtest: toNumber precisão relativa < 1e-15
+ok 20 - toNumber precisão relativa < 1e-15
+  ---
+  duration_ms: 0.159504
+  type: 'test'
+  ...
+# Subtest: força bruta N=10,K=3,n=3: contagens = enumeração
+ok 21 - força bruta N=10,K=3,n=3: contagens = enumeração
+  ---
+  duration_ms: 1.087136
+  type: 'test'
+  ...
+# Subtest: força bruta N=10,K=4,n=3: contagens = enumeração
+ok 22 - força bruta N=10,K=4,n=3: contagens = enumeração
+  ---
+  duration_ms: 0.237991
+  type: 'test'
+  ...
+# Subtest: força bruta N=10,K=7,n=3: contagens = enumeração
+ok 23 - força bruta N=10,K=7,n=3: contagens = enumeração
+  ---
+  duration_ms: 0.196119
+  type: 'test'
+  ...
+# Subtest: força bruta N=12,K=5,n=4: contagens = enumeração
+ok 24 - força bruta N=12,K=5,n=4: contagens = enumeração
+  ---
+  duration_ms: 1.24927
+  type: 'test'
+  ...
+# Subtest: força bruta N=9,K=9,n=4: contagens = enumeração
+ok 25 - força bruta N=9,K=9,n=4: contagens = enumeração
+  ---
+  duration_ms: 0.117952
+  type: 'test'
+  ...
+# Subtest: força bruta N=8,K=0,n=3: contagens = enumeração
+ok 26 - força bruta N=8,K=0,n=3: contagens = enumeração
+  ---
+  duration_ms: 0.077436
+  type: 'test'
+  ...
+# Subtest: força bruta N=11,K=6,n=6: contagens = enumeração
+ok 27 - força bruta N=11,K=6,n=6: contagens = enumeração
+  ---
+  duration_ms: 0.151371
+  type: 'test'
+  ...
+# Subtest: suporte e P=0 fora do suporte
+ok 28 - suporte e P=0 fora do suporte
+  ---
+  duration_ms: 0.837816
+  type: 'test'
+  ...
+# Subtest: variância = fórmula fechada (vários casos)
+ok 29 - variância = fórmula fechada (vários casos)
+  ---
+  duration_ms: 2.740943
+  type: 'test'
+  ...
+# Subtest: parâmetros inválidos lançam
+ok 30 - parâmetros inválidos lançam
+  ---
+  duration_ms: 0.660978
+  type: 'test'
+  ...
+# Subtest: soma da distribuição=1 para todo K,n com N=20
+ok 31 - soma da distribuição=1 para todo K,n com N=20
+  ---
+  duration_ms: 9.000972
+  type: 'test'
+  ...
+# Subtest: megasena aposta 6: soma=1, E=Kn/N, suporte, fora=0
+ok 32 - megasena aposta 6: soma=1, E=Kn/N, suporte, fora=0
+  ---
+  duration_ms: 2.853162
+  type: 'test'
+  ...
+# Subtest: megasena aposta 7: soma=1, E=Kn/N, suporte, fora=0
+ok 33 - megasena aposta 7: soma=1, E=Kn/N, suporte, fora=0
+  ---
+  duration_ms: 0.404054
+  type: 'test'
+  ...
+# Subtest: megasena aposta 8: soma=1, E=Kn/N, suporte, fora=0
+ok 34 - megasena aposta 8: soma=1, E=Kn/N, suporte, fora=0
+  ---
+  duration_ms: 0.25071
+  type: 'test'
+  ...
+# Subtest: megasena aposta 9: soma=1, E=Kn/N, suporte, fora=0
+ok 35 - megasena aposta 9: soma=1, E=Kn/N, suporte, fora=0
+  ---
+  duration_ms: 0.164925
+  type: 'test'
+  ...
+# Subtest: megasena aposta 10: soma=1, E=Kn/N, suporte, fora=0
+ok 36 - megasena aposta 10: soma=1, E=Kn/N, suporte, fora=0
+  ---
+  duration_ms: 0.165518
+  type: 'test'
+  ...
+# Subtest: megasena aposta 11: soma=1, E=Kn/N, suporte, fora=0
+ok 37 - megasena aposta 11: soma=1, E=Kn/N, suporte, fora=0
+  ---
+  duration_ms: 0.15188
+  type: 'test'
+  ...
+# Subtest: megasena aposta 12: soma=1, E=Kn/N, suporte, fora=0
+ok 38 - megasena aposta 12: soma=1, E=Kn/N, suporte, fora=0
+  ---
+  duration_ms: 0.271451
+  type: 'test'
+  ...
+# Subtest: megasena aposta 13: soma=1, E=Kn/N, suporte, fora=0
+ok 39 - megasena aposta 13: soma=1, E=Kn/N, suporte, fora=0
+  ---
+  duration_ms: 0.259833
+  type: 'test'
+  ...
+# Subtest: megasena aposta 14: soma=1, E=Kn/N, suporte, fora=0
+ok 40 - megasena aposta 14: soma=1, E=Kn/N, suporte, fora=0
+  ---
+  duration_ms: 0.314222
+  type: 'test'
+  ...
+# Subtest: megasena aposta 15: soma=1, E=Kn/N, suporte, fora=0
+ok 41 - megasena aposta 15: soma=1, E=Kn/N, suporte, fora=0
+  ---
+  duration_ms: 0.386077
+  type: 'test'
+  ...
+# Subtest: megasena aposta 16: soma=1, E=Kn/N, suporte, fora=0
+ok 42 - megasena aposta 16: soma=1, E=Kn/N, suporte, fora=0
+  ---
+  duration_ms: 0.671943
+  type: 'test'
+  ...
+# Subtest: megasena aposta 17: soma=1, E=Kn/N, suporte, fora=0
+ok 43 - megasena aposta 17: soma=1, E=Kn/N, suporte, fora=0
+  ---
+  duration_ms: 0.348419
+  type: 'test'
+  ...
+# Subtest: megasena aposta 18: soma=1, E=Kn/N, suporte, fora=0
+ok 44 - megasena aposta 18: soma=1, E=Kn/N, suporte, fora=0
+  ---
+  duration_ms: 0.558108
+  type: 'test'
+  ...
+# Subtest: megasena aposta 19: soma=1, E=Kn/N, suporte, fora=0
+ok 45 - megasena aposta 19: soma=1, E=Kn/N, suporte, fora=0
+  ---
+  duration_ms: 0.102291
+  type: 'test'
+  ...
+# Subtest: megasena aposta 20: soma=1, E=Kn/N, suporte, fora=0
+ok 46 - megasena aposta 20: soma=1, E=Kn/N, suporte, fora=0
+  ---
+  duration_ms: 0.102752
+  type: 'test'
+  ...
+# Subtest: megasena: rejeita tamanhos inválidos
+ok 47 - megasena: rejeita tamanhos inválidos
+  ---
+  duration_ms: 0.310339
+  type: 'test'
+  ...
+# Subtest: lotofacil aposta 15: soma=1, E=Kn/N, suporte, fora=0
+ok 48 - lotofacil aposta 15: soma=1, E=Kn/N, suporte, fora=0
+  ---
+  duration_ms: 0.197559
+  type: 'test'
+  ...
+# Subtest: lotofacil aposta 16: soma=1, E=Kn/N, suporte, fora=0
+ok 49 - lotofacil aposta 16: soma=1, E=Kn/N, suporte, fora=0
+  ---
+  duration_ms: 0.302995
+  type: 'test'
+  ...
+# Subtest: lotofacil aposta 17: soma=1, E=Kn/N, suporte, fora=0
+ok 50 - lotofacil aposta 17: soma=1, E=Kn/N, suporte, fora=0
+  ---
+  duration_ms: 0.346402
+  type: 'test'
+  ...
+# Subtest: lotofacil aposta 18: soma=1, E=Kn/N, suporte, fora=0
+ok 51 - lotofacil aposta 18: soma=1, E=Kn/N, suporte, fora=0
+  ---
+  duration_ms: 0.355905
+  type: 'test'
+  ...
+# Subtest: lotofacil aposta 19: soma=1, E=Kn/N, suporte, fora=0
+ok 52 - lotofacil aposta 19: soma=1, E=Kn/N, suporte, fora=0
+  ---
+  duration_ms: 0.297215
+  type: 'test'
+  ...
+# Subtest: lotofacil aposta 20: soma=1, E=Kn/N, suporte, fora=0
+ok 53 - lotofacil aposta 20: soma=1, E=Kn/N, suporte, fora=0
+  ---
+  duration_ms: 0.293966
+  type: 'test'
+  ...
+# Subtest: lotofacil: rejeita tamanhos inválidos
+ok 54 - lotofacil: rejeita tamanhos inválidos
+  ---
+  duration_ms: 0.149502
+  type: 'test'
+  ...
+# Subtest: quina aposta 5: soma=1, E=Kn/N, suporte, fora=0
+ok 55 - quina aposta 5: soma=1, E=Kn/N, suporte, fora=0
+  ---
+  duration_ms: 0.120861
+  type: 'test'
+  ...
+# Subtest: quina aposta 6: soma=1, E=Kn/N, suporte, fora=0
+ok 56 - quina aposta 6: soma=1, E=Kn/N, suporte, fora=0
+  ---
+  duration_ms: 0.079872
+  type: 'test'
+  ...
+# Subtest: quina aposta 7: soma=1, E=Kn/N, suporte, fora=0
+ok 57 - quina aposta 7: soma=1, E=Kn/N, suporte, fora=0
+  ---
+  duration_ms: 0.287917
+  type: 'test'
+  ...
+# Subtest: quina aposta 8: soma=1, E=Kn/N, suporte, fora=0
+ok 58 - quina aposta 8: soma=1, E=Kn/N, suporte, fora=0
+  ---
+  duration_ms: 3.321617
+  type: 'test'
+  ...
+# Subtest: quina aposta 9: soma=1, E=Kn/N, suporte, fora=0
+ok 59 - quina aposta 9: soma=1, E=Kn/N, suporte, fora=0
+  ---
+  duration_ms: 0.142043
+  type: 'test'
+  ...
+# Subtest: quina aposta 10: soma=1, E=Kn/N, suporte, fora=0
+ok 60 - quina aposta 10: soma=1, E=Kn/N, suporte, fora=0
+  ---
+  duration_ms: 0.118128
+  type: 'test'
+  ...
+# Subtest: quina aposta 11: soma=1, E=Kn/N, suporte, fora=0
+ok 61 - quina aposta 11: soma=1, E=Kn/N, suporte, fora=0
+  ---
+  duration_ms: 0.094046
+  type: 'test'
+  ...
+# Subtest: quina aposta 12: soma=1, E=Kn/N, suporte, fora=0
+ok 62 - quina aposta 12: soma=1, E=Kn/N, suporte, fora=0
+  ---
+  duration_ms: 0.126273
+  type: 'test'
+  ...
+# Subtest: quina aposta 13: soma=1, E=Kn/N, suporte, fora=0
+ok 63 - quina aposta 13: soma=1, E=Kn/N, suporte, fora=0
+  ---
+  duration_ms: 0.098396
+  type: 'test'
+  ...
+# Subtest: quina aposta 14: soma=1, E=Kn/N, suporte, fora=0
+ok 64 - quina aposta 14: soma=1, E=Kn/N, suporte, fora=0
+  ---
+  duration_ms: 0.085276
+  type: 'test'
+  ...
+# Subtest: quina aposta 15: soma=1, E=Kn/N, suporte, fora=0
+ok 65 - quina aposta 15: soma=1, E=Kn/N, suporte, fora=0
+  ---
+  duration_ms: 0.089666
+  type: 'test'
+  ...
+# Subtest: quina: rejeita tamanhos inválidos
+ok 66 - quina: rejeita tamanhos inválidos
+  ---
+  duration_ms: 0.119822
+  type: 'test'
+  ...
+# Subtest: lotomania aposta 50: soma=1, E=Kn/N, suporte, fora=0
+ok 67 - lotomania aposta 50: soma=1, E=Kn/N, suporte, fora=0
+  ---
+  duration_ms: 0.912854
+  type: 'test'
+  ...
+# Subtest: lotomania: rejeita tamanhos inválidos
+ok 68 - lotomania: rejeita tamanhos inválidos
+  ---
+  duration_ms: 0.104913
+  type: 'test'
+  ...
+# Subtest: modalidade desconhecida e protótipo
+ok 69 - modalidade desconhecida e protótipo
+  ---
+  duration_ms: 0.112927
+  type: 'test'
+  ...
+# Subtest: regras: sem preços (placeholder null) e objetos congelados
+ok 70 - regras: sem preços (placeholder null) e objetos congelados
+  ---
+  duration_ms: 0.05871
+  type: 'test'
+  ...
+# Subtest: Mega simples: 1 em 50063860
+ok 71 - Mega simples: 1 em 50063860
+  ---
+  duration_ms: 0.051436
+  type: 'test'
+  ...
+# Subtest: Mega 7 números: 7 jogos, 1 em 7151980
+ok 72 - Mega 7 números: 7 jogos, 1 em 7151980
+  ---
+  duration_ms: 0.033424
+  type: 'test'
+  ...
+# Subtest: Mega 15 números: C(15,6)=5005 jogos, prob=5005/50063860
+ok 73 - Mega 15 números: C(15,6)=5005 jogos, prob=5005/50063860
+  ---
+  duration_ms: 0.037079
+  type: 'test'
+  ...
+# Subtest: Mega 20: C(20,6)=38760
+ok 74 - Mega 20: C(20,6)=38760
+  ---
+  duration_ms: 0.027337
+  type: 'test'
+  ...
+# Subtest: Lotofácil simples 1/3268760; 16 números 16 jogos → 2/408595
+ok 75 - Lotofácil simples 1/3268760; 16 números 16 jogos → 2/408595
+  ---
+  duration_ms: 0.045106
+  type: 'test'
+  ...
+# Subtest: Quina simples 1/24040016
+ok 76 - Quina simples 1/24040016
+  ---
+  duration_ms: 0.029418
+  type: 'test'
+  ...
+# Subtest: Lotomania P(20)=P(0)=148/1683150111
+ok 77 - Lotomania P(20)=P(0)=148/1683150111
+  ---
+  duration_ms: 1.660159
+  type: 'test'
+  ...
+# Subtest: Lotomania simetria P(k)=P(20-k), soma=1, E=10
+ok 78 - Lotomania simetria P(k)=P(20-k), soma=1, E=10
+  ---
+  duration_ms: 0.950741
+  type: 'test'
+  ...
+# Subtest: pares/trincas vs fórmula independente N(N-1)/2, N(N-1)(N-2)/6
+ok 79 - pares/trincas vs fórmula independente N(N-1)/2, N(N-1)(N-2)/6
+  ---
+  duration_ms: 0.130637
+  type: 'test'
+  ...
+# Subtest: REF06 C(60,6)
+ok 80 - REF06 C(60,6)
+  ---
+  duration_ms: 0.680689
+  type: 'test'
+  ...
+# Subtest: REF07 C(25,15)
+ok 81 - REF07 C(25,15)
+  ---
+  duration_ms: 0.124282
+  type: 'test'
+  ...
+# Subtest: REF08 C(80,5)
+ok 82 - REF08 C(80,5)
+  ---
+  duration_ms: 0.098037
+  type: 'test'
+  ...
+# Subtest: REF09 pares/trincas Mega
+ok 83 - REF09 pares/trincas Mega
+  ---
+  duration_ms: 0.093624
+  type: 'test'
+  ...
+# Subtest: REF10 P(X=0)=P(X=20)
+ok 84 - REF10 P(X=0)=P(X=20)
+  ---
+  duration_ms: 0.533299
+  type: 'test'
+  ...
+# Subtest: REF11 simetria k=0..20
+ok 85 - REF11 simetria k=0..20
+  ---
+  duration_ms: 0.237322
+  type: 'test'
+  ...
+# Subtest: REF12 soma = 1 (Vandermonde)
+ok 86 - REF12 soma = 1 (Vandermonde)
+  ---
+  duration_ms: 0.862511
+  type: 'test'
+  ...
+# Subtest: REF13 E(X)=10
+ok 87 - REF13 E(X)=10
+  ---
+  duration_ms: 1.185019
+  type: 'test'
+  ...
+# Subtest: REF14 decimal 30 casas de P(20)
+ok 88 - REF14 decimal 30 casas de P(20)
+  ---
+  duration_ms: 0.42288
+  type: 'test'
+  ...
+1..88
+# tests 88
+# suites 0
+# pass 88
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 89.859137
+exit=0
+
+## FASE 2: node --test test/fase2/*.test.js
+TAP version 13
+# Subtest: [6] megasena: frequências — soma exata, p=k/N, Var=Dp(1−p), cotas binomiais exatas por dezena, IC Wilson
+ok 1 - [6] megasena: frequências — soma exata, p=k/N, Var=Dp(1−p), cotas binomiais exatas por dezena, IC Wilson
+  ---
+  duration_ms: 65.777918
+  type: 'test'
+  ...
+# Subtest: [7] megasena: distribuição de acertos empírica vs hipergeométrica exata (Fase 1), tamanhos de aposta 6,20
+ok 2 - [7] megasena: distribuição de acertos empírica vs hipergeométrica exata (Fase 1), tamanhos de aposta 6,20
+  ---
+  duration_ms: 45.45252
+  type: 'test'
+  ...
+# Subtest: [8] megasena: convergência — TVD de acertos e desvio máximo de frequência dentro de cotas exatas que encolhem com D
+ok 3 - [8] megasena: convergência — TVD de acertos e desvio máximo de frequência dentro de cotas exatas que encolhem com D
+  ---
+  duration_ms: 46.63632
+  type: 'test'
+  ...
+# Subtest: [9] megasena: distribuições estruturais (soma, paridade, faixas, consecutivos, amplitude) vs exatas
+ok 4 - [9] megasena: distribuições estruturais (soma, paridade, faixas, consecutivos, amplitude) vs exatas
+  ---
+  duration_ms: 58.375627
+  type: 'test'
+  ...
+# Subtest: [10] megasena: repetição entre concursos consecutivos ~ hipergeométrica(N,k,k) (pares disjuntos ⇒ independência)
+ok 5 - [10] megasena: repetição entre concursos consecutivos ~ hipergeométrica(N,k,k) (pares disjuntos ⇒ independência)
+  ---
+  duration_ms: 58.28122
+  type: 'test'
+  ...
+# Subtest: [6] lotofacil: frequências — soma exata, p=k/N, Var=Dp(1−p), cotas binomiais exatas por dezena, IC Wilson
+ok 6 - [6] lotofacil: frequências — soma exata, p=k/N, Var=Dp(1−p), cotas binomiais exatas por dezena, IC Wilson
+  ---
+  duration_ms: 33.014436
+  type: 'test'
+  ...
+# Subtest: [7] lotofacil: distribuição de acertos empírica vs hipergeométrica exata (Fase 1), tamanhos de aposta 15,20
+ok 7 - [7] lotofacil: distribuição de acertos empírica vs hipergeométrica exata (Fase 1), tamanhos de aposta 15,20
+  ---
+  duration_ms: 48.420629
+  type: 'test'
+  ...
+# Subtest: [8] lotofacil: convergência — TVD de acertos e desvio máximo de frequência dentro de cotas exatas que encolhem com D
+ok 8 - [8] lotofacil: convergência — TVD de acertos e desvio máximo de frequência dentro de cotas exatas que encolhem com D
+  ---
+  duration_ms: 62.455335
+  type: 'test'
+  ...
+# Subtest: [9] lotofacil: distribuições estruturais (soma, paridade, faixas, consecutivos, amplitude) vs exatas
+ok 9 - [9] lotofacil: distribuições estruturais (soma, paridade, faixas, consecutivos, amplitude) vs exatas
+  ---
+  duration_ms: 72.409405
+  type: 'test'
+  ...
+# Subtest: [10] lotofacil: repetição entre concursos consecutivos ~ hipergeométrica(N,k,k) (pares disjuntos ⇒ independência)
+ok 10 - [10] lotofacil: repetição entre concursos consecutivos ~ hipergeométrica(N,k,k) (pares disjuntos ⇒ independência)
+  ---
+  duration_ms: 116.710816
+  type: 'test'
+  ...
+# Subtest: [6] quina: frequências — soma exata, p=k/N, Var=Dp(1−p), cotas binomiais exatas por dezena, IC Wilson
+ok 11 - [6] quina: frequências — soma exata, p=k/N, Var=Dp(1−p), cotas binomiais exatas por dezena, IC Wilson
+  ---
+  duration_ms: 38.798288
+  type: 'test'
+  ...
+# Subtest: [7] quina: distribuição de acertos empírica vs hipergeométrica exata (Fase 1), tamanhos de aposta 5,15
+ok 12 - [7] quina: distribuição de acertos empírica vs hipergeométrica exata (Fase 1), tamanhos de aposta 5,15
+  ---
+  duration_ms: 21.152417
+  type: 'test'
+  ...
+# Subtest: [8] quina: convergência — TVD de acertos e desvio máximo de frequência dentro de cotas exatas que encolhem com D
+ok 13 - [8] quina: convergência — TVD de acertos e desvio máximo de frequência dentro de cotas exatas que encolhem com D
+  ---
+  duration_ms: 25.801668
+  type: 'test'
+  ...
+# Subtest: [9] quina: distribuições estruturais (soma, paridade, faixas, consecutivos, amplitude) vs exatas
+ok 14 - [9] quina: distribuições estruturais (soma, paridade, faixas, consecutivos, amplitude) vs exatas
+  ---
+  duration_ms: 56.235407
+  type: 'test'
+  ...
+# Subtest: [10] quina: repetição entre concursos consecutivos ~ hipergeométrica(N,k,k) (pares disjuntos ⇒ independência)
+ok 15 - [10] quina: repetição entre concursos consecutivos ~ hipergeométrica(N,k,k) (pares disjuntos ⇒ independência)
+  ---
+  duration_ms: 39.990175
+  type: 'test'
+  ...
+# Subtest: [6] lotomania: frequências — soma exata, p=k/N, Var=Dp(1−p), cotas binomiais exatas por dezena, IC Wilson
+ok 16 - [6] lotomania: frequências — soma exata, p=k/N, Var=Dp(1−p), cotas binomiais exatas por dezena, IC Wilson
+  ---
+  duration_ms: 76.278887
+  type: 'test'
+  ...
+# Subtest: [7] lotomania: distribuição de acertos empírica vs hipergeométrica exata (Fase 1), tamanhos de aposta 50
+ok 17 - [7] lotomania: distribuição de acertos empírica vs hipergeométrica exata (Fase 1), tamanhos de aposta 50
+  ---
+  duration_ms: 43.424142
+  type: 'test'
+  ...
+# Subtest: [8] lotomania: convergência — TVD de acertos e desvio máximo de frequência dentro de cotas exatas que encolhem com D
+ok 18 - [8] lotomania: convergência — TVD de acertos e desvio máximo de frequência dentro de cotas exatas que encolhem com D
+  ---
+  duration_ms: 86.547902
+  type: 'test'
+  ...
+# Subtest: [9] lotomania: distribuições estruturais (soma, paridade, faixas, consecutivos, amplitude) vs exatas
+ok 19 - [9] lotomania: distribuições estruturais (soma, paridade, faixas, consecutivos, amplitude) vs exatas
+  ---
+  duration_ms: 154.815494
+  type: 'test'
+  ...
+# Subtest: [10] lotomania: repetição entre concursos consecutivos ~ hipergeométrica(N,k,k) (pares disjuntos ⇒ independência)
+ok 20 - [10] lotomania: repetição entre concursos consecutivos ~ hipergeométrica(N,k,k) (pares disjuntos ⇒ independência)
+  ---
+  duration_ms: 178.029083
+  type: 'test'
+  ...
+# Subtest: [9] fórmulas estruturais exatas = enumeração por força bruta (N=10,k=4 e N=12,k=5, início 1 e 0)
+ok 21 - [9] fórmulas estruturais exatas = enumeração por força bruta (N=10,k=4 e N=12,k=5, início 1 e 0)
+  ---
+  duration_ms: 1.839788
+  type: 'test'
+  ...
+# Subtest: [17] megasena: mesmo spec+semente ⇒ JSON byte a byte idêntico (uniformity, error_rates, convergence); semente diferente ⇒ diferente
+ok 22 - [17] megasena: mesmo spec+semente ⇒ JSON byte a byte idêntico (uniformity, error_rates, convergence); semente diferente ⇒ diferente
+  ---
+  duration_ms: 75.231849
+  type: 'test'
+  ...
+# Subtest: [17] lotofacil: mesmo spec+semente ⇒ JSON byte a byte idêntico (uniformity, error_rates, convergence); semente diferente ⇒ diferente
+ok 23 - [17] lotofacil: mesmo spec+semente ⇒ JSON byte a byte idêntico (uniformity, error_rates, convergence); semente diferente ⇒ diferente
+  ---
+  duration_ms: 56.502501
+  type: 'test'
+  ...
+# Subtest: [17] quina: mesmo spec+semente ⇒ JSON byte a byte idêntico (uniformity, error_rates, convergence); semente diferente ⇒ diferente
+ok 24 - [17] quina: mesmo spec+semente ⇒ JSON byte a byte idêntico (uniformity, error_rates, convergence); semente diferente ⇒ diferente
+  ---
+  duration_ms: 31.731546
+  type: 'test'
+  ...
+# Subtest: [17] lotomania: mesmo spec+semente ⇒ JSON byte a byte idêntico (uniformity, error_rates, convergence); semente diferente ⇒ diferente
+ok 25 - [17] lotomania: mesmo spec+semente ⇒ JSON byte a byte idêntico (uniformity, error_rates, convergence); semente diferente ⇒ diferente
+  ---
+  duration_ms: 93.497445
+  type: 'test'
+  ...
+# Subtest: [18] entradas inválidas lançam erro
+ok 26 - [18] entradas inválidas lançam erro
+  ---
+  duration_ms: 1.207331
+  type: 'test'
+  ...
+# Subtest: [18] desempenho: fluxo preguiçoso (10 milhões declarados, 5 consumidos) e 200 mil concursos em < 15 s
+ok 27 - [18] desempenho: fluxo preguiçoso (10 milhões declarados, 5 consumidos) e 200 mil concursos em < 15 s
+  ---
+  duration_ms: 77.823787
+  type: 'test'
+  ...
+# Subtest: [12] fórmula p=(b+1)/(B+1), resolução 1/(B+1), nunca zero
+ok 28 - [12] fórmula p=(b+1)/(B+1), resolução 1/(B+1), nunca zero
+  ---
+  duration_ms: 1.955543
+  type: 'test'
+  ...
+# Subtest: [12] megasena: sob H0 os valores-p MC são (super)uniformes — R=200 conjuntos, B=99, nulas independentes
+ok 29 - [12] megasena: sob H0 os valores-p MC são (super)uniformes — R=200 conjuntos, B=99, nulas independentes
+  ---
+  duration_ms: 454.6637
+  type: 'test'
+  ...
+# Subtest: [12] lotofacil: sob H0 os valores-p MC são (super)uniformes — R=200 conjuntos, B=99, nulas independentes
+ok 30 - [12] lotofacil: sob H0 os valores-p MC são (super)uniformes — R=200 conjuntos, B=99, nulas independentes
+  ---
+  duration_ms: 807.983177
+  type: 'test'
+  ...
+# Subtest: [12] quina: sob H0 os valores-p MC são (super)uniformes — R=200 conjuntos, B=99, nulas independentes
+ok 31 - [12] quina: sob H0 os valores-p MC são (super)uniformes — R=200 conjuntos, B=99, nulas independentes
+  ---
+  duration_ms: 318.497557
+  type: 'test'
+  ...
+# Subtest: [12] lotomania: sob H0 os valores-p MC são (super)uniformes — R=200 conjuntos, B=99, nulas independentes
+ok 32 - [12] lotomania: sob H0 os valores-p MC são (super)uniformes — R=200 conjuntos, B=99, nulas independentes
+  ---
+  duration_ms: 1246.886451
+  type: 'test'
+  ...
+# Subtest: [12] E_H0[X_Pearson] = N − k (não N − 1): média MC próxima
+ok 33 - [12] E_H0[X_Pearson] = N − k (não N − 1): média MC próxima
+  ---
+  duration_ms: 303.671608
+  type: 'test'
+  ...
+# Subtest: [12] uniformityTest: estrutura, tamanho de efeito, alpha configurável, sem tabela qui-quadrado
+ok 34 - [12] uniformityTest: estrutura, tamanho de efeito, alpha configurável, sem tabela qui-quadrado
+  ---
+  duration_ms: 7.031643
+  type: 'test'
+  ...
+# Subtest: [13] Holm: exemplos calculados à mão (= p.adjust(method="holm") do R)
+ok 35 - [13] Holm: exemplos calculados à mão (= p.adjust(method="holm") do R)
+  ---
+  duration_ms: 0.340413
+  type: 'test'
+  ...
+# Subtest: [14] Benjamini–Hochberg: exemplos calculados à mão (= p.adjust(method="BH") do R)
+ok 36 - [14] Benjamini–Hochberg: exemplos calculados à mão (= p.adjust(method="BH") do R)
+  ---
+  duration_ms: 0.268365
+  type: 'test'
+  ...
+# Subtest: [13][14] família documentada: m, p originais e ajustados, rótulo exploratório/confirmatório, sem seleção
+ok 37 - [13][14] família documentada: m, p originais e ajustados, rótulo exploratório/confirmatório, sem seleção
+  ---
+  duration_ms: 6.376786
+  type: 'test'
+  ...
+# Subtest: [11] Lotomania exata: suporte 0..20, P(k)=P(20−k) para todo k, P(0)=P(20), E=10 (frações exatas)
+ok 38 - [11] Lotomania exata: suporte 0..20, P(k)=P(20−k) para todo k, P(0)=P(20), E=10 (frações exatas)
+  ---
+  duration_ms: 2.333031
+  type: 'test'
+  ...
+# Subtest: [11] Lotomania simulada (60000 concursos): cada faixa 0..20 dentro de cotas exatas; simetria empírica e média
+ok 39 - [11] Lotomania simulada (60000 concursos): cada faixa 0..20 dentro de cotas exatas; simetria empírica e média
+  ---
+  duration_ms: 174.080498
+  type: 'test'
+  ...
+# Subtest: [11] experimento lotomania reprodutível e restrito à Lotomania
+ok 40 - [11] experimento lotomania reprodutível e restrito à Lotomania
+  ---
+  duration_ms: 20.120116
+  type: 'test'
+  ...
+# Subtest: [15] megasena: FPR sob H0 — Holm controla FWER na família por dezena; sem correção a taxa familiar é maior
+ok 41 - [15] megasena: FPR sob H0 — Holm controla FWER na família por dezena; sem correção a taxa familiar é maior
+  ---
+  duration_ms: 325.070727
+  type: 'test'
+  ...
+# Subtest: [16] megasena: poder sob viés artificial forte (peso 3 em uma dezena) ≈ 1 e maior que sob viés fraco
+ok 42 - [16] megasena: poder sob viés artificial forte (peso 3 em uma dezena) ≈ 1 e maior que sob viés fraco
+  ---
+  duration_ms: 79.152164
+  type: 'test'
+  ...
+# Subtest: [16] megasena: amostrador ponderado — pesos iguais ⇒ uniforme; peso maior ⇒ inclusão maior; sem duplicatas
+ok 43 - [16] megasena: amostrador ponderado — pesos iguais ⇒ uniforme; peso maior ⇒ inclusão maior; sem duplicatas
+  ---
+  duration_ms: 83.679248
+  type: 'test'
+  ...
+# Subtest: [15] lotofacil: FPR sob H0 — Holm controla FWER na família por dezena; sem correção a taxa familiar é maior
+ok 44 - [15] lotofacil: FPR sob H0 — Holm controla FWER na família por dezena; sem correção a taxa familiar é maior
+  ---
+  duration_ms: 607.783667
+  type: 'test'
+  ...
+# Subtest: [16] lotofacil: poder sob viés artificial forte (peso 3 em uma dezena) ≈ 1 e maior que sob viés fraco
+ok 45 - [16] lotofacil: poder sob viés artificial forte (peso 3 em uma dezena) ≈ 1 e maior que sob viés fraco
+  ---
+  duration_ms: 139.748448
+  type: 'test'
+  ...
+# Subtest: [16] lotofacil: amostrador ponderado — pesos iguais ⇒ uniforme; peso maior ⇒ inclusão maior; sem duplicatas
+ok 46 - [16] lotofacil: amostrador ponderado — pesos iguais ⇒ uniforme; peso maior ⇒ inclusão maior; sem duplicatas
+  ---
+  duration_ms: 110.693566
+  type: 'test'
+  ...
+# Subtest: [15] quina: FPR sob H0 — Holm controla FWER na família por dezena; sem correção a taxa familiar é maior
+ok 47 - [15] quina: FPR sob H0 — Holm controla FWER na família por dezena; sem correção a taxa familiar é maior
+  ---
+  duration_ms: 220.171921
+  type: 'test'
+  ...
+# Subtest: [16] quina: poder sob viés artificial forte (peso 3 em uma dezena) ≈ 1 e maior que sob viés fraco
+ok 48 - [16] quina: poder sob viés artificial forte (peso 3 em uma dezena) ≈ 1 e maior que sob viés fraco
+  ---
+  duration_ms: 73.168241
+  type: 'test'
+  ...
+# Subtest: [16] quina: amostrador ponderado — pesos iguais ⇒ uniforme; peso maior ⇒ inclusão maior; sem duplicatas
+ok 49 - [16] quina: amostrador ponderado — pesos iguais ⇒ uniforme; peso maior ⇒ inclusão maior; sem duplicatas
+  ---
+  duration_ms: 93.478522
+  type: 'test'
+  ...
+# Subtest: [15] lotomania: FPR sob H0 — Holm controla FWER na família por dezena; sem correção a taxa familiar é maior
+ok 50 - [15] lotomania: FPR sob H0 — Holm controla FWER na família por dezena; sem correção a taxa familiar é maior
+  ---
+  duration_ms: 950.787897
+  type: 'test'
+  ...
+# Subtest: [16] lotomania: poder sob viés artificial forte (peso 3 em uma dezena) ≈ 1 e maior que sob viés fraco
+ok 51 - [16] lotomania: poder sob viés artificial forte (peso 3 em uma dezena) ≈ 1 e maior que sob viés fraco
+  ---
+  duration_ms: 259.39406
+  type: 'test'
+  ...
+# Subtest: [16] lotomania: amostrador ponderado — pesos iguais ⇒ uniforme; peso maior ⇒ inclusão maior; sem duplicatas
+ok 52 - [16] lotomania: amostrador ponderado — pesos iguais ⇒ uniforme; peso maior ⇒ inclusão maior; sem duplicatas
+  ---
+  duration_ms: 233.148077
+  type: 'test'
+  ...
+# Subtest: [1] vetor conhecido xoshiro128** (estado {1,2,3,4}) = implementação de referência em C
+ok 53 - [1] vetor conhecido xoshiro128** (estado {1,2,3,4}) = implementação de referência em C
+  ---
+  duration_ms: 2.587532
+  type: 'test'
+  ...
+# Subtest: [1] semeadura SplitMix64 = referência em C (sementes 0, 42, 20261031)
+ok 54 - [1] semeadura SplitMix64 = referência em C (sementes 0, 42, 20261031)
+  ---
+  duration_ms: 0.64972
+  type: 'test'
+  ...
+# Subtest: [1] megasena: mesma semente ⇒ mesma sequência de concursos
+ok 55 - [1] megasena: mesma semente ⇒ mesma sequência de concursos
+  ---
+  duration_ms: 8.997084
+  type: 'test'
+  ...
+# Subtest: [2] megasena: sementes diferentes ⇒ sequências diferentes
+ok 56 - [2] megasena: sementes diferentes ⇒ sequências diferentes
+  ---
+  duration_ms: 0.690708
+  type: 'test'
+  ...
+# Subtest: [1] lotofacil: mesma semente ⇒ mesma sequência de concursos
+ok 57 - [1] lotofacil: mesma semente ⇒ mesma sequência de concursos
+  ---
+  duration_ms: 11.28263
+  type: 'test'
+  ...
+# Subtest: [2] lotofacil: sementes diferentes ⇒ sequências diferentes
+ok 58 - [2] lotofacil: sementes diferentes ⇒ sequências diferentes
+  ---
+  duration_ms: 0.471274
+  type: 'test'
+  ...
+# Subtest: [1] quina: mesma semente ⇒ mesma sequência de concursos
+ok 59 - [1] quina: mesma semente ⇒ mesma sequência de concursos
+  ---
+  duration_ms: 2.570451
+  type: 'test'
+  ...
+# Subtest: [2] quina: sementes diferentes ⇒ sequências diferentes
+ok 60 - [2] quina: sementes diferentes ⇒ sequências diferentes
+  ---
+  duration_ms: 0.394534
+  type: 'test'
+  ...
+# Subtest: [1] lotomania: mesma semente ⇒ mesma sequência de concursos
+ok 61 - [1] lotomania: mesma semente ⇒ mesma sequência de concursos
+  ---
+  duration_ms: 4.341899
+  type: 'test'
+  ...
+# Subtest: [2] lotomania: sementes diferentes ⇒ sequências diferentes
+ok 62 - [2] lotomania: sementes diferentes ⇒ sequências diferentes
+  ---
+  duration_ms: 1.169248
+  type: 'test'
+  ...
+# Subtest: [2] sementes derivadas por rótulo são distintas e determinísticas
+ok 63 - [2] sementes derivadas por rótulo são distintas e determinísticas
+  ---
+  duration_ms: 3.764254
+  type: 'test'
+  ...
+# Subtest: rejeição sem viés de módulo: L = 2^32 − (2^32 mod n) é múltiplo de n e valores ≥ L são rejeitados
+ok 64 - rejeição sem viés de módulo: L = 2^32 − (2^32 mod n) é múltiplo de n e valores ≥ L são rejeitados
+  ---
+  duration_ms: 0.316944
+  type: 'test'
+  ...
+# Subtest: uniformInt e nextFloat dentro dos limites
+ok 65 - uniformInt e nextFloat dentro dos limites
+  ---
+  duration_ms: 11.358997
+  type: 'test'
+  ...
+# Subtest: Math.random não é usado nos módulos da Fase 2
+ok 66 - Math.random não é usado nos módulos da Fase 2
+  ---
+  duration_ms: 0.720444
+  type: 'test'
+  ...
+# Subtest: [3] uniformidade EXATA do Fisher-Yates parcial N=6,k=2 (enumeração de todas as N!/(N−k)! escolhas)
+ok 67 - [3] uniformidade EXATA do Fisher-Yates parcial N=6,k=2 (enumeração de todas as N!/(N−k)! escolhas)
+  ---
+  duration_ms: 1.029051
+  type: 'test'
+  ...
+# Subtest: [3] uniformidade EXATA do Fisher-Yates parcial N=7,k=3 (enumeração de todas as N!/(N−k)! escolhas)
+ok 68 - [3] uniformidade EXATA do Fisher-Yates parcial N=7,k=3 (enumeração de todas as N!/(N−k)! escolhas)
+  ---
+  duration_ms: 1.090933
+  type: 'test'
+  ...
+# Subtest: [3] uniformidade EXATA do Fisher-Yates parcial N=8,k=4 (enumeração de todas as N!/(N−k)! escolhas)
+ok 69 - [3] uniformidade EXATA do Fisher-Yates parcial N=8,k=4 (enumeração de todas as N!/(N−k)! escolhas)
+  ---
+  duration_ms: 6.963552
+  type: 'test'
+  ...
+# Subtest: [3] uniformidade EXATA do Fisher-Yates parcial N=5,k=5 (enumeração de todas as N!/(N−k)! escolhas)
+ok 70 - [3] uniformidade EXATA do Fisher-Yates parcial N=5,k=5 (enumeração de todas as N!/(N−k)! escolhas)
+  ---
+  duration_ms: 0.298395
+  type: 'test'
+  ...
+# Subtest: [3] uniformidade EXATA do Fisher-Yates parcial N=6,k=1 (enumeração de todas as N!/(N−k)! escolhas)
+ok 71 - [3] uniformidade EXATA do Fisher-Yates parcial N=6,k=1 (enumeração de todas as N!/(N−k)! escolhas)
+  ---
+  duration_ms: 0.208868
+  type: 'test'
+  ...
+# Subtest: [3] uniformidade estatística N=6,k=2 com PRNG real: 15 subconjuntos, cotas binomiais exatas
+ok 72 - [3] uniformidade estatística N=6,k=2 com PRNG real: 15 subconjuntos, cotas binomiais exatas
+  ---
+  duration_ms: 39.164235
+  type: 'test'
+  ...
+# Subtest: [4][5] megasena: sem duplicatas, ordenado, dentro do universo, tamanho exato (20000 concursos)
+ok 73 - [4][5] megasena: sem duplicatas, ordenado, dentro do universo, tamanho exato (20000 concursos)
+  ---
+  duration_ms: 23.81978
+  type: 'test'
+  ...
+# Subtest: [4][5] lotofacil: sem duplicatas, ordenado, dentro do universo, tamanho exato (20000 concursos)
+ok 74 - [4][5] lotofacil: sem duplicatas, ordenado, dentro do universo, tamanho exato (20000 concursos)
+  ---
+  duration_ms: 32.58694
+  type: 'test'
+  ...
+# Subtest: [4][5] quina: sem duplicatas, ordenado, dentro do universo, tamanho exato (20000 concursos)
+ok 75 - [4][5] quina: sem duplicatas, ordenado, dentro do universo, tamanho exato (20000 concursos)
+  ---
+  duration_ms: 10.222273
+  type: 'test'
+  ...
+# Subtest: [4][5] lotomania: sem duplicatas, ordenado, dentro do universo, tamanho exato (20000 concursos)
+ok 76 - [4][5] lotomania: sem duplicatas, ordenado, dentro do universo, tamanho exato (20000 concursos)
+  ---
+  duration_ms: 45.146917
+  type: 'test'
+  ...
+# Subtest: [5] limites oficiais das 4 modalidades
+ok 77 - [5] limites oficiais das 4 modalidades
+  ---
+  duration_ms: 0.85259
+  type: 'test'
+  ...
+1..77
+# tests 77
+# suites 0
+# pass 77
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 3267.024439
+exit=0
+
+## COMPLETO: npm test (spec)
+ℹ tests 165
+ℹ suites 0
+ℹ pass 165
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3142.647955
