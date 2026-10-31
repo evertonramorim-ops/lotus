@@ -1,0 +1,242 @@
+{
+  "data_kind": "SYNTHETIC_DATA",
+  "null_mode": "per_rep",
+  "seed": 20261101,
+  "plan": {
+    "fpr": {
+      "draws": 500,
+      "reps": 200,
+      "B": 199,
+      "alphas": [
+        0.01,
+        0.05,
+        0.1
+      ],
+      "nullMode": "per_rep"
+    },
+    "power": {
+      "draws": [
+        100,
+        500,
+        2000
+      ],
+      "boosts": [
+        0.1,
+        0.25,
+        0.5
+      ],
+      "reps": 100,
+      "B": 99,
+      "alphas": [
+        0.01,
+        0.05,
+        0.1
+      ],
+      "nullMode": "per_rep"
+    },
+    "group": {
+      "draws": 2000,
+      "factor": 1.2,
+      "reps": 100,
+      "B": 99,
+      "alphas": [
+        0.01,
+        0.05,
+        0.1
+      ],
+      "nullMode": "per_rep"
+    }
+  },
+  "node": "v24.22.1",
+  "started_at": "2026-10-31T22:47:39.395Z",
+  "finished_at": "2026-10-31T22:56:21.349Z",
+  "method": "duas execuções em processos Node separados (spawn, em paralelo), diretórios temporários distintos",
+  "identical": true,
+  "run1_ms": 519330,
+  "run2_ms": 521941,
+  "run1_aggregate_sha256": "b0c09c2d73a1eda4d8c4fdd219724aa3569dfbef367dd608806fbd49a54c00a8",
+  "run2_aggregate_sha256": "b0c09c2d73a1eda4d8c4fdd219724aa3569dfbef367dd608806fbd49a54c00a8",
+  "aggregate_definition": "sha256(JSON.stringify({arquivo: sha256}) com arquivos em ordem alfabética)",
+  "files": {
+    "RESULTADOS-per-rep.md": {
+      "run1": "c5359a1db06afd1ed824f9c7058768618cc00d061c17aaab6c66844a70d90300",
+      "run2": "c5359a1db06afd1ed824f9c7058768618cc00d061c17aaab6c66844a70d90300"
+    },
+    "fpr-lotofacil.json": {
+      "run1": "623f2ff2aa4c4d21e570e1caa0ba2812fdd193157429bad3bba3c324f34d0176",
+      "run2": "623f2ff2aa4c4d21e570e1caa0ba2812fdd193157429bad3bba3c324f34d0176"
+    },
+    "fpr-lotomania.json": {
+      "run1": "7183383aacec4f8c13ef08775af157e336230a2884308bc9d66daa71d4916725",
+      "run2": "7183383aacec4f8c13ef08775af157e336230a2884308bc9d66daa71d4916725"
+    },
+    "fpr-megasena.json": {
+      "run1": "13d820832dfe6c237dfb4b13801760d345ae69ba9b89bc836e428cba88aa2b51",
+      "run2": "13d820832dfe6c237dfb4b13801760d345ae69ba9b89bc836e428cba88aa2b51"
+    },
+    "fpr-quina.json": {
+      "run1": "9e33e222a7ac0c97e5716132c95e7dc577e7e102110179832a7540303757f6b2",
+      "run2": "9e33e222a7ac0c97e5716132c95e7dc577e7e102110179832a7540303757f6b2"
+    },
+    "group-lotofacil.json": {
+      "run1": "7b0a232a7cb2ede7d0ae776508be6084742628b87dd5e522ff3361ba9dbda85b",
+      "run2": "7b0a232a7cb2ede7d0ae776508be6084742628b87dd5e522ff3361ba9dbda85b"
+    },
+    "group-lotomania.json": {
+      "run1": "b27f4871a0262457fb39cc54b3e81f4e7a59d8f495bad161be813b91177c84fa",
+      "run2": "b27f4871a0262457fb39cc54b3e81f4e7a59d8f495bad161be813b91177c84fa"
+    },
+    "group-megasena.json": {
+      "run1": "fd6c22730345b74614caf296c1fe156c70e96d0d96baf15e40e8f3607df7257d",
+      "run2": "fd6c22730345b74614caf296c1fe156c70e96d0d96baf15e40e8f3607df7257d"
+    },
+    "group-quina.json": {
+      "run1": "184ce5fd295f81d8540f599cd35dee9aa90a7b05e156bd0657c83b5e82daa911",
+      "run2": "184ce5fd295f81d8540f599cd35dee9aa90a7b05e156bd0657c83b5e82daa911"
+    },
+    "power-lotofacil-D100-b0.1.json": {
+      "run1": "32f411b10dc8131924ed9e94070adf6b75ba66a4adb7d62f853b5a6a352efe35",
+      "run2": "32f411b10dc8131924ed9e94070adf6b75ba66a4adb7d62f853b5a6a352efe35"
+    },
+    "power-lotofacil-D100-b0.25.json": {
+      "run1": "1a503901f116a280f1614c83cce38f263c6c9fe42e7046fab0bf33dac7431a52",
+      "run2": "1a503901f116a280f1614c83cce38f263c6c9fe42e7046fab0bf33dac7431a52"
+    },
+    "power-lotofacil-D100-b0.5.json": {
+      "run1": "0a41bfb23a228c0972da6a25eaf7ab8f6f7d8bfc505787946e8bbec5fc35a5f3",
+      "run2": "0a41bfb23a228c0972da6a25eaf7ab8f6f7d8bfc505787946e8bbec5fc35a5f3"
+    },
+    "power-lotofacil-D2000-b0.1.json": {
+      "run1": "7c02e21d4b504ab6db83ef1ab74477e997905b190e59c6b416f32b5ba3c7be81",
+      "run2": "7c02e21d4b504ab6db83ef1ab74477e997905b190e59c6b416f32b5ba3c7be81"
+    },
+    "power-lotofacil-D2000-b0.25.json": {
+      "run1": "ec7af60cdccd3afae08d7832281a6c9c5f5bec7aece0e5deee1c735986957bfa",
+      "run2": "ec7af60cdccd3afae08d7832281a6c9c5f5bec7aece0e5deee1c735986957bfa"
+    },
+    "power-lotofacil-D2000-b0.5.json": {
+      "run1": "5dabda5175e4ed2a5356d34a9a6f574d91b8beec66c3b92f50a80a7bc90eeb5e",
+      "run2": "5dabda5175e4ed2a5356d34a9a6f574d91b8beec66c3b92f50a80a7bc90eeb5e"
+    },
+    "power-lotofacil-D500-b0.1.json": {
+      "run1": "9e57d3c363f6ec8b650f911652e997246a78c5c94b3f44f6d77bf48c91589cc5",
+      "run2": "9e57d3c363f6ec8b650f911652e997246a78c5c94b3f44f6d77bf48c91589cc5"
+    },
+    "power-lotofacil-D500-b0.25.json": {
+      "run1": "3f510aea530cee4d9e491348717d1cef74c5cd11548e4601202ae0e6e7e9e54d",
+      "run2": "3f510aea530cee4d9e491348717d1cef74c5cd11548e4601202ae0e6e7e9e54d"
+    },
+    "power-lotofacil-D500-b0.5.json": {
+      "run1": "ff28606e2c04762065a8e59edb3158a316261912f7c73a968b4f776c1d3a871c",
+      "run2": "ff28606e2c04762065a8e59edb3158a316261912f7c73a968b4f776c1d3a871c"
+    },
+    "power-lotomania-D100-b0.1.json": {
+      "run1": "75b44ccea21e6cedde5298a6d6d959cf60a29fc9e4017c44dc3346164a1c9f75",
+      "run2": "75b44ccea21e6cedde5298a6d6d959cf60a29fc9e4017c44dc3346164a1c9f75"
+    },
+    "power-lotomania-D100-b0.25.json": {
+      "run1": "2a840c1dbede387cc23297c720f161b5c80b1301b21c89fc0dda59c43186d5a7",
+      "run2": "2a840c1dbede387cc23297c720f161b5c80b1301b21c89fc0dda59c43186d5a7"
+    },
+    "power-lotomania-D100-b0.5.json": {
+      "run1": "311b8b8f29468c6128434e6795481a0e1352c6fec6e2dfa5c58c927ef36954d1",
+      "run2": "311b8b8f29468c6128434e6795481a0e1352c6fec6e2dfa5c58c927ef36954d1"
+    },
+    "power-lotomania-D2000-b0.1.json": {
+      "run1": "3ff27d1de6cde61157c2f9fe895f54a10c8243496861bccb13c79ac0ece00b8c",
+      "run2": "3ff27d1de6cde61157c2f9fe895f54a10c8243496861bccb13c79ac0ece00b8c"
+    },
+    "power-lotomania-D2000-b0.25.json": {
+      "run1": "81ada0efe90bcf7c542a4e346b7309162e41d17598208896d74f34e69991f480",
+      "run2": "81ada0efe90bcf7c542a4e346b7309162e41d17598208896d74f34e69991f480"
+    },
+    "power-lotomania-D2000-b0.5.json": {
+      "run1": "e83566eb23c92b7e14b78fdb8ee75f16eefd7479c93cd2646744a2956ab9ed0c",
+      "run2": "e83566eb23c92b7e14b78fdb8ee75f16eefd7479c93cd2646744a2956ab9ed0c"
+    },
+    "power-lotomania-D500-b0.1.json": {
+      "run1": "a7fb15c1dd86b5fb640b214b970d51c15ca3c13ccb3335ec15b8551761b5284e",
+      "run2": "a7fb15c1dd86b5fb640b214b970d51c15ca3c13ccb3335ec15b8551761b5284e"
+    },
+    "power-lotomania-D500-b0.25.json": {
+      "run1": "0eb1b95a4edf45ec98b85b0b11a1b8c4fc88a13b0c19eb5faa342f584180edb1",
+      "run2": "0eb1b95a4edf45ec98b85b0b11a1b8c4fc88a13b0c19eb5faa342f584180edb1"
+    },
+    "power-lotomania-D500-b0.5.json": {
+      "run1": "3cdf34f7522020a9d5e9d554edbdb691cbdc6c93870760aef7419635c8e7b17d",
+      "run2": "3cdf34f7522020a9d5e9d554edbdb691cbdc6c93870760aef7419635c8e7b17d"
+    },
+    "power-megasena-D100-b0.1.json": {
+      "run1": "a8c3a2ab655756473fa2e92e68326cf90c88b18d9582574e9d1592dc21f0c772",
+      "run2": "a8c3a2ab655756473fa2e92e68326cf90c88b18d9582574e9d1592dc21f0c772"
+    },
+    "power-megasena-D100-b0.25.json": {
+      "run1": "97480b38721c76b8380a30318885b518edc2e7a858ad216792cfa8139ca26248",
+      "run2": "97480b38721c76b8380a30318885b518edc2e7a858ad216792cfa8139ca26248"
+    },
+    "power-megasena-D100-b0.5.json": {
+      "run1": "fc49ec4afde8e4b6155cef280608cb926f1e3d56b517d27f2fc2c46be137f6d4",
+      "run2": "fc49ec4afde8e4b6155cef280608cb926f1e3d56b517d27f2fc2c46be137f6d4"
+    },
+    "power-megasena-D2000-b0.1.json": {
+      "run1": "4288dbadb7b91e37be8bffb287f048c6c30684517c4b236049146a1beda47a27",
+      "run2": "4288dbadb7b91e37be8bffb287f048c6c30684517c4b236049146a1beda47a27"
+    },
+    "power-megasena-D2000-b0.25.json": {
+      "run1": "36f9167a8250d9d780925d289901fb556c385ed67ff136fe891b4510373a02d4",
+      "run2": "36f9167a8250d9d780925d289901fb556c385ed67ff136fe891b4510373a02d4"
+    },
+    "power-megasena-D2000-b0.5.json": {
+      "run1": "6d0b2dd6291c2078ee8d085cc959937a4dacd76339cb8dedd2f3cf190cbe34f3",
+      "run2": "6d0b2dd6291c2078ee8d085cc959937a4dacd76339cb8dedd2f3cf190cbe34f3"
+    },
+    "power-megasena-D500-b0.1.json": {
+      "run1": "301d09d8f4dd585c74c137b3eb768c9fa83d489ed8df5acdda45497717e503dd",
+      "run2": "301d09d8f4dd585c74c137b3eb768c9fa83d489ed8df5acdda45497717e503dd"
+    },
+    "power-megasena-D500-b0.25.json": {
+      "run1": "188918c2b648c32d85dd0903b6b8ab52476991346c1b6d629ea44773de26bb8a",
+      "run2": "188918c2b648c32d85dd0903b6b8ab52476991346c1b6d629ea44773de26bb8a"
+    },
+    "power-megasena-D500-b0.5.json": {
+      "run1": "8c3877cd89c5f67c306e8827863f94a2d82cb0a3d6b27b329d8d952822cf8db6",
+      "run2": "8c3877cd89c5f67c306e8827863f94a2d82cb0a3d6b27b329d8d952822cf8db6"
+    },
+    "power-quina-D100-b0.1.json": {
+      "run1": "f32b469cde35e2d85b331c8aa9465addda94bb7c6d7c1cd05d30fd9e1154e909",
+      "run2": "f32b469cde35e2d85b331c8aa9465addda94bb7c6d7c1cd05d30fd9e1154e909"
+    },
+    "power-quina-D100-b0.25.json": {
+      "run1": "2d3fc625c79879af747a44fbd0783cea4f10aae74bd4bc3d42aad7a0e1064f76",
+      "run2": "2d3fc625c79879af747a44fbd0783cea4f10aae74bd4bc3d42aad7a0e1064f76"
+    },
+    "power-quina-D100-b0.5.json": {
+      "run1": "0e8815c41518c36218560f58a2429fad3f271652763049474536f14473971060",
+      "run2": "0e8815c41518c36218560f58a2429fad3f271652763049474536f14473971060"
+    },
+    "power-quina-D2000-b0.1.json": {
+      "run1": "714fcca8b988572d62de063bb44c4fc50c795ffb2336eb0c347b31db8f4f2168",
+      "run2": "714fcca8b988572d62de063bb44c4fc50c795ffb2336eb0c347b31db8f4f2168"
+    },
+    "power-quina-D2000-b0.25.json": {
+      "run1": "e1722c619c60789944088d65853fcf6278ea20d09a8fe22a749250e36f19d057",
+      "run2": "e1722c619c60789944088d65853fcf6278ea20d09a8fe22a749250e36f19d057"
+    },
+    "power-quina-D2000-b0.5.json": {
+      "run1": "f455de811ee0c5388104e59b8c6f415783693576e96e71cd92e4988b0376c37f",
+      "run2": "f455de811ee0c5388104e59b8c6f415783693576e96e71cd92e4988b0376c37f"
+    },
+    "power-quina-D500-b0.1.json": {
+      "run1": "4665916054c80f51e84dfe4d17323cdcb6d2ccbdc308083e5c03c2e4bc1172d0",
+      "run2": "4665916054c80f51e84dfe4d17323cdcb6d2ccbdc308083e5c03c2e4bc1172d0"
+    },
+    "power-quina-D500-b0.25.json": {
+      "run1": "e040ae65648357ad3b9f3e6631745491711b0ba6292946b20c9a67134d77a770",
+      "run2": "e040ae65648357ad3b9f3e6631745491711b0ba6292946b20c9a67134d77a770"
+    },
+    "power-quina-D500-b0.5.json": {
+      "run1": "90a9d3694e6e9cad316e436c9e6b9bd2c7bd9e24e160d279d441fcf020ba80e1",
+      "run2": "90a9d3694e6e9cad316e436c9e6b9bd2c7bd9e24e160d279d441fcf020ba80e1"
+    }
+  }
+}

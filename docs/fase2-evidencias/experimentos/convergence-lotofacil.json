@@ -1,0 +1,122 @@
+{
+  "allowed_bet_sizes": [
+    15,
+    16,
+    17,
+    18,
+    19,
+    20
+  ],
+  "alpha": null,
+  "data_kind": "SYNTHETIC_DATA",
+  "disclaimer": "SYNTHETIC_DATA: dados artificiais gerados pelo laboratório; não representam nem avaliam sorteios reais; sem previsão.",
+  "draws": 100000,
+  "experiment_id": "exp-283fccb18e8842e9",
+  "generator": "xoshiro128**/splitmix64",
+  "generator_version": "1.0.0",
+  "hypotheses": {
+    "H0": "mecanismo uniforme, independente entre concursos, sem reposição no concurso",
+    "H1": "desvio do modelo uniforme especificado"
+  },
+  "lottery": "lotofacil",
+  "mc_replicates": null,
+  "parameters": {
+    "betSizes": [
+      15,
+      20
+    ],
+    "checkpoints": [
+      100,
+      1000,
+      10000,
+      100000
+    ],
+    "draws": 100000,
+    "lottery": "lotofacil",
+    "seed": "20261031",
+    "type": "convergence"
+  },
+  "results": {
+    "checkpoints": [
+      {
+        "draws": 100,
+        "freq_max_abs_rel_dev_x_sqrtD": 1.1,
+        "freq_max_abs_rel_deviation": 0.11,
+        "hits": [
+          {
+            "bet_size": 15,
+            "max_cumulative_error": 0.0451810472473,
+            "total_variation": 0.0801584086932,
+            "tv_x_sqrtD": 0.801584086932
+          },
+          {
+            "bet_size": 20,
+            "max_cumulative_error": 0.031185770751,
+            "total_variation": 0.058418972332,
+            "tv_x_sqrtD": 0.58418972332
+          }
+        ]
+      },
+      {
+        "draws": 1000,
+        "freq_max_abs_rel_dev_x_sqrtD": 1.01192885125,
+        "freq_max_abs_rel_deviation": 0.032,
+        "hits": [
+          {
+            "bet_size": 15,
+            "max_cumulative_error": 0.0138890833221,
+            "total_variation": 0.0236633463454,
+            "tv_x_sqrtD": 0.748300715129
+          },
+          {
+            "bet_size": 20,
+            "max_cumulative_error": 0.00903162055336,
+            "total_variation": 0.0169486166008,
+            "tv_x_sqrtD": 0.535962316474
+          }
+        ]
+      },
+      {
+        "draws": 10000,
+        "freq_max_abs_rel_dev_x_sqrtD": 0.62,
+        "freq_max_abs_rel_deviation": 0.0062,
+        "hits": [
+          {
+            "bet_size": 15,
+            "max_cumulative_error": 0.00256968636425,
+            "total_variation": 0.00774036882488,
+            "tv_x_sqrtD": 0.774036882488
+          },
+          {
+            "bet_size": 20,
+            "max_cumulative_error": 0.00363873517787,
+            "total_variation": 0.00712450592885,
+            "tv_x_sqrtD": 0.712450592885
+          }
+        ]
+      },
+      {
+        "draws": 100000,
+        "freq_max_abs_rel_dev_x_sqrtD": 0.872788634206,
+        "freq_max_abs_rel_deviation": 0.00276,
+        "hits": [
+          {
+            "bet_size": 15,
+            "max_cumulative_error": 0.00117104724727,
+            "total_variation": 0.00254034692054,
+            "tv_x_sqrtD": 0.803328231592
+          },
+          {
+            "bet_size": 20,
+            "max_cumulative_error": 0.00202577075099,
+            "total_variation": 0.00219268774704,
+            "tv_x_sqrtD": 0.693388747818
+          }
+        ]
+      }
+    ]
+  },
+  "seed": "20261031",
+  "stats_module_version": "2.0.0",
+  "type": "convergence"
+}
