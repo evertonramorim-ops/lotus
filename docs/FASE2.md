@@ -63,7 +63,7 @@ As fórmulas são verificadas contra enumeração por força bruta em universos 
 Cada estatística é sensível a desvios específicos (frequência, paridade, dependência serial, soma); nenhuma é sensível a todos.
 
 ## 6. Reprodutibilidade
-Cada experimento (`runExperiment`) registra: `experiment_id` (sha256 dos parâmetros canônicos), `data_kind: "SYNTHETIC_DATA"`, tipo, modalidade, nº de concursos, semente, gerador e versão, `stats_module_version` (2.0.0), parâmetros completos, hipóteses, α, nº de réplicas MC e resultados. A serialização é canônica (chaves ordenadas, números com 12 algarismos significativos, sem carimbo de tempo) ⇒ **mesmos parâmetros + mesma semente ⇒ JSON byte a byte idêntico** (testado para todos os tipos e modalidades). O script `scripts/experimentos-fase2.mjs` executa todos os experimentos documentados **duas vezes em processos separados** e compara o sha256 de cada um dos 54 arquivos; o resultado fica em `docs/fase2-evidencias/reprodutibilidade.json`.
+Cada experimento (`runExperiment`) registra: `experiment_id` (sha256 dos parâmetros canônicos), `data_kind: "SYNTHETIC_DATA"`, tipo, modalidade, nº de concursos, semente, gerador e versão, `stats_module_version` (2.0.0), parâmetros completos, hipóteses, α, nº de réplicas MC e resultados. A serialização é canônica (chaves ordenadas, números com 12 algarismos significativos, sem carimbo de tempo) ⇒ **mesmos parâmetros + mesma semente ⇒ JSON byte a byte idêntico** (testado para todos os tipos e modalidades). O script `scripts/experimentos-fase2.mjs` executa todos os experimentos documentados **duas vezes em processos separados** e compara o sha256 de cada um dos 54 arquivos; o resultado fica em `docs/fase2-evidencias/reprodutibilidade.json`. **Correção (revisão complementar):** `reprodutibilidade.json` registra **exatamente 2 execuções** (run1/run2, sha256 agregado `c9e41f64…eceb2`). Uma terceira execução em cópia independente (`/tmp/lotus-fresh`) foi mencionada no relatório anterior mas não foi registrada nesse arquivo; ver §15.6 para o que é e o que não é verificável dela.
 
 ## 7. Exemplos de execução
 ```sh
@@ -121,7 +121,9 @@ Esta fase usa **exclusivamente** dados gerados pelo laboratório, marcados `SYNT
 - Wasserstein, R. L.; Lazar, N. A. (2016). The ASA statement on p-values. *Am. Stat.* 70.
 
 ## 13. Resultados dos experimentos (resumo)
-Tabelas completas em `docs/fase2-evidencias/experimentos/RESULTADOS.md` (+ 53 JSONs). Reprodutibilidade em `docs/fase2-evidencias/reprodutibilidade.json`.
+Tabelas completas em `docs/fase2-evidencias/experimentos/RESULTADOS.md` (+ 53 JSONs).
+
+> **Atenção — `nullMode: 'shared'`.** As tabelas de FPR e poder em `experimentos/` (seções 1–3 de RESULTADOS.md, inclusive o viés de grupo, que usou o padrão `shared`) reutilizam UMA distribuição nula MC por (modalidade, D) em todas as réplicas: as réplicas são **condicionalmente dependentes** e essas taxas/ICs **não são estimativas sobre réplicas independentes**. Foram mantidas inalteradas como registro histórico. As estimativas com réplicas independentes estão na §15 (`nullMode: 'per_rep'`). Reprodutibilidade em `docs/fase2-evidencias/reprodutibilidade.json`.
 
 ## 14. Resultados individuais dos testes
 Saída bruta (TAP, com versão do Node e data): `docs/fase2-evidencias/test-output.txt`.
@@ -300,3 +302,147 @@ Saída bruta (TAP, com versão do Node e data): `docs/fase2-evidencias/test-outp
 | 75 | [4][5] quina: sem duplicatas, ordenado, dentro do universo, tamanho exato (20000 concursos) | ✅ passou |
 | 76 | [4][5] lotomania: sem duplicatas, ordenado, dentro do universo, tamanho exato (20000 concursos) | ✅ passou |
 | 77 | [5] limites oficiais das 4 modalidades | ✅ passou |
+
+## 15. Revisão complementar — FPR e poder com `nullMode: 'per_rep'` (SYNTHETIC_DATA)
+
+**Motivo.** A bateria original (§13) usou `nullMode: 'shared'`. Esta bateria nova usa `nullMode: 'per_rep'`: cada réplica i gera seus dados com `deriveSeed(seed, "data:i")` e sua PRÓPRIA nula MC com `deriveSeed(seed, "null:i")` ⇒ réplicas independentes; IC95% de Wilson sobre R réplicas independentes. A implementação de `per_rep` em `src/stats/power.js` já existia e foi revisada sem defeitos; **nenhum código de `src/` foi alterado**. Foram acrescentados 3 testes (`test/fase2/per-rep.test.js`: registro de `null_mode` e rejeição de modo inválido; nulas distintas por réplica; determinismo).
+
+**Script:** `scripts/experimentos-fase2-per-rep.mjs` → `docs/fase2-evidencias/experimentos-per-rep/` (44 JSONs + `RESULTADOS-per-rep.md`; todos com `data_kind: "SYNTHETIC_DATA"` e `null_mode: "per_rep"`). Semente-mestre **20261101** (diferente da bateria shared, 20261031). α ∈ {0.01, 0.05, 0.1}.
+
+| Bateria | D | R | B | grade |
+|---|---|---|---|---|
+| FPR (H0, uniforme) | 500 | 200 | 199 | 4 modalidades |
+| Poder, viés em 1 dezena (alvo = minNumber+6, peso 1+boost) | 100, 500, 2000 | 100 | 99 | boost 0.1, 0.25, 0.5 — **mesma grade da bateria shared, sem redução** |
+| Poder, viés de grupo (primeira faixa: 10 dezenas; Lotofácil 5; peso 1.2) | 2000 | 100 | 99 | 4 modalidades |
+
+Tempo: ≈520 s por execução (Node v24.22.1). **BH é EXPLORATÓRIO** (controla FDR, não FWER); a decisão confirmatória usa Holm.
+
+### 15.1. Taxa de falsos positivos sob H0 (gerador uniforme)
+
+D=500, R=200, B=199. Família global = 4 testes MC; família por dezena = N testes binomiais exatos. **BH = EXPLORATÓRIO** (controla FDR, não FWER).
+
+| Modalidade | α | freq_pearson | parity | repetition | sum | global s/ correção | global Holm | global BH (EXPLORATÓRIO) | por dezena s/ correção | por dezena Holm | por dezena BH (EXPLORATÓRIO) |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| megasena | 0.01 | 0.005 [0.001; 0.028] | 0.015 [0.005; 0.043] | 0.010 [0.003; 0.036] | 0.010 [0.003; 0.036] | 0.040 [0.020; 0.077] | 0.000 [0.000; 0.019] | 0.000 [0.000; 0.019] | 0.400 [0.335; 0.469] | 0.005 [0.001; 0.028] | 0.005 [0.001; 0.028] |
+| megasena | 0.05 | 0.065 [0.038; 0.108] | 0.065 [0.038; 0.108] | 0.035 [0.017; 0.070] | 0.055 [0.031; 0.096] | 0.205 [0.155; 0.266] | 0.040 [0.020; 0.077] | 0.040 [0.020; 0.077] | 0.940 [0.898; 0.965] | 0.040 [0.020; 0.077] | 0.040 [0.020; 0.077] |
+| megasena | 0.1 | 0.105 [0.070; 0.155] | 0.090 [0.058; 0.138] | 0.090 [0.058; 0.138] | 0.140 [0.099; 0.195] | 0.365 [0.301; 0.434] | 0.130 [0.090; 0.184] | 0.130 [0.090; 0.184] | 1.000 [0.981; 1.000] | 0.100 [0.066; 0.149] | 0.100 [0.066; 0.149] |
+| lotofacil | 0.01 | 0.015 [0.005; 0.043] | 0.005 [0.001; 0.028] | 0.010 [0.003; 0.036] | 0.010 [0.003; 0.036] | 0.040 [0.020; 0.077] | 0.000 [0.000; 0.019] | 0.000 [0.000; 0.019] | 0.200 [0.150; 0.261] | 0.015 [0.005; 0.043] | 0.015 [0.005; 0.043] |
+| lotofacil | 0.05 | 0.055 [0.031; 0.096] | 0.050 [0.027; 0.090] | 0.050 [0.027; 0.090] | 0.025 [0.011; 0.057] | 0.160 [0.116; 0.217] | 0.040 [0.020; 0.077] | 0.040 [0.020; 0.077] | 0.755 [0.691; 0.809] | 0.050 [0.027; 0.090] | 0.050 [0.027; 0.090] |
+| lotofacil | 0.1 | 0.105 [0.070; 0.155] | 0.095 [0.062; 0.144] | 0.110 [0.074; 0.161] | 0.070 [0.042; 0.114] | 0.335 [0.273; 0.403] | 0.085 [0.054; 0.132] | 0.085 [0.054; 0.132] | 0.930 [0.886; 0.958] | 0.095 [0.062; 0.144] | 0.095 [0.062; 0.144] |
+| quina | 0.01 | 0.010 [0.003; 0.036] | 0.015 [0.005; 0.043] | 0.020 [0.008; 0.050] | 0.015 [0.005; 0.043] | 0.060 [0.035; 0.102] | 0.000 [0.000; 0.019] | 0.000 [0.000; 0.019] | 0.525 [0.456; 0.593] | 0.000 [0.000; 0.019] | 0.000 [0.000; 0.019] |
+| quina | 0.05 | 0.055 [0.031; 0.096] | 0.060 [0.035; 0.102] | 0.075 [0.046; 0.120] | 0.055 [0.031; 0.096] | 0.235 [0.182; 0.298] | 0.060 [0.035; 0.102] | 0.060 [0.035; 0.102] | 0.980 [0.950; 0.992] | 0.045 [0.024; 0.083] | 0.045 [0.024; 0.083] |
+| quina | 0.1 | 0.080 [0.050; 0.126] | 0.115 [0.078; 0.167] | 0.120 [0.082; 0.172] | 0.095 [0.062; 0.144] | 0.370 [0.306; 0.439] | 0.135 [0.094; 0.189] | 0.135 [0.094; 0.189] | 1.000 [0.981; 1.000] | 0.085 [0.054; 0.132] | 0.090 [0.058; 0.138] |
+| lotomania | 0.01 | 0.010 [0.003; 0.036] | 0.010 [0.003; 0.036] | 0.010 [0.003; 0.036] | 0.000 [0.000; 0.019] | 0.030 [0.014; 0.064] | 0.000 [0.000; 0.019] | 0.000 [0.000; 0.019] | 0.605 [0.536; 0.670] | 0.005 [0.001; 0.028] | 0.005 [0.001; 0.028] |
+| lotomania | 0.05 | 0.065 [0.038; 0.108] | 0.050 [0.027; 0.090] | 0.035 [0.017; 0.070] | 0.030 [0.014; 0.064] | 0.170 [0.124; 0.228] | 0.030 [0.014; 0.064] | 0.030 [0.014; 0.064] | 0.980 [0.950; 0.992] | 0.045 [0.024; 0.083] | 0.045 [0.024; 0.083] |
+| lotomania | 0.1 | 0.115 [0.078; 0.167] | 0.075 [0.046; 0.120] | 0.080 [0.050; 0.126] | 0.060 [0.035; 0.102] | 0.295 [0.236; 0.362] | 0.075 [0.046; 0.120] | 0.080 [0.050; 0.126] | 1.000 [0.981; 1.000] | 0.080 [0.050; 0.126] | 0.095 [0.062; 0.144] |
+
+### 15.2. Poder sob viés ARTIFICIAL em uma dezena (alvo = minNumber+6, peso 1+boost)
+
+R=100, B=99, D ∈ {100, 500, 2000}, boost ∈ {0.1, 0.25, 0.5} (mesma grade da bateria shared). "freq MC" = Pearson global calibrado por MC (nula por réplica); "alvo Holm/BH" = dezena enviesada rejeitada na família por dezena; "falso Holm" = alguma dezena não enviesada rejeitada (Holm).
+
+| Modalidade | D | boost | α | freq MC | alvo Holm | alvo BH (EXPLORATÓRIO) | falso (não-alvo) Holm |
+|---|---|---|---|---|---|---|---|
+| megasena | 100 | 0.1 | 0.01 | 0.000 [0.000; 0.037] | 0.000 [0.000; 0.037] | 0.000 [0.000; 0.037] | 0.000 [0.000; 0.037] |
+| megasena | 100 | 0.1 | 0.05 | 0.010 [0.002; 0.054] | 0.000 [0.000; 0.037] | 0.000 [0.000; 0.037] | 0.010 [0.002; 0.054] |
+| megasena | 100 | 0.25 | 0.01 | 0.000 [0.000; 0.037] | 0.010 [0.002; 0.054] | 0.010 [0.002; 0.054] | 0.000 [0.000; 0.037] |
+| megasena | 100 | 0.25 | 0.05 | 0.010 [0.002; 0.054] | 0.010 [0.002; 0.054] | 0.010 [0.002; 0.054] | 0.000 [0.000; 0.037] |
+| megasena | 100 | 0.5 | 0.01 | 0.010 [0.002; 0.054] | 0.020 [0.006; 0.070] | 0.020 [0.006; 0.070] | 0.000 [0.000; 0.037] |
+| megasena | 100 | 0.5 | 0.05 | 0.090 [0.048; 0.162] | 0.020 [0.006; 0.070] | 0.030 [0.010; 0.085] | 0.020 [0.006; 0.070] |
+| megasena | 500 | 0.1 | 0.01 | 0.030 [0.010; 0.085] | 0.000 [0.000; 0.037] | 0.000 [0.000; 0.037] | 0.010 [0.002; 0.054] |
+| megasena | 500 | 0.1 | 0.05 | 0.060 [0.028; 0.125] | 0.000 [0.000; 0.037] | 0.010 [0.002; 0.054] | 0.040 [0.016; 0.098] |
+| megasena | 500 | 0.25 | 0.01 | 0.030 [0.010; 0.085] | 0.020 [0.006; 0.070] | 0.020 [0.006; 0.070] | 0.000 [0.000; 0.037] |
+| megasena | 500 | 0.25 | 0.05 | 0.050 [0.022; 0.112] | 0.050 [0.022; 0.112] | 0.050 [0.022; 0.112] | 0.030 [0.010; 0.085] |
+| megasena | 500 | 0.5 | 0.01 | 0.090 [0.048; 0.162] | 0.250 [0.175; 0.343] | 0.250 [0.175; 0.343] | 0.000 [0.000; 0.037] |
+| megasena | 500 | 0.5 | 0.05 | 0.200 [0.133; 0.289] | 0.410 [0.319; 0.508] | 0.410 [0.319; 0.508] | 0.020 [0.006; 0.070] |
+| megasena | 2000 | 0.1 | 0.01 | 0.010 [0.002; 0.054] | 0.000 [0.000; 0.037] | 0.000 [0.000; 0.037] | 0.000 [0.000; 0.037] |
+| megasena | 2000 | 0.1 | 0.05 | 0.050 [0.022; 0.112] | 0.000 [0.000; 0.037] | 0.000 [0.000; 0.037] | 0.020 [0.006; 0.070] |
+| megasena | 2000 | 0.25 | 0.01 | 0.060 [0.028; 0.125] | 0.260 [0.184; 0.354] | 0.260 [0.184; 0.354] | 0.010 [0.002; 0.054] |
+| megasena | 2000 | 0.25 | 0.05 | 0.160 [0.101; 0.244] | 0.380 [0.291; 0.478] | 0.380 [0.291; 0.478] | 0.010 [0.002; 0.054] |
+| megasena | 2000 | 0.5 | 0.01 | 0.720 [0.625; 0.799] | 0.990 [0.946; 0.998] | 0.990 [0.946; 0.998] | 0.000 [0.000; 0.037] |
+| megasena | 2000 | 0.5 | 0.05 | 0.830 [0.745; 0.891] | 1.000 [0.963; 1.000] | 1.000 [0.963; 1.000] | 0.040 [0.016; 0.098] |
+| lotofacil | 100 | 0.1 | 0.01 | 0.010 [0.002; 0.054] | 0.000 [0.000; 0.037] | 0.000 [0.000; 0.037] | 0.000 [0.000; 0.037] |
+| lotofacil | 100 | 0.1 | 0.05 | 0.040 [0.016; 0.098] | 0.000 [0.000; 0.037] | 0.000 [0.000; 0.037] | 0.010 [0.002; 0.054] |
+| lotofacil | 100 | 0.25 | 0.01 | 0.010 [0.002; 0.054] | 0.030 [0.010; 0.085] | 0.030 [0.010; 0.085] | 0.000 [0.000; 0.037] |
+| lotofacil | 100 | 0.25 | 0.05 | 0.070 [0.034; 0.137] | 0.050 [0.022; 0.112] | 0.050 [0.022; 0.112] | 0.020 [0.006; 0.070] |
+| lotofacil | 100 | 0.5 | 0.01 | 0.080 [0.041; 0.150] | 0.170 [0.109; 0.255] | 0.170 [0.109; 0.255] | 0.010 [0.002; 0.054] |
+| lotofacil | 100 | 0.5 | 0.05 | 0.270 [0.193; 0.364] | 0.350 [0.264; 0.447] | 0.350 [0.264; 0.447] | 0.020 [0.006; 0.070] |
+| lotofacil | 500 | 0.1 | 0.01 | 0.010 [0.002; 0.054] | 0.030 [0.010; 0.085] | 0.030 [0.010; 0.085] | 0.000 [0.000; 0.037] |
+| lotofacil | 500 | 0.1 | 0.05 | 0.060 [0.028; 0.125] | 0.030 [0.010; 0.085] | 0.040 [0.016; 0.098] | 0.060 [0.028; 0.125] |
+| lotofacil | 500 | 0.25 | 0.01 | 0.130 [0.078; 0.210] | 0.410 [0.319; 0.508] | 0.410 [0.319; 0.508] | 0.000 [0.000; 0.037] |
+| lotofacil | 500 | 0.25 | 0.05 | 0.410 [0.319; 0.508] | 0.590 [0.492; 0.681] | 0.590 [0.492; 0.681] | 0.010 [0.002; 0.054] |
+| lotofacil | 500 | 0.5 | 0.01 | 0.940 [0.875; 0.972] | 1.000 [0.963; 1.000] | 1.000 [0.963; 1.000] | 0.000 [0.000; 0.037] |
+| lotofacil | 500 | 0.5 | 0.05 | 0.990 [0.946; 0.998] | 1.000 [0.963; 1.000] | 1.000 [0.963; 1.000] | 0.030 [0.010; 0.085] |
+| lotofacil | 2000 | 0.1 | 0.01 | 0.160 [0.101; 0.244] | 0.310 [0.228; 0.406] | 0.320 [0.237; 0.417] | 0.010 [0.002; 0.054] |
+| lotofacil | 2000 | 0.1 | 0.05 | 0.340 [0.255; 0.437] | 0.490 [0.394; 0.587] | 0.490 [0.394; 0.587] | 0.060 [0.028; 0.125] |
+| lotofacil | 2000 | 0.25 | 0.01 | 0.990 [0.946; 0.998] | 1.000 [0.963; 1.000] | 1.000 [0.963; 1.000] | 0.030 [0.010; 0.085] |
+| lotofacil | 2000 | 0.25 | 0.05 | 1.000 [0.963; 1.000] | 1.000 [0.963; 1.000] | 1.000 [0.963; 1.000] | 0.050 [0.022; 0.112] |
+| lotofacil | 2000 | 0.5 | 0.01 | 1.000 [0.963; 1.000] | 1.000 [0.963; 1.000] | 1.000 [0.963; 1.000] | 0.060 [0.028; 0.125] |
+| lotofacil | 2000 | 0.5 | 0.05 | 1.000 [0.963; 1.000] | 1.000 [0.963; 1.000] | 1.000 [0.963; 1.000] | 0.140 [0.085; 0.221] |
+| quina | 100 | 0.1 | 0.01 | 0.000 [0.000; 0.037] | 0.000 [0.000; 0.037] | 0.000 [0.000; 0.037] | 0.010 [0.002; 0.054] |
+| quina | 100 | 0.1 | 0.05 | 0.030 [0.010; 0.085] | 0.000 [0.000; 0.037] | 0.000 [0.000; 0.037] | 0.040 [0.016; 0.098] |
+| quina | 100 | 0.25 | 0.01 | 0.000 [0.000; 0.037] | 0.000 [0.000; 0.037] | 0.000 [0.000; 0.037] | 0.000 [0.000; 0.037] |
+| quina | 100 | 0.25 | 0.05 | 0.020 [0.006; 0.070] | 0.000 [0.000; 0.037] | 0.000 [0.000; 0.037] | 0.020 [0.006; 0.070] |
+| quina | 100 | 0.5 | 0.01 | 0.010 [0.002; 0.054] | 0.000 [0.000; 0.037] | 0.000 [0.000; 0.037] | 0.000 [0.000; 0.037] |
+| quina | 100 | 0.5 | 0.05 | 0.030 [0.010; 0.085] | 0.030 [0.010; 0.085] | 0.030 [0.010; 0.085] | 0.050 [0.022; 0.112] |
+| quina | 500 | 0.1 | 0.01 | 0.020 [0.006; 0.070] | 0.010 [0.002; 0.054] | 0.010 [0.002; 0.054] | 0.000 [0.000; 0.037] |
+| quina | 500 | 0.1 | 0.05 | 0.080 [0.041; 0.150] | 0.010 [0.002; 0.054] | 0.010 [0.002; 0.054] | 0.060 [0.028; 0.125] |
+| quina | 500 | 0.25 | 0.01 | 0.030 [0.010; 0.085] | 0.020 [0.006; 0.070] | 0.020 [0.006; 0.070] | 0.000 [0.000; 0.037] |
+| quina | 500 | 0.25 | 0.05 | 0.100 [0.055; 0.174] | 0.050 [0.022; 0.112] | 0.050 [0.022; 0.112] | 0.050 [0.022; 0.112] |
+| quina | 500 | 0.5 | 0.01 | 0.070 [0.034; 0.137] | 0.110 [0.063; 0.186] | 0.110 [0.063; 0.186] | 0.020 [0.006; 0.070] |
+| quina | 500 | 0.5 | 0.05 | 0.200 [0.133; 0.289] | 0.190 [0.125; 0.278] | 0.230 [0.158; 0.322] | 0.040 [0.016; 0.098] |
+| quina | 2000 | 0.1 | 0.01 | 0.000 [0.000; 0.037] | 0.000 [0.000; 0.037] | 0.000 [0.000; 0.037] | 0.010 [0.002; 0.054] |
+| quina | 2000 | 0.1 | 0.05 | 0.050 [0.022; 0.112] | 0.020 [0.006; 0.070] | 0.020 [0.006; 0.070] | 0.030 [0.010; 0.085] |
+| quina | 2000 | 0.25 | 0.01 | 0.040 [0.016; 0.098] | 0.140 [0.085; 0.221] | 0.140 [0.085; 0.221] | 0.020 [0.006; 0.070] |
+| quina | 2000 | 0.25 | 0.05 | 0.120 [0.070; 0.198] | 0.280 [0.201; 0.375] | 0.300 [0.219; 0.396] | 0.050 [0.022; 0.112] |
+| quina | 2000 | 0.5 | 0.01 | 0.390 [0.300; 0.488] | 0.910 [0.838; 0.952] | 0.910 [0.838; 0.952] | 0.030 [0.010; 0.085] |
+| quina | 2000 | 0.5 | 0.05 | 0.640 [0.542; 0.727] | 0.940 [0.875; 0.972] | 0.940 [0.875; 0.972] | 0.050 [0.022; 0.112] |
+| lotomania | 100 | 0.1 | 0.01 | 0.010 [0.002; 0.054] | 0.000 [0.000; 0.037] | 0.000 [0.000; 0.037] | 0.000 [0.000; 0.037] |
+| lotomania | 100 | 0.1 | 0.05 | 0.050 [0.022; 0.112] | 0.000 [0.000; 0.037] | 0.000 [0.000; 0.037] | 0.100 [0.055; 0.174] |
+| lotomania | 100 | 0.25 | 0.01 | 0.010 [0.002; 0.054] | 0.000 [0.000; 0.037] | 0.000 [0.000; 0.037] | 0.000 [0.000; 0.037] |
+| lotomania | 100 | 0.25 | 0.05 | 0.070 [0.034; 0.137] | 0.000 [0.000; 0.037] | 0.000 [0.000; 0.037] | 0.090 [0.048; 0.162] |
+| lotomania | 100 | 0.5 | 0.01 | 0.020 [0.006; 0.070] | 0.030 [0.010; 0.085] | 0.030 [0.010; 0.085] | 0.000 [0.000; 0.037] |
+| lotomania | 100 | 0.5 | 0.05 | 0.100 [0.055; 0.174] | 0.050 [0.022; 0.112] | 0.050 [0.022; 0.112] | 0.070 [0.034; 0.137] |
+| lotomania | 500 | 0.1 | 0.01 | 0.000 [0.000; 0.037] | 0.000 [0.000; 0.037] | 0.000 [0.000; 0.037] | 0.000 [0.000; 0.037] |
+| lotomania | 500 | 0.1 | 0.05 | 0.000 [0.000; 0.037] | 0.000 [0.000; 0.037] | 0.000 [0.000; 0.037] | 0.050 [0.022; 0.112] |
+| lotomania | 500 | 0.25 | 0.01 | 0.020 [0.006; 0.070] | 0.060 [0.028; 0.125] | 0.060 [0.028; 0.125] | 0.000 [0.000; 0.037] |
+| lotomania | 500 | 0.25 | 0.05 | 0.120 [0.070; 0.198] | 0.120 [0.070; 0.198] | 0.120 [0.070; 0.198] | 0.040 [0.016; 0.098] |
+| lotomania | 500 | 0.5 | 0.01 | 0.210 [0.142; 0.300] | 0.730 [0.636; 0.807] | 0.730 [0.636; 0.807] | 0.000 [0.000; 0.037] |
+| lotomania | 500 | 0.5 | 0.05 | 0.390 [0.300; 0.488] | 0.850 [0.767; 0.907] | 0.850 [0.767; 0.907] | 0.020 [0.006; 0.070] |
+| lotomania | 2000 | 0.1 | 0.01 | 0.010 [0.002; 0.054] | 0.020 [0.006; 0.070] | 0.020 [0.006; 0.070] | 0.010 [0.002; 0.054] |
+| lotomania | 2000 | 0.1 | 0.05 | 0.090 [0.048; 0.162] | 0.050 [0.022; 0.112] | 0.060 [0.028; 0.125] | 0.040 [0.016; 0.098] |
+| lotomania | 2000 | 0.25 | 0.01 | 0.220 [0.150; 0.311] | 0.780 [0.689; 0.850] | 0.780 [0.689; 0.850] | 0.010 [0.002; 0.054] |
+| lotomania | 2000 | 0.25 | 0.05 | 0.470 [0.375; 0.567] | 0.900 [0.826; 0.945] | 0.900 [0.826; 0.945] | 0.040 [0.016; 0.098] |
+| lotomania | 2000 | 0.5 | 0.01 | 0.970 [0.915; 0.990] | 1.000 [0.963; 1.000] | 1.000 [0.963; 1.000] | 0.020 [0.006; 0.070] |
+| lotomania | 2000 | 0.5 | 0.05 | 1.000 [0.963; 1.000] | 1.000 [0.963; 1.000] | 1.000 [0.963; 1.000] | 0.080 [0.041; 0.150] |
+
+### 15.3. Poder sob viés ARTIFICIAL de grupo (primeira faixa, peso 1.2, D=2000, R=100, B=99)
+
+| Modalidade | grupo | α | freq MC | algum alvo Holm | algum alvo BH (EXPLORATÓRIO) | falso (não-alvo) Holm |
+|---|---|---|---|---|---|---|
+| megasena | 1–10 | 0.01 | 0.950 [0.888; 0.978] | 0.500 [0.404; 0.596] | 0.530 [0.433; 0.625] | 0.000 [0.000; 0.037] |
+| megasena | 1–10 | 0.05 | 1.000 [0.963; 1.000] | 0.740 [0.646; 0.816] | 0.770 [0.678; 0.842] | 0.070 [0.034; 0.137] |
+| lotofacil | 1–5 | 0.01 | 1.000 [0.963; 1.000] | 1.000 [0.963; 1.000] | 1.000 [0.963; 1.000] | 0.250 [0.175; 0.343] |
+| lotofacil | 1–5 | 0.05 | 1.000 [0.963; 1.000] | 1.000 [0.963; 1.000] | 1.000 [0.963; 1.000] | 0.620 [0.522; 0.709] |
+| quina | 1–10 | 0.01 | 0.530 [0.433; 0.625] | 0.250 [0.175; 0.343] | 0.250 [0.175; 0.343] | 0.010 [0.002; 0.054] |
+| quina | 1–10 | 0.05 | 0.830 [0.745; 0.891] | 0.500 [0.404; 0.596] | 0.500 [0.404; 0.596] | 0.020 [0.006; 0.070] |
+| lotomania | 0–9 | 0.01 | 1.000 [0.963; 1.000] | 0.990 [0.946; 0.998] | 0.990 [0.946; 0.998] | 0.010 [0.002; 0.054] |
+| lotomania | 0–9 | 0.05 | 1.000 [0.963; 1.000] | 1.000 [0.963; 1.000] | 1.000 [0.963; 1.000] | 0.090 [0.048; 0.162] |
+
+Nota: resolução do valor-p MC = 1/(B+1). Todos os números referem-se a dados SINTÉTICOS.
+
+### 15.4. Leitura e comparação com a bateria `shared`
+- **FPR com réplicas independentes:** sem correção, a família global (4 testes) rejeita em 16–24% a α=0.05 e a família por dezena (N testes) em 76–98% — inflação esperada por multiplicidade. Com Holm, as taxas familiares a α=0.05 ficam entre 0.030 e 0.060 (global) e 0.040 e 0.050 (por dezena), todos os IC95% contendo 0.05; a α=0.01 e 0.1 o comportamento é análogo (IC contém α ou está abaixo).
+- **Comparação a α=0.05 (shared → per_rep):** global Holm: Mega 0.015→0.040, Lotofácil 0.050→0.040, Quina 0.035→0.060, Lotomania 0.070→0.030; por dezena Holm: 0.050→0.040, 0.030→0.050, 0.055→0.045, 0.020→0.045. As conclusões qualitativas (Holm controla a FWER; sem correção há inflação) se mantêm; os números shared exibiam dispersão extra entre modalidades coerente com a dependência da nula comum e **não devem ser lidos como estimativas independentes**. (A família por dezena usa testes binomiais exatos, que não dependem da nula MC; a diferença ali é só de semente.)
+- **Poder:** cresce com D e boost; o teste por dezena (Holm) detecta o alvo com mais poder que o Pearson global (ex.: Mega-Sena D=2000, boost 0.5: 1.000 vs 0.830 a α=0.05).
+- **"Falso (não-alvo)" no viés de grupo:** com pesos maiores num grupo, as dezenas fora do grupo ficam com probabilidade de inclusão MENOR que k/N, logo H0 também é falsa para elas; essa coluna não é uma taxa de falso positivo (explica 0.62 na Lotofácil, onde 5 de 25 dezenas recebem peso). No viés de 1 dezena o efeito sobre as demais é pequeno, mas também não nulo.
+
+### 15.5. Reprodutibilidade da bateria `per_rep`
+Duas execuções em processos Node separados (spawn, em paralelo, diretórios temporários distintos), 45 arquivos idênticos byte a byte — `docs/fase2-evidencias/reprodutibilidade-per-rep.json`:
+- run1 sha256 agregado: `b0c09c2d73a1eda4d8c4fdd219724aa3569dfbef367dd608806fbd49a54c00a8`
+- run2 sha256 agregado: `b0c09c2d73a1eda4d8c4fdd219724aa3569dfbef367dd608806fbd49a54c00a8`
+
+### 15.6. Verdade sobre a "terceira execução" da bateria `shared`
+`reprodutibilidade.json` registra **2 execuções** e não foi alterado. Na revisão complementar foi encontrado o diretório `/tmp/fresh-exp` (54 arquivos, mtime 2026-10-31 19:41:50 −03:00), presumivelmente gerado por `scripts/experimentos-fase2.mjs --out` a partir do clone `/tmp/lotus-fresh` (HEAD 119832977a589d6d99ae7a2241d4ff5565304949). Os sha256 recalculados agora dos 54 arquivos coincidem todos com run1, agregado `c9e41f64eb09a90f30826bc5cf615fe8fc96e92a3c7e1ea5b125bef8552eceb2` — registro em `docs/fase2-evidencias/terceira-execucao-verificacao.json`. **Limite:** os arquivos e hashes são verificáveis, mas não há log que prove o comando/procedência; portanto a evidência formal é: 2 execuções registradas + 1 saída adicional com hashes idênticos verificada a posteriori.
+
+### 15.7. Testes
+Suíte completa: 168 testes, 168 passaram (Fase 1: 88; Fase 2: 77 originais + 3 novos `per_rep`). Saída bruta: `docs/fase2-evidencias/test-output-complementar.txt` (o `test-output.txt` original foi preservado).
