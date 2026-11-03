@@ -1,0 +1,127 @@
+{
+  "label": "SYNTHETIC_DATA",
+  "generatedBy": "scripts/reprodutibilidade-fase3a.mjs",
+  "node": "v24.22.1",
+  "parserVersion": "1.0.0",
+  "createdAtInput": "2026-01-01T00:00:00Z",
+  "runs": 2,
+  "identicalAcrossRuns": true,
+  "run1": {
+    "rootHash": "2798516f61d0879083a301cf858da1af2d04c2163d6410c48004dd1fe8feacb9",
+    "accepted": 9,
+    "quarantined": 14,
+    "verificationOk": true
+  },
+  "run2": {
+    "rootHash": "2798516f61d0879083a301cf858da1af2d04c2163d6410c48004dd1fe8feacb9",
+    "accepted": 9,
+    "quarantined": 14,
+    "verificationOk": true
+  },
+  "fixtureSha256": {
+    "SYNTHETIC_DATA_invalid_mixed.json": "6d5068887e93476355544e4ea8ba9b54363c39989aaff27ac09d35aff20766e7",
+    "SYNTHETIC_DATA_valid_lotofacil.json": "bebe3ea81b58aace9bd55d9c15625cf9c6a11c5876e3e8daf9d7f2cb70c8e92b",
+    "SYNTHETIC_DATA_valid_lotomania.json": "b590a65d85d63d8813ac6c8407b0df10e4b34694fb66faa23bb48bb09b1e3ea6",
+    "SYNTHETIC_DATA_valid_megasena.json": "4f301a43a8bcf32d5dd23498aff2a2c870e8f2ba7d23a1c29f10479c237bcdc6",
+    "SYNTHETIC_DATA_valid_quina.json": "6a074cd3cbe3765fb8cf1a812a97099c91d364ce695be4773fccd88fc6a237cc"
+  },
+  "quarantineCodes": [
+    "COUNT_MISMATCH",
+    "OUT_OF_RANGE",
+    "DUPLICATE_NUMBER+NOT_SORTED",
+    "OUT_OF_RANGE",
+    "OUT_OF_RANGE",
+    "UNKNOWN_LOTTERY",
+    "DATE_INVALID",
+    "CONTEST_INVALID",
+    "MISSING_FIELD",
+    "UNKNOWN_FIELD",
+    "NOT_INTEGER",
+    "UNPARSEABLE_NUMBER",
+    "PARSE_ERROR",
+    "PARSE_ERROR"
+  ],
+  "manifest": {
+    "schema": "lotus.manifest",
+    "schemaVersion": "1.0.0",
+    "datasetId": "synthetic.fase3a.fixtures",
+    "dataSchemaVersion": "lotus.result/1.0.0",
+    "sequence": 1,
+    "createdAt": "2026-01-01T00:00:00Z",
+    "hashAlgorithm": "sha-256",
+    "canonicalization": "rfc8785-jcs",
+    "entries": [
+      {
+        "id": "file:SYNTHETIC_DATA_invalid_mixed.json",
+        "kind": "file",
+        "sha256": "6d5068887e93476355544e4ea8ba9b54363c39989aaff27ac09d35aff20766e7"
+      },
+      {
+        "id": "file:SYNTHETIC_DATA_valid_lotofacil.json",
+        "kind": "file",
+        "sha256": "bebe3ea81b58aace9bd55d9c15625cf9c6a11c5876e3e8daf9d7f2cb70c8e92b"
+      },
+      {
+        "id": "file:SYNTHETIC_DATA_valid_lotomania.json",
+        "kind": "file",
+        "sha256": "b590a65d85d63d8813ac6c8407b0df10e4b34694fb66faa23bb48bb09b1e3ea6"
+      },
+      {
+        "id": "file:SYNTHETIC_DATA_valid_megasena.json",
+        "kind": "file",
+        "sha256": "4f301a43a8bcf32d5dd23498aff2a2c870e8f2ba7d23a1c29f10479c237bcdc6"
+      },
+      {
+        "id": "file:SYNTHETIC_DATA_valid_quina.json",
+        "kind": "file",
+        "sha256": "6a074cd3cbe3765fb8cf1a812a97099c91d364ce695be4773fccd88fc6a237cc"
+      },
+      {
+        "id": "record:lotofacil:1",
+        "kind": "record",
+        "sha256": "26fed4f8b33be3d359eaa7f11a0244b62c5921c9c0c403f5478f8589bdc17bbf"
+      },
+      {
+        "id": "record:lotofacil:2",
+        "kind": "record",
+        "sha256": "93f03daf4aa87393662b725b192a5c30d96a63c83bda7f43f99da47acd3edfb9"
+      },
+      {
+        "id": "record:lotomania:1",
+        "kind": "record",
+        "sha256": "391c31d0bd8e9288d6336b0d7cb39afb124a58062750839fc327110342f253ec"
+      },
+      {
+        "id": "record:lotomania:2",
+        "kind": "record",
+        "sha256": "5172bab94a26c4785dd652b5b34fcc90889a14ec4da07082bfed3fba20d54ce8"
+      },
+      {
+        "id": "record:megasena:1",
+        "kind": "record",
+        "sha256": "ef84506ab7319d9861258cfea681588a999bb2f9d948c9d631c47be64bc2aa1e"
+      },
+      {
+        "id": "record:megasena:2",
+        "kind": "record",
+        "sha256": "68e42e1641dd983db8850a9f4e480987a5ef7283ce47bf23acaea00a1f1d2955"
+      },
+      {
+        "id": "record:megasena:5",
+        "kind": "record",
+        "sha256": "d1ee28f83ceca2f707f11cc8c1e12050e36a8e8ccdbd612b44bd51a1aa4f6a01"
+      },
+      {
+        "id": "record:quina:1",
+        "kind": "record",
+        "sha256": "b967759928078b0cb337339231b8275ff46b9b0ac21585d5e923182ba17fa315"
+      },
+      {
+        "id": "record:quina:2",
+        "kind": "record",
+        "sha256": "257ed980f03ccaa99ee3360c1ff0551d9e2a7da85a944652a169b6e34e686612"
+      }
+    ],
+    "rootHash": "2798516f61d0879083a301cf858da1af2d04c2163d6410c48004dd1fe8feacb9"
+  }
+}

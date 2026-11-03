@@ -1,0 +1,53 @@
+
+> lotus@0.1.0 test:fase3a
+> node --test test/fase3a/*.test.js
+
+✔ compat: modalidades e universos vêm de src/lotteries/config.js (sem duplicação) (1.030474ms)
+✔ compat: sorteios SINTÉTICOS do laboratório da Fase 2 passam pelo pipeline da Fase 3a (18.776127ms)
+✔ compat: JCS coincide com JSON.stringify em objetos simples já ordenados (0.199671ms)
+✔ fixtures: todas rotuladas SYNTHETIC_DATA no nome e no conteúdo, sem alegar origem CAIXA (1.193126ms)
+✔ bruto: bytes originais preservados exatamente (inclui espaços, BOM-free UTF-8 e acentos) (1.576461ms)
+✔ bruto: adulteração do envelope é detectada e vai para quarentena (0.389911ms)
+✔ normalização: fixtures válidas das 4 modalidades aceitas; bruto intacto; ordenação e datas (2.82669ms)
+✔ normalização determinística: mesma entrada → mesmo registro e mesmo hash (repetida e com chaves reordenadas) (0.782773ms)
+✔ quarentena: cada caso inválido tem motivo explícito com o código esperado (1.698864ms)
+✔ lote: nada é descartado (aceitos + quarentena = entrada), duplicatas vão para quarentena (4.44857ms)
+✔ quarentena: entradas imutáveis e exigem motivo (0.195693ms)
+✔ correção: registra valor anterior, novo, fonte, data, motivo, autor e hashes encadeados (1.468218ms)
+✔ econômico: válido; separado do resultado (validador de resultado rejeita) (1.618408ms)
+✔ econômico: inválidos — status, faixa fora das regras, duplicada, dinheiro, tipos, campos (0.36406ms)
+✔ JCS: RFC 8785 §3.2.2/§3.2.3 — exemplo de primitivos e ordenação (0.979624ms)
+✔ JCS: RFC 8785 Apêndice B — todos os vetores de serialização numérica (bits IEEE 754) (1.231184ms)
+✔ JCS: vetores cyberphone/json-canonicalization (input → output byte a byte) (1.020001ms)
+✔ JCS: ordenação por unidades UTF-16 (não por code point nem locale) (0.169444ms)
+✔ JCS: escapes de string e controles (0.112594ms)
+✔ JCS: rejeita valores não-JSON e entradas inválidas (falha explícita) (0.238823ms)
+✔ JCS: -0 → 0, arrays mantêm ordem, objetos aninhados ordenados (0.089876ms)
+✔ JCS: determinismo — ordem de inserção das chaves não altera a saída (0.071379ms)
+✔ manifesto: construção determinística, entradas ordenadas, rootHash verificável (3.916848ms)
+✔ manifesto: parâmetros inválidos são rejeitados (sem relógio oculto: createdAt obrigatório) (0.359328ms)
+✔ adulteração: registro alterado, arquivo alterado, entrada ausente, extra, e manifesto alterado (1.459638ms)
+✔ sequência: avanço aceito; regressão, substituição e replay rejeitados (0.769796ms)
+✔ ManifestLedger: histórico por dataset, rejeita inválido/regressão/substituição de sequência antiga (2.71253ms)
+✔ SHA-256: vetores NIST (vazio, "abc", mensagem de 448 bits) (0.930596ms)
+✔ SHA-256: WebCrypto (abstração para navegador/PWA) coincide com node:crypto (7.281269ms)
+✔ SHA-256: hashJson = SHA-256(UTF-8(JCS)) e independe da ordem das chaves (0.830464ms)
+✔ megasena: válidos nos extremos (6 distintos em 1..60) (1.732927ms)
+✔ megasena: inválidos — contagem, intervalo, duplicata, tipo, não-inteiro, ordem, modalidade (0.628648ms)
+✔ lotofacil: válidos nos extremos (15 distintos em 1..25) (0.13349ms)
+✔ lotofacil: inválidos — contagem, intervalo, duplicata, tipo, não-inteiro, ordem, modalidade (0.153828ms)
+✔ quina: válidos nos extremos (5 distintos em 1..80) (0.179429ms)
+✔ quina: inválidos — contagem, intervalo, duplicata, tipo, não-inteiro, ordem, modalidade (0.116886ms)
+✔ lotomania: válidos nos extremos (20 distintos em 0..99) (0.33769ms)
+✔ lotomania: inválidos — contagem, intervalo, duplicata, tipo, não-inteiro, ordem, modalidade (0.366606ms)
+✔ estrutura: campos ausentes, desconhecidos, tipos errados, esquema/versão, concurso, data (1.030637ms)
+✔ proveniência: obrigatória, tipo de fonte restrito, data ISO UTC, sem campos extras (0.411988ms)
+✔ conjunto: duplicata idêntica e conflitante, lacunas reportadas (não erro), ordem de datas (2.488294ms)
+ℹ tests 41
+ℹ suites 0
+ℹ pass 41
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 92.159031
