@@ -8,7 +8,7 @@
  * @module data/normalize
  */
 import { RESULT_SCHEMA, RESULT_SCHEMA_VERSION } from './schema.js';
-import { rawText, verifyRawEnvelope } from './raw.js';
+import { rawText, verifyRawEnvelopeDetailed } from './raw.js';
 import { createQuarantineEntry } from './quarantine.js';
 import { validateResultRecord } from '../validation/result.js';
 import { validateResultDataset } from '../validation/dataset.js';
@@ -33,8 +33,9 @@ function toInt(v, path, out, label) {
  *          | {status:'quarantined', quarantine:object}}
  */
 export function normalizeRaw(env) {
-  const q = (stage, reasons, candidate = null) => ({ status: 'quarantined', quarantine: createQuarantineEntry({ rawSha256: env && env.sha256, stage, reasons, parserVersion: PARSER_VERSION, candidate }) });
-  if (!env || !verifyRawEnvelope(env)) return q('parse', [issue('RAW_INTEGRITY', '$', 'envelope bruto ausente ou hash não confere')]);
+  const q = (stage, reasons, candidate = null) => ({ status: 'quarantined', quarantine: createQuarantineEntry({ rawSha256: env && typeof env.sha256 === 'string' ? env.sha256 : null, stage, reasons, parserVersion: PARSER_VERSION, candidate }) });
+  const ver = verifyRawEnvelopeDetailed(env);
+  if (!ver.ok) return q('parse', [issue('RAW_INTEGRITY', '$', 'envelope bruto ausente, malformado ou alterado (verificação completa falhou)'), ...ver.errors]);
   let input;
   try { const t = rawText(env); assertNoDuplicateKeys(t); input = JSON.parse(t); } catch (e) { return q('parse', [issue('PARSE_ERROR', '$', String(e.message))]); }
   if (!isPlainObject(input)) return q('parse', [issue('WRONG_TYPE', '$', 'entrada deve ser objeto JSON')]);
