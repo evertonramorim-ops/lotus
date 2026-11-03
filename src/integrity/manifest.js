@@ -66,43 +66,93 @@ export function buildManifest(p) {
 /** Calcula o rootHash esperado de um manifesto (ignora o campo rootHash presente). */
 export function computeRootHash(m) { const { rootHash, ...body } = m; void rootHash; return hashJson(body); }
 
+const REQUIRED_KEYS = ALLOWED_KEYS;
+const ENTRY_KEYS = ['id', 'kind', 'sha256'];
+const DATASET_ID = /^[a-z0-9][a-z0-9._-]{0,127}$/;
+
+function isPlainObj(v) {
+  if (v === null || typeof v !== 'object' || Array.isArray(v)) return false;
+  const p = Object.getPrototypeOf(v); return p === Object.prototype || p === null;
+}
+
 /**
- * Verifica manifesto e, opcionalmente, o conteúdo.
+ * Validação ESTRUTURAL completa do manifesto (independente de hash). Nunca lança.
+ * @returns {{code:string, path:string, detail?:string}[]}
+ */
+export function validateManifestStructure(m) {
+  const errors = []; const e = (code, path, detail) => errors.push(detail === undefined ? { code, path } : { code, path, detail });
+  if (!isPlainObj(m)) { e('MANIFEST_NOT_OBJECT', '$'); return errors; }
+  for (const k of Object.keys(m)) if (!ALLOWED_KEYS.includes(k)) e('MANIFEST_UNKNOWN_FIELD', `$.${k}`, k);
+  for (const k of REQUIRED_KEYS) if (!Object.prototype.hasOwnProperty.call(m, k)) e('MANIFEST_MISSING_FIELD', `$.${k}`, k);
+  if ('schema' in m && m.schema !== MANIFEST_SCHEMA) e('MANIFEST_SCHEMA', '$.schema');
+  if ('schemaVersion' in m && m.schemaVersion !== MANIFEST_SCHEMA_VERSION) e('MANIFEST_SCHEMA_VERSION', '$.schemaVersion');
+  if (('hashAlgorithm' in m && m.hashAlgorithm !== 'sha-256') || ('canonicalization' in m && m.canonicalization !== 'rfc8785-jcs')) e('MANIFEST_ALGORITHM', '$');
+  if ('datasetId' in m && !(typeof m.datasetId === 'string' && DATASET_ID.test(m.datasetId))) e('MANIFEST_DATASET_ID_INVALID', '$.datasetId');
+  if ('dataSchemaVersion' in m && !(typeof m.dataSchemaVersion === 'string' && m.dataSchemaVersion.trim().length > 0 && m.dataSchemaVersion.length <= 128)) e('MANIFEST_DATA_SCHEMA_VERSION_INVALID', '$.dataSchemaVersion');
+  if ('sequence' in m && !(Number.isSafeInteger(m.sequence) && m.sequence >= 1)) e('MANIFEST_SEQUENCE_INVALID', '$.sequence');
+  if ('createdAt' in m && !isIsoUtc(m.createdAt)) e('MANIFEST_CREATED_AT_INVALID', '$.createdAt');
+  if ('rootHash' in m && !isSha256Hex(m.rootHash)) e('MANIFEST_ROOT_HASH_FORMAT', '$.rootHash');
+  if ('entries' in m) {
+    if (!Array.isArray(m.entries)) e('MANIFEST_ENTRIES_INVALID', '$.entries', 'não é array');
+    else if (m.entries.length === 0) e('MANIFEST_ENTRIES_INVALID', '$.entries', 'vazio');
+    else {
+      const ids = new Set(); let prev = null;
+      m.entries.forEach((en, i) => {
+        const p = `$.entries[${i}]`;
+        if (!isPlainObj(en)) { e('ENTRY_NOT_OBJECT', p); prev = null; return; }
+        for (const k of Object.keys(en)) if (!ENTRY_KEYS.includes(k)) e('ENTRY_UNKNOWN_FIELD', `${p}.${k}`, k);
+        for (const k of ENTRY_KEYS) if (!Object.prototype.hasOwnProperty.call(en, k)) e('ENTRY_MISSING_FIELD', `${p}.${k}`, k);
+        if ('kind' in en && en.kind !== 'record' && en.kind !== 'file') e('ENTRY_KIND_INVALID', `${p}.kind`);
+        if ('sha256' in en && !isSha256Hex(en.sha256)) e('ENTRY_SHA256_INVALID', `${p}.sha256`);
+        if ('id' in en) {
+          if (typeof en.id !== 'string' || en.id.length === 0) { e('ENTRY_ID_INVALID', `${p}.id`); prev = null; return; }
+          if (ids.has(en.id)) e('ENTRY_ID_DUPLICATE', `${p}.id`, en.id);
+          else if (prev !== null && compareUtf16(prev, en.id) > 0) e('MANIFEST_ENTRIES_NOT_SORTED_OR_DUPLICATE', `${p}.id`);
+          ids.add(en.id); prev = en.id;
+        }
+      });
+      if (errors.some(x => x.code === 'ENTRY_ID_DUPLICATE') && !errors.some(x => x.code === 'MANIFEST_ENTRIES_NOT_SORTED_OR_DUPLICATE')) e('MANIFEST_ENTRIES_NOT_SORTED_OR_DUPLICATE', '$.entries');
+    }
+  }
+  return errors;
+}
+
+/**
+ * Verifica manifesto: (1) validade ESTRUTURAL completa, (2) integridade do rootHash e,
+ * opcionalmente, (3) o conteúdo. Nunca lança em entrada malformada; devolve erros estruturados.
+ * Um rootHash correto NÃO torna válido um manifesto estruturalmente inválido.
  * @param {object} manifest
  * @param {Map<string,{kind:'record',value:unknown}|{kind:'file',bytes:Uint8Array|string}>} [contents]
- * @returns {{ok:boolean, errors:{code:string, id?:string, detail?:string}[]}}
+ * @returns {{ok:boolean, structuralOk:boolean, hashOk:boolean|null, errors:{code:string, path?:string, id?:string, detail?:string}[]}}
  */
-export function verifyManifest(manifest, contents) {
-  const errors = [];
-  if (!manifest || typeof manifest !== 'object') return { ok: false, errors: [{ code: 'MANIFEST_NOT_OBJECT' }] };
-  for (const k of Object.keys(manifest)) if (!ALLOWED_KEYS.includes(k)) errors.push({ code: 'MANIFEST_UNKNOWN_FIELD', detail: k });
-  if (manifest.schema !== MANIFEST_SCHEMA) errors.push({ code: 'MANIFEST_SCHEMA' });
-  if (manifest.schemaVersion !== MANIFEST_SCHEMA_VERSION) errors.push({ code: 'MANIFEST_SCHEMA_VERSION' });
-  if (manifest.hashAlgorithm !== 'sha-256' || manifest.canonicalization !== 'rfc8785-jcs') errors.push({ code: 'MANIFEST_ALGORITHM' });
-  if (!Number.isSafeInteger(manifest.sequence) || manifest.sequence < 1) errors.push({ code: 'MANIFEST_SEQUENCE_INVALID' });
-  if (!isIsoUtc(manifest.createdAt)) errors.push({ code: 'MANIFEST_CREATED_AT_INVALID' });
-  if (!Array.isArray(manifest.entries)) errors.push({ code: 'MANIFEST_ENTRIES_INVALID' });
-  else {
-    for (let i = 1; i < manifest.entries.length; i++) if (compareUtf16(manifest.entries[i - 1].id, manifest.entries[i].id) >= 0) { errors.push({ code: 'MANIFEST_ENTRIES_NOT_SORTED_OR_DUPLICATE' }); break; }
-  }
-  let rh = null;
-  try { rh = computeRootHash(manifest); } catch (e) { errors.push({ code: 'MANIFEST_NOT_CANONICALIZABLE', detail: e.message }); }
-  if (rh !== null && rh !== manifest.rootHash) errors.push({ code: 'ROOT_HASH_MISMATCH' });
-  if (contents && Array.isArray(manifest.entries)) {
+export function verifyManifestDetailed(manifest, contents) {
+  const errors = validateManifestStructure(manifest);
+  const structuralOk = errors.length === 0;
+  if (!isPlainObj(manifest)) return { ok: false, structuralOk: false, hashOk: null, errors };
+  let hashOk = null;
+  try { hashOk = computeRootHash(manifest) === manifest.rootHash; if (!hashOk) errors.push({ code: 'ROOT_HASH_MISMATCH' }); }
+  catch (err) { errors.push({ code: 'MANIFEST_NOT_CANONICALIZABLE', detail: String(err && err.message) }); }
+  if (contents && structuralOk) {
     const listed = new Set();
-    for (const e of manifest.entries) {
-      listed.add(e.id);
-      const c = contents.get(e.id);
-      if (!c) { errors.push({ code: 'ENTRY_MISSING', id: e.id }); continue; }
-      if (c.kind !== e.kind) { errors.push({ code: 'ENTRY_KIND_MISMATCH', id: e.id }); continue; }
+    for (const en of manifest.entries) {
+      listed.add(en.id);
+      const c = contents.get(en.id);
+      if (!c) { errors.push({ code: 'ENTRY_MISSING', id: en.id }); continue; }
+      if (c.kind !== en.kind) { errors.push({ code: 'ENTRY_KIND_MISMATCH', id: en.id }); continue; }
       let h;
-      try { h = c.kind === 'file' ? hashFile(c.bytes) : hashRecord(c.value); } catch (err) { errors.push({ code: 'ENTRY_NOT_HASHABLE', id: e.id, detail: err.message }); continue; }
-      if (h !== e.sha256) errors.push({ code: 'ENTRY_HASH_MISMATCH', id: e.id });
+      try { h = c.kind === 'file' ? hashFile(c.bytes) : hashRecord(c.value); } catch (err) { errors.push({ code: 'ENTRY_NOT_HASHABLE', id: en.id, detail: String(err && err.message) }); continue; }
+      if (h !== en.sha256) errors.push({ code: 'ENTRY_HASH_MISMATCH', id: en.id });
     }
     for (const id of contents.keys()) if (!listed.has(id)) errors.push({ code: 'ENTRY_UNLISTED', id });
   }
-  return { ok: errors.length === 0, errors };
+  return { ok: errors.length === 0, structuralOk, hashOk, errors };
 }
+
+/**
+ * Igual a {@link verifyManifestDetailed}, mantendo o formato de retorno original { ok, errors }.
+ * @returns {{ok:boolean, errors:object[]}}
+ */
+export function verifyManifest(manifest, contents) { const r = verifyManifestDetailed(manifest, contents); return { ok: r.ok, errors: r.errors }; }
 
 /**
  * Verifica a sucessão entre o último manifesto aceito e um candidato (anti-regressão / anti-substituição).
@@ -130,6 +180,7 @@ export class ManifestLedger {
   submit(manifest) {
     const v = verifyManifest(manifest);
     if (!v.ok) return { accepted: false, code: 'INVALID_MANIFEST', errors: v.errors };
+    // a partir daqui o manifesto é estruturalmente válido e íntegro
     const h = this.history.get(manifest.datasetId) ?? [];
     const seen = h.find(m => m.sequence === manifest.sequence);
     if (seen && seen.rootHash !== manifest.rootHash) return { accepted: false, code: 'SEQUENCE_SUBSTITUTION' };
