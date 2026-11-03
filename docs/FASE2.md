@@ -22,7 +22,7 @@ src/stats/multiple.js         Holm e Benjamini–Hochberg (ajustes monótonos), 
 src/stats/power.js            experimentos de falsos positivos e poder (uniforme × enviesado artificial)
 src/stats/experiment.js       executor de experimentos com metadados e JSON canônico (sha256)
 scripts/experimentos-fase2.mjs  executa os experimentos documentados duas vezes e compara hashes
-test/fase2/*.test.js          77 testes da Fase 2 (separados dos 88 da Fase 1 em test/*.test.js)
+test/fase2/*.test.js          80 testes da Fase 2 (77 originais + 3 `per_rep` da §15; separados dos 88 da Fase 1 em test/*.test.js)
 docs/fase2-evidencias/        RESULTADOS.md, JSONs, reprodutibilidade.json, test-output.txt
 ```
 Módulos da Fase 1 **não foram alterados** (`src/math/*`, `src/lotteries/config.js`, `index.js`, testes da Fase 1). Única alteração em arquivo existente: `package.json` (descrição e scripts `test`, `test:fase1`, `test:fase2`, `experimentos:fase2`) — necessária para executar os testes da Fase 2 no `npm test` e separadamente.
@@ -67,9 +67,9 @@ Cada experimento (`runExperiment`) registra: `experiment_id` (sha256 dos parâme
 
 ## 7. Exemplos de execução
 ```sh
-npm test                    # Fase 1 (88) + Fase 2 (77)
+npm test                    # Fase 1 (88) + Fase 2 (80) = 168
 npm run test:fase1          # apenas os 88 testes da Fase 1
-npm run test:fase2          # apenas os 77 testes da Fase 2
+npm run test:fase2          # apenas os 80 testes da Fase 2
 node scripts/experimentos-fase2.mjs              # experimentos 2×, compara hashes, grava docs/fase2-evidencias/
 node scripts/experimentos-fase2.mjs --out /tmp/x # uma execução em diretório escolhido
 ```
@@ -104,7 +104,7 @@ Esta fase usa **exclusivamente** dados gerados pelo laboratório, marcados `SYNT
 - Desempenho medido (geração em fluxo, 200 mil concursos): ≈0,4 µs (Mega-Sena, Quina) a ≈1,7 µs (Lotomania) por concurso; os experimentos documentados levam ≈20 s por execução (Node v24.22.1 nesta máquina).
 
 ## 11. Testes e tolerâncias
-77 testes da Fase 2 nas 18 categorias exigidas (o número entre colchetes no nome indica a categoria), todos com sementes fixas e **determinísticos**. Tolerâncias: cada contagem que, sob o modelo correto, segue Binomial(n, p) é comparada com cotas **exatas** [lo, hi] tais que P(fora) ≤ δ/m, com união de Boole sobre as m células ⇒ probabilidade total de falha de um gerador correto ≤ δ = 10⁻⁶ (sem aproximação normal). Médias limitadas usam Hoeffding. Calibração MC: com réplicas independentes, #{p ≤ α} é estocasticamente ≤ Binomial(R, α) e exige-se ≤ cota superior exata. Poder: cotas inferiores rigorosas da probabilidade de inclusão sob o viés implicam valores-p binomiais muito abaixo de α/N.
+80 testes da Fase 2 (77 originais nas 18 categorias exigidas + 3 testes `per_rep` da revisão complementar, §15.7) (o número entre colchetes no nome indica a categoria), todos com sementes fixas e **determinísticos**. Tolerâncias: cada contagem que, sob o modelo correto, segue Binomial(n, p) é comparada com cotas **exatas** [lo, hi] tais que P(fora) ≤ δ/m, com união de Boole sobre as m células ⇒ probabilidade total de falha de um gerador correto ≤ δ = 10⁻⁶ (sem aproximação normal). Médias limitadas usam Hoeffding. Calibração MC: com réplicas independentes, #{p ≤ α} é estocasticamente ≤ Binomial(R, α) e exige-se ≤ cota superior exata. Poder: cotas inferiores rigorosas da probabilidade de inclusão sob o viés implicam valores-p binomiais muito abaixo de α/N.
 
 ## 12. Referências
 - Blackman, D.; Vigna, S. (2021). Scrambled linear pseudorandom number generators. *ACM TOMS* 47(4). (xoshiro128**)
@@ -221,7 +221,9 @@ Saída bruta (TAP, com versão do Node e data): `docs/fase2-evidencias/test-outp
 | 87 | REF13 E(X)=10 | ✅ passou |
 | 88 | REF14 decimal 30 casas de P(20) | ✅ passou |
 
-### Fase 2 — 77 testes (77 passaram)
+### Fase 2 — 77 testes originais (77 passaram) — estado ANTES da revisão complementar
+
+> Nota (atualização pós-Fase 2): esta tabela registra os 77 testes da entrega original. A revisão complementar (§15.7) acrescentou 3 testes em `test/fase2/per-rep.test.js`; o total atual da Fase 2 é **80** (suíte completa: 168).
 
 | # | Teste | Resultado |
 |---|---|---|
