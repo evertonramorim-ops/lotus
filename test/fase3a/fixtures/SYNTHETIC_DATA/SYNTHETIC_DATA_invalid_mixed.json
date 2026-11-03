@@ -1,0 +1,63 @@
+{
+  "label": "SYNTHETIC_DATA",
+  "notice": "SYNTHETIC_DATA — dados artificiais criados manualmente para testes do LOTUS. NÃO são resultados reais e NÃO vieram da CAIXA.",
+  "format": "lotus.synthetic-input/1",
+  "cases": [
+    {
+      "expectedCode": "COUNT_MISMATCH",
+      "raw": "{\"lottery\":\"megasena\",\"contest\":10,\"drawDate\":\"2001-02-01\",\"numbers\":[1,2,3,4,5]}"
+    },
+    {
+      "expectedCode": "OUT_OF_RANGE",
+      "raw": "{\"lottery\":\"megasena\",\"contest\":11,\"drawDate\":\"2001-02-02\",\"numbers\":[1,2,3,4,5,61]}"
+    },
+    {
+      "expectedCode": "DUPLICATE_NUMBER",
+      "raw": "{\"lottery\":\"quina\",\"contest\":10,\"drawDate\":\"2003-04-01\",\"numbers\":[1,1,2,3,4]}"
+    },
+    {
+      "expectedCode": "OUT_OF_RANGE",
+      "raw": "{\"lottery\":\"lotomania\",\"contest\":10,\"drawDate\":\"2004-05-01\",\"numbers\":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,100]}"
+    },
+    {
+      "expectedCode": "OUT_OF_RANGE",
+      "raw": "{\"lottery\":\"lotofacil\",\"contest\":10,\"drawDate\":\"2002-03-01\",\"numbers\":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14]}"
+    },
+    {
+      "expectedCode": "UNKNOWN_LOTTERY",
+      "raw": "{\"lottery\":\"timemania\",\"contest\":1,\"drawDate\":\"2005-01-01\",\"numbers\":[1,2,3]}"
+    },
+    {
+      "expectedCode": "DATE_INVALID",
+      "raw": "{\"lottery\":\"quina\",\"contest\":11,\"drawDate\":\"2003-02-30\",\"numbers\":[1,2,3,4,5]}"
+    },
+    {
+      "expectedCode": "CONTEST_INVALID",
+      "raw": "{\"lottery\":\"quina\",\"contest\":0,\"drawDate\":\"2003-02-01\",\"numbers\":[1,2,3,4,5]}"
+    },
+    {
+      "expectedCode": "MISSING_FIELD",
+      "raw": "{\"lottery\":\"quina\",\"contest\":12,\"numbers\":[1,2,3,4,5]}"
+    },
+    {
+      "expectedCode": "UNKNOWN_FIELD",
+      "raw": "{\"lottery\":\"quina\",\"contest\":13,\"drawDate\":\"2003-02-01\",\"numbers\":[1,2,3,4,5],\"extra\":true}"
+    },
+    {
+      "expectedCode": "NOT_INTEGER",
+      "raw": "{\"lottery\":\"quina\",\"contest\":14,\"drawDate\":\"2003-02-01\",\"numbers\":[1,2,3,4,5.5]}"
+    },
+    {
+      "expectedCode": "UNPARSEABLE_NUMBER",
+      "raw": "{\"lottery\":\"quina\",\"contest\":15,\"drawDate\":\"2003-02-01\",\"numbers\":[1,2,3,4,\"x5\"]}"
+    },
+    {
+      "expectedCode": "PARSE_ERROR",
+      "raw": "{\"lottery\":\"quina\","
+    },
+    {
+      "expectedCode": "PARSE_ERROR",
+      "raw": "{\"lottery\":\"quina\",\"lottery\":\"megasena\",\"contest\":16,\"drawDate\":\"2003-02-01\",\"numbers\":[1,2,3,4,5]}"
+    }
+  ]
+}

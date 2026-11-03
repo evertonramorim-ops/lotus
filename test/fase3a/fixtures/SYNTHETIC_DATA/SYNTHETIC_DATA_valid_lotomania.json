@@ -1,0 +1,9 @@
+{
+  "label": "SYNTHETIC_DATA",
+  "notice": "SYNTHETIC_DATA — dados artificiais criados manualmente para testes do LOTUS. NÃO são resultados reais e NÃO vieram da CAIXA.",
+  "format": "lotus.synthetic-input/1",
+  "rawInputs": [
+    "{\"lottery\":\"lotomania\",\"contest\":1,\"drawDate\":\"2004-04-04\",\"numbers\":[\"00\",\"99\",\"01\",\"98\",\"02\",\"97\",\"03\",\"96\",\"04\",\"95\",\"05\",\"94\",\"06\",\"93\",\"07\",\"92\",\"08\",\"91\",\"09\",\"90\"]}",
+    "{\"lottery\":\"lotomania\",\"contest\":2,\"drawDate\":\"2004-04-07\",\"numbers\":[0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,99]}"
+  ]
+}

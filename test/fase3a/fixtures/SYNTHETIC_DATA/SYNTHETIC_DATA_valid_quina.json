@@ -1,0 +1,9 @@
+{
+  "label": "SYNTHETIC_DATA",
+  "notice": "SYNTHETIC_DATA — dados artificiais criados manualmente para testes do LOTUS. NÃO são resultados reais e NÃO vieram da CAIXA.",
+  "format": "lotus.synthetic-input/1",
+  "rawInputs": [
+    "{\"lottery\":\"quina\",\"contest\":1,\"drawDate\":\"2003-03-03\",\"numbers\":[\"80\",\"01\",\"40\",\"41\",\"79\"]}",
+    "{\"lottery\":\"quina\",\"contest\":2,\"drawDate\":\"2003-03-04\",\"numbers\":[5,15,25,35,45]}"
+  ]
+}
