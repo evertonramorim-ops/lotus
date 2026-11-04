@@ -87,24 +87,29 @@ export function compareRecords(x, j, ctx) {
   const hitsAll = [...new Set([...x.prizeTiers.map(t => t.hits), ...j.tiers.map(t => t.hits)])].sort((a, b) => b - a);
   for (const h of hitsAll) {
     const xt = x.prizeTiers.find(t => t.hits === h); const jt = j.tiers.find(t => t.hits === h);
+    // Valor monetário JSON presente-mas-inválido: verificado SEMPRE que a faixa existe no JSON, antes de
+    // qualquer `continue` e independentemente da faixa existir no XLSX. Nunca vira zero/ausência/DIVERGENCIA_REAL.
+    const jInvalid = !!(jt && jt.prizeMoney && jt.prizeMoney.present && !jt.prizeMoney.valid);
+    if (jInvalid) add(`tier[${h}].prize`, C.VALOR_INVALIDO, xt ? xt.prize.raw : '<faixa inexistente no XLSX>', jt.prizeMoney.literal, `literal JSON presente mas não interpretável: ${jt.prizeMoney.invalidReason}`, { jsonLiteral: jt.prizeMoney.literal, invalidReason: jt.prizeMoney.invalidReason, ...(preReal ? { unidadeMonetariaVerificada: false } : {}) });
     if (xt && jt) {
       if (xt.winners.absent || xt.prize.absent) { add(`tier[${h}].winners`, C.SEMANTICA, xt.winners.raw, jt.winners, 'XLSX ausente ("-"/vazio) e faixa listada no JSON'); continue; }
       add(`tier[${h}].winners`, xt.winners.value === jt.winners ? C.EQUIVALENTE : C.DIVERGENCIA, xt.winners.raw, jt.winners);
-      if (jt.prizeMoney && jt.prizeMoney.present && !jt.prizeMoney.valid) { add(`tier[${h}].prize`, C.VALOR_INVALIDO, xt.prize.raw, jt.prizeMoney.literal, `literal JSON presente mas não interpretável: ${jt.prizeMoney.invalidReason}`); continue; }
-      if (preReal) { add(`tier[${h}].prize`, xt.prize.cents === jt.prizeCents ? C.EQUIVALENTE : C.SEMANTICA, xt.prize.raw, jt.prizeLiteral, PRE_REAL_NOTE, { unidadeMonetariaVerificada: false }); continue; }
+      if (jInvalid) continue;
+      if (preReal) { add(`tier[${h}].prize`, C.SEMANTICA, xt.prize.raw, jt.prizeLiteral, PRE_REAL_NOTE, { unidadeMonetariaVerificada: false, xlsxLiteral: xt.prize.raw, jsonLiteral: jt.prizeLiteral }); continue; }
       add(`tier[${h}].prize`, xt.prize.cents === jt.prizeCents ? C.EQUIVALENTE : C.DIVERGENCIA, xt.prize.raw, jt.prizeLiteral, xt.prize.cents === jt.prizeCents ? 'mesmo valor em centavos (texto R$ × literal decimal)' : null);
     } else if (xt && !jt) {
       if (xt.winners.absent && xt.prize.absent) add(`tier[${h}]`, C.REPRESENTACAO, `${xt.winners.raw}|${xt.prize.raw}`, '<faixa não listada>', 'ambas as fontes indicam ausência da faixa');
       else add(`tier[${h}]`, C.SEMANTICA, `${xt.winners.raw}|${xt.prize.raw}`, '<faixa não listada>', 'XLSX traz valor (inclusive zero) e JSON não lista a faixa');
-    } else add(`tier[${h}]`, C.AUSENTE, '<coluna inexistente>', `${jt.winners}|${jt.prizeLiteral}`);
+    } else if (jInvalid) add(`tier[${h}].winners`, C.AUSENTE, '<faixa inexistente no XLSX>', jt.winners, 'faixa só no JSON; prêmio classificado à parte como VALOR_INVALIDO');
+    else add(`tier[${h}]`, C.AUSENTE, '<coluna inexistente>', `${jt.winners}|${jt.prizeLiteral}`);
   }
   for (const k of ['totalCollected', 'nextPrizeEstimate', 'specialAccumulated', 'accumulatedTopTier']) {
     const xm = x.economic[k]; const jc = j.economic[k]; const jm = j.economicMoney ? j.economicMoney[k] : null;
-    if (jm && jm.present && !jm.valid) { add(`economic.${k}`, C.VALOR_INVALIDO, xm ? xm.raw : '<coluna inexistente>', jm.literal, `literal JSON presente mas não interpretável: ${jm.invalidReason}`); continue; }
+    if (jm && jm.present && !jm.valid) { add(`economic.${k}`, C.VALOR_INVALIDO, xm ? xm.raw : '<coluna inexistente>', jm.literal, `literal JSON presente mas não interpretável: ${jm.invalidReason}`, { jsonLiteral: jm.literal, invalidReason: jm.invalidReason, ...(preReal ? { unidadeMonetariaVerificada: false } : {}) }); continue; }
     if (!xm && jc === null) continue;
     if (!xm || xm.absent || jc === null) { add(`economic.${k}`, C.AUSENTE, xm ? xm.raw : '<coluna inexistente>', jc); continue; }
     const hyp = FIELD_CORRESPONDENCE.find(f => f.lotus === `economic.${k}`).status === 'HIPOTESE';
-    if (preReal) { add(`economic.${k}`, xm.cents === jc ? C.EQUIVALENTE : C.SEMANTICA, xm.raw, jc, PRE_REAL_NOTE, { unidadeMonetariaVerificada: false }); continue; }
+    if (preReal) { add(`economic.${k}`, C.SEMANTICA, xm.raw, jm ? jm.literal : jc, PRE_REAL_NOTE, { unidadeMonetariaVerificada: false, xlsxLiteral: xm.raw, jsonLiteral: jm ? jm.literal : null }); continue; }
     if (xm.cents === jc) add(`economic.${k}`, C.EQUIVALENTE, xm.raw, jc, hyp ? 'valores iguais; correspondência semântica é HIPÓTESE' : null);
     else add(`economic.${k}`, hyp ? C.SEMANTICA : C.DIVERGENCIA, xm.raw, jc, hyp ? 'correspondência semântica não confirmada' : null);
   }
@@ -120,7 +125,7 @@ export function compareRecords(x, j, ctx) {
   return rows;
 }
 
-const PRE_REAL_NOTE = 'unidade monetária pré-Real NÃO verificada: comparação apenas literal; excluído de comparação financeira em BRL; diferença nunca vira DIVERGENCIA_REAL';
+const PRE_REAL_NOTE = 'unidade monetária pré-Real NÃO verificada: SEMANTICA_DESCONHECIDA mesmo com centavos coincidentes; literais das duas fontes preservados; sem conversão, fator tributário ou 0,7; nunca DIVERGENCIA_REAL';
 
 /** Quarentena para divergências reais (stage 'dataset'); o registro XLSX NÃO é alterado. */
 export function divergenceQuarantine(x, j, rows, ctx) {
