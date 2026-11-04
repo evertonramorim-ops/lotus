@@ -3,7 +3,7 @@
  * Importação LOCAL dos XLSX históricos (Fase 3b.2) para armazenamento PRIVADO fora do Git.
  * Não faz rede: usa os bytes já coletados na Fase 3b.1 (cópia byte a byte com verificação SHA-256).
  * Uso:
- *   node scripts/importar-historico-fase3b2.mjs --private /workspace/LOTUS_PRIVATE_DATA --from-3b1 /caminho/fase3b1 [--created-at ISO]
+ *   node scripts/importar-historico-fase3b2.mjs --private /caminho/dados-privados --from-3b1 /caminho/fase3b1 [--created-at ISO]
  * Recusa: diretório privado dentro de um repositório Git; SHA-256 divergente; sobrescrita de arquivo existente.
  * Nada aqui contém dado real: os dados só existem no diretório privado.
  */
