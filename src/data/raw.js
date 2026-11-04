@@ -14,6 +14,13 @@ import { RAW_SCHEMA, RAW_SCHEMA_VERSION } from './schema.js';
 import { sha256Hex, toBytes, hashJson, isSha256Hex } from '../integrity/hash.js';
 import { validateProvenance, isPlainObject } from '../validation/common.js';
 
+/**
+ * Regra ÚNICA de mediaType (usada na criação e na verificação): tipo/subtipo em minúsculas,
+ * caracteres de token restritos (RFC 6838 simplificada), sem parâmetros, até 127 caracteres.
+ */
+export const MEDIA_TYPE_PATTERN = /^[a-z0-9][a-z0-9!#$&^_.+-]{0,62}\/[a-z0-9][a-z0-9!#$&^_.+-]{0,62}$/;
+export function isValidMediaType(v) { return typeof v === 'string' && MEDIA_TYPE_PATTERN.test(v); }
+
 export const RAW_ENVELOPE_FIELDS = Object.freeze(['schema', 'schemaVersion', 'mediaType', 'byteLength', 'sha256', 'contentBase64', 'provenance', 'envelopeSha256']);
 
 function b64encode(bytes) { let s = ''; for (const b of bytes) s += String.fromCharCode(b); return btoa(s); }
@@ -28,8 +35,9 @@ export function createRawEnvelope(content, meta) {
   const errs = []; validateProvenance(meta && meta.provenance, '$.provenance', errs);
   if (errs.length) throw new TypeError('proveniência inválida: ' + errs.map(e => e.code + '@' + e.path).join(', '));
   const bytes = toBytes(content);
-  const mediaType = meta.mediaType ?? 'application/json';
-  if (typeof mediaType !== 'string' || !/^[a-z0-9!#$&^_.+-]+\/[a-z0-9!#$&^_.+-]+$/.test(mediaType)) throw new TypeError('mediaType inválido');
+  // Só a AUSÊNCIA (undefined) usa o padrão; null ou outro valor explícito passa pela regra única.
+  const mediaType = meta.mediaType === undefined ? 'application/json' : meta.mediaType;
+  if (!isValidMediaType(mediaType)) throw new TypeError('mediaType inválido');
   const body = {
     schema: RAW_SCHEMA, schemaVersion: RAW_SCHEMA_VERSION, mediaType,
     byteLength: bytes.length, sha256: sha256Hex(bytes), contentBase64: b64encode(bytes),
@@ -60,7 +68,7 @@ export function verifyRawEnvelopeDetailed(env) {
   for (const k of RAW_ENVELOPE_FIELDS) if (!Object.prototype.hasOwnProperty.call(env, k)) e('MISSING_FIELD', `$.${k}`, `campo obrigatório ausente: ${k}`);
   if (env.schema !== RAW_SCHEMA) e('RAW_SCHEMA', '$.schema', `esperado ${RAW_SCHEMA}`);
   if (env.schemaVersion !== RAW_SCHEMA_VERSION) e('RAW_SCHEMA_VERSION', '$.schemaVersion', `versão suportada: ${RAW_SCHEMA_VERSION}`);
-  if (typeof env.mediaType !== 'string' || !env.mediaType) e('RAW_MEDIA_TYPE', '$.mediaType', 'mediaType inválido');
+  if (!isValidMediaType(env.mediaType)) e('RAW_MEDIA_TYPE', '$.mediaType', 'mediaType inválido');
   if (!Number.isSafeInteger(env.byteLength) || env.byteLength < 0) e('RAW_BYTE_LENGTH', '$.byteLength', 'byteLength inválido');
   if (!isSha256Hex(env.sha256)) e('RAW_SHA256_FORMAT', '$.sha256', 'sha256 deve ter 64 hex minúsculos');
   if (!isSha256Hex(env.envelopeSha256)) e('RAW_ENVELOPE_SHA256_FORMAT', '$.envelopeSha256', 'envelopeSha256 deve ter 64 hex minúsculos');
