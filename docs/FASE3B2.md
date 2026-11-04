@@ -63,11 +63,11 @@ Resultado (agregado): 37 GET, todos HTTP 200, 0 bloqueios; 54 amostras; **0 DIVE
 - ADR-6: classes de reconciliação fechadas; só `DIVERGENCIA_REAL` gera quarentena `DIVERGENCIA_JSON_XLSX`.
 
 ## 10. Reprodução
-`npm test` (427/427, 0 falhas, 0 skip — 377 de baseline intactos + 32 da 1ª rodada + 7 da auditoria final + 11 da auditoria complementar); `npm run reprodutibilidade:fase3b2` (2 processos distintos, hashes idênticos); `npm run fixtures:fase3b2 -- --check`.
+`npm test` (552/552, 0 falhas, 0 skip — 377 de baseline intactos + 32 da 1ª rodada + 7 da auditoria final + 11 da auditoria complementar + 125 da auditoria consolidada); `npm run reprodutibilidade:fase3b2` (2 processos distintos, hashes idênticos); `npm run fixtures:fase3b2 -- --check`.
 
 ## 10a. Correções da auditoria (PR #4)
 
-Histórico de HEADs: `3099934` = HEAD inicialmente auditado; `ba1af3e` = HEAD da 1ª rodada corretiva (itens 1–6); `f7287a9` = HEAD da auditoria final (itens 7–8); a auditoria complementar (itens 9–10) é o HEAD atual do PR.
+Histórico de HEADs: `3099934` = HEAD inicialmente auditado; `ba1af3e` = 1ª rodada corretiva (itens 1–6); `f7287a9` = auditoria final (itens 7–8); `5e049f1` = auditoria complementar (itens 9–10); a auditoria consolidada (item 11, seção 10b) é o HEAD atual do PR.
 
 ### 1ª rodada corretiva (3099934 → ba1af3e)
 1. **Limites da reconciliação (bloqueio).** Lógica extraída para `src/historical/reconcile-fetch.js` com `fetch`/`sleep` injetáveis. `parseFetchOptions` aceita apenas inteiros decimais (`--max` 1..50; `--delay-ms` ≥ 6000) e rejeita negativo, zero, decimal, vazio, NaN, Infinity, exponencial, hex e opção repetida antes de qualquer GET (exit 2). `runControlledFetch` revalida as opções, recusa plano maior que o teto e nunca executa mais que `min(max, 50)` requisições; para no primeiro 403/429/5xx/3xx/erro de rede/não-JSON. A política anterior documentada ("5xx repetido") foi substituída pela mais conservadora (primeiro 5xx). Testes: 9 (inclui propriedade com 200 planos aleatórios).
@@ -102,6 +102,50 @@ Reconciliação offline sobre o JSON arquivado (0 requisições): contagem de cl
 Observação: o comentário da 1ª linha de `test/fase3b2/import-validation.test.js` ainda cita "V01–V15"; ele pertence aos 377 testes de baseline, que não podem ser editados, e por isso foi mantido.
 
 Limitações preservadas: Quina 380 permanece em quarentena, data não alterada; a coincidência XLSX × JSON **não** prova que a data esteja correta.
+
+## 10b. Auditoria consolidada da reconciliação (a partir de 5e049f1) — reconciliação 1.1.0
+
+11. Redesenho único de `adaptJsonResult`/`compareRecords` (`src/historical/reconcile.js`), e no script de reconciliação o tratamento de concurso JSON inválido. Os itens 7–10 foram mantidos: os testes anteriores passam sem nenhuma alteração.
+
+**Taxonomia (classes de campo)**
+
+| Classe | Semântica |
+|---|---|
+| `EQUIVALENTE` | dois valores válidos e iguais. Se monetário: regime `POS_REAL` estabelecido |
+| `DIVERGENCIA_REAL` | dois valores válidos e diferentes (correspondência CONFIRMADA). Se monetário: regime `POS_REAL`. Única classe que gera quarentena |
+| `AUSENTE_EM_UMA_FONTE` | sem valor em ao menos uma fonte e nenhum lado inválido (inclui ausente nas duas; nota explica) |
+| `SEMANTICA_DESCONHECIDA` | não há conclusão possível: regime monetário pré-Real/desconhecido, correspondência HIPÓTESE com valores diferentes, XLSX "-" com JSON listando a faixa (ex.: Quina faixa 2 antes de 4085), faixa não listada pelo JSON, estrutura de faixas JSON inutilizável |
+| `VALOR_INVALIDO` | **somente monetário**: valor presente mas não interpretável em ≥1 fonte |
+| `DADO_INVALIDO` | **estrutural**: concurso, data, dezenas, ganhadores, ordem do sorteio, estrutura de `listaRateioPremio` (não-lista, descrição não mapeada, faixa duplicada, faixa não prevista em `src/lotteries/config.js`) |
+| `DIFERENCA_FORMATACAO` | mesmo valor, texto diferente (data d/m/aaaa, espaços) |
+| `DIFERENCA_REPRESENTACAO` | representações distintas da mesma informação (faixa "-" no XLSX × não listada; texto × lista) |
+| `DIFERENCA_TEMPORAL` | concurso posterior ao último do XLSX |
+
+**Prioridade por campo:** inválido (`VALOR_INVALIDO`/`DADO_INVALIDO`) > ausência > semântica desconhecida (regime, hipótese, estrutura) > comparação. Uma invalidade nunca é escondida por ausência ou por regime. Toda linha inválida tem `invalidSource` (`XLSX`|`JSON`|`AMBOS`) e evidência por fonte: `xlsxPresent`, `xlsxValid`, `xlsxLiteral`, `xlsxRef`, `xlsxColumn`, `xlsxInvalidReason`, `jsonPresent`, `jsonValid`, `jsonLiteral`, `jsonInvalidReason`, `invalidReason`. Regra de presença/validade: ausente → `present:false, valid:null`; válido → `true/true`; inválido → `true/false`.
+
+**Validação estrutural JSON:**
+- `numero`: inteiro seguro > 0. Motivos: `NEGATIVO`, `MENOR_QUE_1`, `NAO_INTEIRO`, `TIPO_NAO_NUMERICO`, `FORA_DO_INTEIRO_SEGURO`. Concurso inválido → `DADO_INVALIDO`, e no script status `JSON_DADO_INVALIDO` em vez de ausência.
+- `dataApuracao`: ausente/nula, válida, malformada/inexistente (`DATA_MALFORMADA_OU_INEXISTENTE`) ou tipo incorreto (`TIPO_NAO_TEXTO`).
+- `listaDezenas`/`dezenasSorteadasOrdemSorteio`: itens preservados, sem `NaN`. Validadas tipo, vazio, inteiro, quantidade = `draw`, intervalo `minNumber..maxNumber` e duplicatas, pelas regras de `src/lotteries/config.js`.
+- `numeroDeGanhadores`: inteiro seguro ≥ 0.
+- `listaRateioPremio`: ausente/nula → linha `AUSENTE` e faixas sem lado JSON. Não-lista → `DADO_INVALIDO` e faixas `SEMANTICA_DESCONHECIDA`. Entradas não mapeadas/duplicadas/não previstas → linha `DADO_INVALIDO` com elementos originais preservados. Faixa duplicada → `DADO_INVALIDO` nos dois campos. Com entradas não mapeadas, a falta de uma faixa não é conclusiva (`SEMANTICA_DESCONHECIDA`).
+
+Os mesmos critérios valem para o lado XLSX, inclusive registros em quarentena: data inválida, dezenas inválidas/duplicadas/fora do intervalo e ganhadores inválidos → `DADO_INVALIDO` com origem XLSX.
+
+**Faixas:** para cada faixa da união XLSX ∪ JSON há sempre `tier[k].winners` e `tier[k].prize` próprias. Faixa no XLSX e ausente do JSON mantém ainda a linha de listagem `tier[k]` (`DIFERENCA_REPRESENTACAO`/`SEMANTICA_DESCONHECIDA`, semântica documentada e testes de baseline). Ela não substitui as linhas por campo.
+
+**Regime monetário** (`monetaryRegime`, das duas datas válidas):
+
+| Datas XLSX / JSON | Regime |
+|---|---|
+| válidas, iguais, < 1994-07-01 | `PRE_REAL_NAO_VERIFICADA` |
+| válidas, iguais, ≥ 1994-07-01 | `POS_REAL` |
+| ausente/inválida em qualquer lado | `REGIME_MONETARIO_DESCONHECIDO` |
+| válidas e diferentes (ou em lados opostos de 01/07/1994) | `REGIME_MONETARIO_DESCONHECIDO` |
+
+Apenas em `POS_REAL` dois valores válidos podem ser `EQUIVALENTE`/`DIVERGENCIA_REAL`. Nos demais regimes eles ficam em `SEMANTICA_DESCONHECIDA`, com literais, datas (`xlsxDrawDate`, `jsonDrawDate`), `monetaryRegime`, `monetaryRegimeReason` e `unidadeMonetariaVerificada:false`. Ausência/invalidade mantêm a classe e recebem os mesmos marcadores. Não há fator 0,7, conversão ou imposto.
+
+Testes: 125 em `audit-consolidada-reconcile.test.js` (matriz monetária 1–10, matriz econômica 4 campos × 4 estados XLSX × 6 estados JSON, estruturais, quarentena, regime e propriedade global com PRNG semeado em 400 iterações). Contra o código de 5e049f1, 71 falham. Os 54 que passam lá são sobretudo combinações econômicas já corretas e casos de comparação válida. Reconciliação offline: classes de 1.0.0 preservadas; as faixas só no XLSX passam a ter linhas por campo (+14 `AUSENTE_EM_UMA_FONTE`, +16 `SEMANTICA_DESCONHECIDA`); 0 inválidos e 0 divergências reais nas amostras reais.
 
 ## 11. Limitações e riscos
 - Completude do histórico não é declarada; XLSX é fonte única oficial disponível, JSON é amostral.

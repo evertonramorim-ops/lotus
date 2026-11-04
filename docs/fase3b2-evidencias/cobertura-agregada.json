@@ -109,5 +109,32 @@
     "transicoes": {},
     "nota": "contagem idêntica à auditoria final; nenhum caso real nos novos cenários",
     "quina380": "QUARENTENA, data original preservada"
+  },
+  "reconciliacaoOfflineAuditoriaConsolidada": {
+    "versaoReconciliacao": "1.1.0",
+    "requisicoesNovas": 0,
+    "amostras": 54,
+    "classesCampo": {
+      "EQUIVALENTE": 850,
+      "AUSENTE_EM_UMA_FONTE": 1169,
+      "DIFERENCA_REPRESENTACAO": 30,
+      "DIFERENCA_FORMATACAO": 1,
+      "DIFERENCA_TEMPORAL": 2,
+      "SEMANTICA_DESCONHECIDA": 45,
+      "DIVERGENCIA_REAL": 0,
+      "VALOR_INVALIDO": 0,
+      "DADO_INVALIDO": 0
+    },
+    "transicoes": {
+      "novas linhas tier[k].winners/prize de faixas só no XLSX: AUSENTE_EM_UMA_FONTE": 14,
+      "idem: SEMANTICA_DESCONHECIDA": 16,
+      "linhas existentes com classe alterada": 0
+    },
+    "statusAmostras": {
+      "ACEITO": 51,
+      "AUSENTE": 2,
+      "QUARENTENA": 1
+    },
+    "quina380": "QUARENTENA, data original preservada"
   }
 }

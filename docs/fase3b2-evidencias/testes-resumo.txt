@@ -1,24 +1,29 @@
-# Node v24.22.1 · clone limpo de phase-3b2-historical-import @ afb5fd4
+# Node v24.22.1 · npm 11.21.1 · clone limpo de phase-3b2-historical-import @ e0934fd
 # comando: env -i PATH="$PATH" HOME=/tmp npm test
-ℹ tests 427
+ℹ tests 552
 ℹ suites 0
-ℹ pass 427
+ℹ pass 552
 ℹ fail 0
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 3207.693025
+ℹ duration_ms 3398.71352
 
-# testes de reconciliação e auditoria isolados — comando: env -i PATH="$PATH" HOME=/tmp node --test <arquivo>
-reconcile: tests 5 pass 5 fail 0 skipped 0
-audit-fetch-limits: tests 9 pass 9 fail 0 skipped 0
-audit-formulas: tests 9 pass 9 fail 0 skipped 0
-audit-json-money: tests 6 pass 6 fail 0 skipped 0
-audit-provenance-link: tests 8 pass 8 fail 0 skipped 0
-audit-final-reconcile: tests 7 pass 7 fail 0 skipped 0
-audit-complementar-reconcile: tests 11 pass 11 fail 0 skipped 0
+# reconciliação/auditoria isolados — comando: env -i PATH="$PATH" HOME=/tmp node --test test/fase3b2/<arquivo>.test.js
+reconcile: tests 5 pass 5 fail 0 skipped 0 
+audit-complementar-reconcile: tests 11 pass 11 fail 0 skipped 0 
+audit-consolidada-reconcile: tests 125 pass 125 fail 0 skipped 0 
+audit-fetch-limits: tests 9 pass 9 fail 0 skipped 0 
+audit-final-reconcile: tests 7 pass 7 fail 0 skipped 0 
+audit-formulas: tests 9 pass 9 fail 0 skipped 0 
+audit-json-money: tests 6 pass 6 fail 0 skipped 0 
+audit-provenance-link: tests 8 pass 8 fail 0 skipped 0 
 
-# 377 testes de baseline: git diff 3099934 HEAD -- <arquivos de test/ em 3099934> = vazio (byte-idênticos)
-# 32 testes da 1ª rodada: git diff ba1af3e HEAD -- test/fase3b2/audit-{fetch-limits,formulas,json-money,provenance-link}.test.js = vazio
-# 7 testes da auditoria final: 2 asserts ajustados na regressão 4 (justificativa em docs/FASE3B2.md, item 10); git diff f7287a9 HEAD = 6 inserções, 3 remoções
-# falha-antes: audit-complementar-reconcile contra o reconcile.js de f7287a9 = 10 falhas, 1 aprovado (o 11º é regressão)
+# npm run reprodutibilidade:fase3b2 → exit 0, idêntico em 2 processos (hashes em reprodutibilidade-sintetica.json)
+# npm run fixtures:fase3b2 -- --check → exit 0, "OK: fixtures idênticas" (o script já inclui --check; o argumento extra é redundante)
+
+# preservação
+# 377 baseline: git diff 3099934 HEAD -- <arquivos de test/ em 3099934> = vazio
+# 32 da 1ª rodada: git diff ba1af3e HEAD -- audit-{fetch-limits,formulas,json-money,provenance-link} = vazio
+# 7 da auditoria final + 11 da complementar: git diff 5e049f1 HEAD = vazio (nenhuma expectativa ajustada)
+# falha-antes: audit-consolidada-reconcile contra reconcile.js de 5e049f1 (import tolerante a exports novos) = 71 falhas / 54 aprovados de 125

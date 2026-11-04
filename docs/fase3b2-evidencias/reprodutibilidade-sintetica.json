@@ -87,16 +87,16 @@
   ],
   "variableMetadata": [
     {
-      "pid": 653134,
-      "startedAt": "2026-11-04T11:29:25.575Z",
-      "elapsedMs": 94
+      "pid": 674423,
+      "startedAt": "2026-11-04T12:09:44.375Z",
+      "elapsedMs": 92
     },
     {
-      "pid": 653141,
-      "startedAt": "2026-11-04T11:29:25.728Z",
-      "elapsedMs": 93
+      "pid": 674430,
+      "startedAt": "2026-11-04T12:09:44.534Z",
+      "elapsedMs": 99
     }
   ],
   "distinctProcesses": true,
-  "nota": "reexecutado na auditoria complementar @ afb5fd4, dois processos separados"
+  "nota": "npm run reprodutibilidade:fase3b2 em clone limpo @ e0934fd (auditoria consolidada), dois processos"
 }
