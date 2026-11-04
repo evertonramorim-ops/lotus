@@ -1,8 +1,17 @@
-ℹ tests 377
+# npm test em clone limpo de phase-3b2-historical-import @ 65a84b2 (env -i)
+ℹ tests 409
 ℹ suites 0
-ℹ pass 377
+ℹ pass 409
 ℹ fail 0
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 3303.799317
+ℹ duration_ms 3269.838508
+
+# testes novos da auditoria (node --test por arquivo)
+audit-fetch-limits: ℹ tests 9 ℹ pass 9 ℹ fail 0 ℹ skipped 0 
+audit-formulas: ℹ tests 9 ℹ pass 9 ℹ fail 0 ℹ skipped 0 
+audit-json-money: ℹ tests 6 ℹ pass 6 ℹ fail 0 ℹ skipped 0 
+audit-provenance-link: ℹ tests 8 ℹ pass 8 ℹ fail 0 ℹ skipped 0 
+
+# 377 testes anteriores: git diff 3099934 HEAD -- <80 arquivos de test/ existentes> = vazio (byte-idênticos)

@@ -29,7 +29,7 @@ Registro normalizado: `lottery`, `contest` (int), `drawDate` (ISO), `numbers` (o
 Relatório de importação: `lotus.import-report` 1.0.0 com contagens, `quarantineReasonCounts`, `annotationCounts`, `coverage` (`completenessClaim: NAO_DECLARADA`).
 
 ## 4. Regras de validação (V01–V15)
-Cada validador tem `name`, `version`, `rule`. V01 concurso inteiro positivo; V02 data válida; V03 quantidade de dezenas; V04 faixa de dezenas; V05 dezenas únicas; V06 ganhadores inteiro ≥0; V07 valores monetários parseáveis; V08 faixas esperadas para o período (`RULE_NOT_VERIFIED` onde não há norma); V09 '-' tratado como ausência; V10 zero literal anotado; V11 moeda pré-Real anotada; V12 duplicidade idêntica/conflitante; V13 monotonicidade de data (ISOLATED_OUTLIER × PAIR_INVERSION); V14 lacunas de concurso; V15 esquema de colunas (SCHEMA_INESPERADO / ARQUIVO_INCOMPATIVEL). Detalhes em `src/historical/validators.js`.
+Cada validador tem `name`, `version`, `rule`. V01 concurso inteiro positivo; V02 data válida; V03 quantidade de dezenas; V04 faixa de dezenas; V05 dezenas únicas; V06 ganhadores inteiro ≥0; V07 valores monetários parseáveis; V08 faixas esperadas para o período (`RULE_NOT_VERIFIED` onde não há norma); V09 '-' tratado como ausência; V10 zero literal anotado; V11 moeda pré-Real anotada; V12 duplicidade idêntica/conflitante; V13 monotonicidade de data (ISOLATED_OUTLIER × PAIR_INVERSION); V14 lacunas de concurso; V15 esquema de colunas (SCHEMA_INESPERADO / ARQUIVO_INCOMPATIVEL); **V16** fórmula em campo mapeado → `FORMULA_EM_CAMPO_HISTORICO` (bloqueante). Detalhes em `src/historical/validators.js`.
 
 ## 5. Política de quarentena
 Nada é descartado nem corrigido automaticamente. Registro com problema bloqueante vai à quarentena (contrato 3a) com `reviewStatus`, `humanDecision: null` e evidência. Invariante testado: `aceitos + quarentena + duplicados idênticos == normalizados`. (A)
@@ -47,8 +47,8 @@ Reexecução com mesmo conteúdo → `UNCHANGED_REPLAY`. Mudança → nova sequ�
 ```
 node scripts/reconciliar-fase3b2.mjs --private <DIR> --plan <plano.json> --fetch --max 50 --delay-ms 6000
 ```
-Limite rígido ≤50 GET, intervalo ≥6 s, toda requisição registrada em `request_log.jsonl`, parada em 403/429/resposta não-JSON.
-Classes: `EQUIVALENTE`, `DIFERENCA_FORMATACAO`, `DIFERENCA_REPRESENTACAO`, `AUSENTE_EM_UMA_FONTE`, `DIVERGENCIA_REAL`, `DIFERENCA_TEMPORAL`, `SEMANTICA_DESCONHECIDA`.
+Limites impostos pelo código (`src/historical/reconcile-fetch.js`): teto absoluto de 50 GET por execução; `--max` só inteiro 1..50; `--delay-ms` só inteiro ≥ 6000; padrões 50/6000; opção inválida recusada antes de qualquer GET. Parada em 403, 429, **primeiro** 5xx, 3xx, erro de rede/timeout e 200 não-JSON; sem retentativa automática. Toda requisição registrada em `request_log.jsonl`.
+Classes: `VALOR_INVALIDO` (literal JSON presente mas não interpretável em centavos — nunca tratado como ausência), `EQUIVALENTE`, `DIFERENCA_FORMATACAO`, `DIFERENCA_REPRESENTACAO`, `AUSENTE_EM_UMA_FONTE`, `DIVERGENCIA_REAL`, `DIFERENCA_TEMPORAL`, `SEMANTICA_DESCONHECIDA`.
 Tabela de correspondência (`FIELD_CORRESPONDENCE` em `src/historical/reconcile.js`): concurso, data, dezenas, ganhadores/prêmio por faixa, arrecadação e estimativa = `CONFIRMADO_ESTRUTURAL`; acumulado especial e acumulado faixa principal = `HIPOTESE`; ordem de sorteio, `dataProximoConcurso` etc. = `SEM_CORRESPONDENTE`.
 Amostras justificadas no plano: primeiro/último concurso, fronteiras de mudança de faixa (Quina 4084/4085, Lotomania 1651–1653), troca de moeda (Quina 28/29, Lotofácil 428/429), anomalia de data (Quina 379–381), reset atípico (Mega 3010), concurso "mais recente".
 
@@ -63,7 +63,17 @@ Resultado (agregado): 37 GET, todos HTTP 200, 0 bloqueios; 54 amostras; **0 DIVE
 - ADR-6: classes de reconciliação fechadas; só `DIVERGENCIA_REAL` gera quarentena `DIVERGENCIA_JSON_XLSX`.
 
 ## 10. Reprodução
-`npm test` (377/377, 0 falhas, 0 skip); `npm run reprodutibilidade:fase3b2` (2 processos distintos, hashes idênticos); `npm run fixtures:fase3b2 -- --check`.
+`npm test` (409/409, 0 falhas, 0 skip — 377 anteriores intactos + 32 da auditoria); `npm run reprodutibilidade:fase3b2` (2 processos distintos, hashes idênticos); `npm run fixtures:fase3b2 -- --check`.
+
+## 10a. Correções da auditoria (PR #4, HEAD auditado 3099934)
+1. **Limites da reconciliação (bloqueio).** Lógica extraída para `src/historical/reconcile-fetch.js` com `fetch`/`sleep` injetáveis. `parseFetchOptions` aceita apenas inteiros decimais (`--max` 1..50; `--delay-ms` ≥ 6000) e rejeita negativo, zero, decimal, vazio, NaN, Infinity, exponencial, hex e opção repetida antes de qualquer GET (exit 2). `runControlledFetch` revalida as opções, recusa plano maior que o teto e nunca executa mais que `min(max, 50)` requisições; para no primeiro 403/429/5xx/3xx/erro de rede/não-JSON. A política anterior documentada ("5xx repetido") foi substituída pela mais conservadora (primeiro 5xx). Testes: 9 (inclui propriedade com 200 planos aleatórios).
+2. **Fórmulas (bloqueio).** O parser guarda `hasFormula` e `formula {expression, type, sharedIndex, sharedRef}`; a extração e a normalização transportam a informação com a referência da célula. Fórmula em campo mapeado gera `formulaCells` no registro e o validador **V16** bloqueia com `FORMULA_EM_CAMPO_HISTORICO` (evidência: ref, coluna, expressão, valor em cache, tipo). Fórmulas nunca são avaliadas; o valor em cache nunca é aceito; bytes brutos inalterados. Fórmulas em colunas desconhecidas ficam em `extras` com `hasFormula`, `formula`, `cachedValue` e origem. Registros sem fórmula não ganham chave nova (hash estável). `VALIDATORS_VERSION` → 1.1.0. Testes: 9 (dezena, concurso, data, prêmio, ganhadores, econômico, parser, coluna desconhecida, estabilidade).
+3. **Vínculo envelope × coleta (bloqueio).** `validateCollectionEnvelopeLink(collection, envelope, lottery)` verifica sha256, envelopeSha256, byteLength, url = provenance.sourceId, collectedAt = provenance.obtainedAt, sourceType = provenance.sourceType e modalidade. Falha → `REJECTED` com `INTEGRIDADE_ORIGEM` (`evidence.linkErrors`), zero aceitos. Testes: 8, com adulteração de URL, horário, tipo, tamanho e modalidade **recalculando `collectionSha256`**.
+4. **Literais monetários JSON (melhoria).** `decimalLiteralToCents` devolve `invalidReason` e limita literal (64 caracteres), expoente (|e| ≤ 30) e dígitos do resultado (≤ 30) antes de qualquer potência BigInt. `adaptJsonResult` expõe `economicMoney`/`prizeMoney` com `{present, literal, cents, valid, invalidReason}`; valor presente e inválido → classe `VALOR_INVALIDO`. Testes: 6 (0.125, 1e2, 1.5e-3, 1e400, 1e999999999, extremos, custo).
+5. **Pré-Real.** Aceitos anteriores a 01/07/1994 recebem `unidadeMonetariaVerificada: false`; na reconciliação, campos monetários desses concursos são comparados só literalmente, marcados com o mesmo flag e nunca geram `DIVERGENCIA_REAL`.
+6. **Reimportação real (local, privada).** Nova execução anexada ao ledger (linhas anteriores preservadas). Nenhuma fórmula nos 4 arquivos reais; contagens idênticas (3080/3819/7156+1/2994); Quina 380 continua em quarentena com a data original. Manifestos passaram a sequence 2 apenas pela mudança de versão dos validadores e do flag pré-Real.
+
+Limitações preservadas: Quina 380 permanece em quarentena, data não alterada; a coincidência XLSX × JSON **não** prova que a data esteja correta.
 
 ## 11. Limitações e riscos
 - Completude do histórico não é declarada; XLSX é fonte única oficial disponível, JSON é amostral.
