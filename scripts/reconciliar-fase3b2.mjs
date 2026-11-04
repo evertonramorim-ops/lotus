@@ -73,9 +73,14 @@ const out = []; const quarantine = []; const allRows = [];
 for (const s of samples) {
   const text = readFileSync(s.file, 'utf8'); const jsonSha256 = sha(Buffer.from(text, 'utf8'));
   let j; try { j = adaptJsonResult(text); } catch (e) { out.push({ ...s, file: undefined, jsonSha256, status: 'JSON_INVALIDO', error: e.message }); continue; }
+  if (j.contestField && j.contestField.present && !j.contestField.valid) { // concurso inválido ≠ ausência: DADO_INVALIDO explícito
+    const ctx0 = { xlsxLastContest: meta[s.lottery].lastContest, xlsxObservedAt: meta[s.lottery].xlsxObservedAt, jsonObservedAt: s.observedAt, jsonSha256, jsonUrl: s.url, lottery: s.lottery };
+    const rows = compareRecords(null, j, ctx0); allRows.push(...rows);
+    out.push({ lottery: s.lottery, contest: null, contestLiteral: j.contestField.literal, contestInvalidReason: j.contestField.invalidReason, origin: s.origin, url: s.url, observedAt: s.observedAt, jsonSha256, status: 'JSON_DADO_INVALIDO', classes: summarize(rows), rows }); continue;
+  }
   if (j.contest === null) { out.push({ ...s, file: undefined, jsonSha256, status: 'JSON_SEM_RESULTADO' }); continue; }
   const x = records[s.lottery].get(j.contest) ?? null;
-  const ctx = { xlsxLastContest: meta[s.lottery].lastContest, xlsxObservedAt: meta[s.lottery].xlsxObservedAt, jsonObservedAt: s.observedAt, jsonSha256, jsonUrl: s.url };
+  const ctx = { xlsxLastContest: meta[s.lottery].lastContest, xlsxObservedAt: meta[s.lottery].xlsxObservedAt, jsonObservedAt: s.observedAt, jsonSha256, jsonUrl: s.url, lottery: s.lottery };
   const rows = compareRecords(x, j, ctx); allRows.push(...rows);
   if (x) { const q = divergenceQuarantine(x, j, rows, ctx); if (q) quarantine.push(q); }
   out.push({ lottery: s.lottery, contest: j.contest, origin: s.origin, url: s.url, observedAt: s.observedAt, xlsxObservedAt: ctx.xlsxObservedAt, jsonSha256, xlsxStatus: x ? (x.__quarantined ? 'QUARENTENA' : 'ACEITO') : 'AUSENTE', justification: s.justification, classes: summarize(rows), rows });
