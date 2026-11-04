@@ -1,0 +1,101 @@
+{
+  "mode": "SYNTHETIC_DATA",
+  "identical": true,
+  "logicalSha256": [
+    "3b8e0a890ac2c5b86ff3be5587c8ee09989eb3f50cf2b1035d19b3bf426a4cba",
+    "3b8e0a890ac2c5b86ff3be5587c8ee09989eb3f50cf2b1035d19b3bf426a4cba"
+  ],
+  "runRootHash": [
+    "cdba29a65ff0faa1990d4cff07c57de6f0eb935d43af7e9ab496b631c5ff1290",
+    "cdba29a65ff0faa1990d4cff07c57de6f0eb935d43af7e9ab496b631c5ff1290"
+  ],
+  "modalityRootHashes": [
+    {
+      "lottery": "megasena",
+      "sequence": 1,
+      "rootHash": "296c309aac8dbefab4842c44ed04814fd6ed30c782268bd93f75387fbe64bea1"
+    },
+    {
+      "lottery": "lotofacil",
+      "sequence": 1,
+      "rootHash": "03b4eb846bcb33b3649cc5a55cff7ae674ed7dbcf3eaf1296bf7e7c482d8d4de"
+    },
+    {
+      "lottery": "quina",
+      "sequence": 1,
+      "rootHash": "0691e756993c737f1ae72ca4111de17565a9eb413db8b833eb1c97cf6ac8f1a8"
+    },
+    {
+      "lottery": "lotomania",
+      "sequence": 1,
+      "rootHash": "54ba7c92362bfba772cee32014b8cd9ed9cacc0abd7a2f18584b0ea59f237718"
+    }
+  ],
+  "counts": [
+    {
+      "lottery": "megasena",
+      "rowsExtracted": 40,
+      "emptyRows": 0,
+      "normalized": 40,
+      "accepted": 40,
+      "quarantinedRecords": 0,
+      "quarantineEntries": 0,
+      "duplicatesIdentical": 0,
+      "conflictingContests": 0,
+      "missingContests": 0,
+      "dateAnomalies": 0
+    },
+    {
+      "lottery": "lotofacil",
+      "rowsExtracted": 40,
+      "emptyRows": 0,
+      "normalized": 40,
+      "accepted": 40,
+      "quarantinedRecords": 0,
+      "quarantineEntries": 0,
+      "duplicatesIdentical": 0,
+      "conflictingContests": 0,
+      "missingContests": 0,
+      "dateAnomalies": 0
+    },
+    {
+      "lottery": "quina",
+      "rowsExtracted": 40,
+      "emptyRows": 0,
+      "normalized": 40,
+      "accepted": 40,
+      "quarantinedRecords": 0,
+      "quarantineEntries": 0,
+      "duplicatesIdentical": 0,
+      "conflictingContests": 0,
+      "missingContests": 0,
+      "dateAnomalies": 0
+    },
+    {
+      "lottery": "lotomania",
+      "rowsExtracted": 40,
+      "emptyRows": 0,
+      "normalized": 40,
+      "accepted": 40,
+      "quarantinedRecords": 0,
+      "quarantineEntries": 0,
+      "duplicatesIdentical": 0,
+      "conflictingContests": 0,
+      "missingContests": 0,
+      "dateAnomalies": 0
+    }
+  ],
+  "variableMetadata": [
+    {
+      "pid": 575389,
+      "startedAt": "2026-11-04T02:05:20.079Z",
+      "elapsedMs": 95
+    },
+    {
+      "pid": 575396,
+      "startedAt": "2026-11-04T02:05:20.233Z",
+      "elapsedMs": 91
+    }
+  ],
+  "distinctProcesses": true
+}

@@ -1,0 +1,15 @@
+{
+  "nota": "Somente estatísticas agregadas. Nenhum dado bruto da Caixa é versionado. completenessClaim=NAO_DECLARADA.",
+  "importacao": {
+    "megasena":  {"status":"IMPORTED","aceitos":3080,"quarentena":0,"concursos":"1-3080","contiguo":true,"anotacoes":{"ZERO_LITERAL":1069}},
+    "lotofacil": {"status":"IMPORTED","aceitos":3819,"quarentena":0,"concursos":"1-3819","contiguo":true,"anotacoes":{"ZERO_LITERAL":428}},
+    "quina":     {"status":"IMPORTED","aceitos":7156,"quarentena":1,"motivoQuarentena":{"DATA_NAO_MONOTONICA":1},"concursos":"1-7157","contiguo":true,"anotacoes":{"ZERO_LITERAL":2054,"CURRENCY_PRE_REAL":28}},
+    "lotomania": {"status":"IMPORTED","aceitos":2994,"quarentena":0,"concursos":"1-2994","contiguo":true,"anotacoes":{"ZERO_LITERAL":932,"ABSENT_BY_PERIOD_RULE":1652}}
+  },
+  "reimportacao": "UNCHANGED_REPLAY nas 4 modalidades (idempotente)",
+  "reconciliacao": {
+    "requisicoesGET": 37, "limite": 50, "intervaloMs": 6000, "status403ou429": 0,
+    "amostras": 54,
+    "classesCampo": {"EQUIVALENTE":871,"AUSENTE_EM_UMA_FONTE":1155,"DIFERENCA_REPRESENTACAO":30,"DIFERENCA_FORMATACAO":1,"DIFERENCA_TEMPORAL":2,"SEMANTICA_DESCONHECIDA":8,"DIVERGENCIA_REAL":0}
+  }
+}
