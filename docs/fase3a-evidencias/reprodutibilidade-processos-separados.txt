@@ -1,4 +1,4 @@
-SYNTHETIC_DATA — verificação após correções da auditoria (2026-11-03, America/Sao_Paulo, Node v24.22.1)
+SYNTHETIC_DATA — verificação após a revisão complementar (2026-11-03, America/Sao_Paulo, Node v24.22.1)
 Comando executado duas vezes em processos separados: npm run -s reprodutibilidade:fase3a
 cmp reprodutibilidade.json (execução 1) x (execução 2): IDÊNTICOS
 cmp saída padrão (execução 1) x (execução 2): IDÊNTICAS

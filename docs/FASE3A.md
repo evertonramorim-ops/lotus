@@ -30,7 +30,7 @@ flowchart LR
 src/integrity/jcs.js        RFC 8785: números (Number::toString, -0→0, NaN/Inf rejeitados), strings, ordenação UTF-16, detecção de chave duplicada
 src/integrity/sha256-web.js  SHA-256 PORTÁVEL: sem imports node:*, WebCrypto assíncrono (sha256HexAsync, hashJsonAsync), toBytes, isSha256Hex
 src/integrity/sha256-node.js SHA-256 SÍNCRONO só para Node (node:crypto): sha256Hex, hashJson — hashes idênticos aos da camada portável
-src/integrity/hash.js        fachada Node que reexporta as duas (API original preservada)
+src/integrity/hash.js        fachada NODE que reexporta as duas (API original preservada) — depende de node:crypto
 src/integrity/manifest.js   manifesto lotus.manifest 1.0.0, validateManifestStructure, verifyManifest(Detailed), checkSuccession, ManifestLedger
 src/integrity/index.js      reexportações
 src/data/schema.js          nomes/versões de esquema; LOTTERY_IDS e regras vindas de src/lotteries/config.js
@@ -66,7 +66,7 @@ Arquivo existente modificado: **somente `package.json`** (scripts `test` passa a
 5. **Nada é descartado**: `processBatch` lança erro se `aceitos + quarentena ≠ entrada`. Duplicatas de concurso (idênticas ou conflitantes) vão para quarentena no estágio `dataset`; a primeira ocorrência é mantida (política provisória, a revisar na 3b).
 6. **Lacunas de numeração** são apenas informadas (`gaps`), pois um conjunto pode ser parcial.
 7. **JCS próprio** (sem dependência): números via `String(n)` (ECMAScript Number::toString, exigido pela RFC), surrogates isolados e chaves duplicadas rejeitados (I-JSON), ordenação por unidades UTF-16 explícita.
-8. **SHA-256** separado em camada portável (`sha256-web.js`, WebCrypto, sem `node:*` — verificado por teste automatizado que varre o grafo de importações) e implementação síncrona do Node (`sha256-node.js`). Isso **não** comprova compatibilidade completa com PWA; apenas remove a dependência do Node da camada portável.
+8. **SHA-256** separado em camada portável (`sha256-web.js`, WebCrypto, sem `node:*` — verificado por teste automatizado que varre o grafo de importações) e implementação síncrona do Node (`sha256-node.js`). Isso **não** comprova compatibilidade completa com PWA; apenas remove a dependência do Node da camada portável. **Escopo exato:** só `sha256-web.js` é a camada de hash portável para navegador. `sha256-node.js` e a fachada `hash.js` são Node. Toda a cadeia de ingestão — `raw.js`, `normalize.js`, `manifest.js`, `correction.js` (e `quarantine.js` via esses fluxos) — usa o hash síncrono pela fachada Node e, portanto, **NÃO é declarada compatível com navegador/PWA** nesta fase. Uma versão assíncrona dessa cadeia não foi feita (fora do escopo).
 9. **Manifesto sem relógio oculto**: `createdAt` é parâmetro obrigatório. `rootHash` = SHA-256(JCS(manifesto sem rootHash)). `sequence` deve crescer estritamente por `datasetId`; sequência menor → `SEQUENCE_REGRESSION`; igual com hash diferente → `SEQUENCE_SUBSTITUTION`; igual com mesmo hash → `SEQUENCE_REPLAY_IDENTICAL` (não avança). Sem assinatura digital (fora do escopo).
 10. **Dinheiro em centavos como string** de dígitos para evitar ponto flutuante.
 
@@ -80,10 +80,10 @@ Arquivo existente modificado: **somente `package.json`** (scripts `test` passa a
 |---|---|
 | `npm run test:fase1` | 88/88 |
 | `npm run test:fase2` | 80/80 |
-| `npm run test:fase3a` | 124/124 — originais 41 (compat 3, data 9, economic 2, jcs 8, manifest 5, sha256 3, validation 11) + auditoria 83 (manifest 32, raw-envelope 16, hash-split 3, quarantine 4, correction 28) |
-| `npm test` | **292/292** (88 + 80 + 124), 0 falhas, 0 ignorados |
+| `npm run test:fase3a` | 172/172 — originais 41 (compat 3, data 9, economic 2, jcs 8, manifest 5, sha256 3, validation 11) + auditoria 83 (manifest 32, raw-envelope 16, hash-split 3, quarantine 4, correction 28) + revisão complementar 48 (manifest-consistency 2, mediatype 16, quarantine-json 30) |
+| `npm test` | **340/340** (88 + 80 + 172), 0 falhas, 0 ignorados |
 
-Primeira entrega do PR (antes da auditoria): `npm test` = 209/209 (168 + 41). Nenhum dos 41 testes originais foi alterado, removido ou ignorado (`git diff 4adba7e` vazio nesses arquivos).
+Primeira entrega do PR (antes da auditoria): `npm test` = 209/209 (168 + 41). Após a auditoria: 292/292. Nenhum dos 41 testes originais foi alterado, removido ou ignorado (`git diff 4adba7e` vazio nesses arquivos).
 
 Baseline antes de qualquer alteração (checkout limpo de `origin/main` `faca405`): `npm test` = 168/168.
 Saídas completas: `docs/fase3a-evidencias/test-output.txt` e `test-output-fase3a.txt`.
@@ -98,6 +98,8 @@ Saídas completas: `docs/fase3a-evidencias/test-output.txt` e `test-output-fase3
 - A verificação de chaves duplicadas em JSON é léxica e mínima (adequada a entradas JSON válidas).
 - Sem assinatura digital: manifesto, `envelopeSha256` e `correctionSha256` detectam alteração em relação ao que foi registrado, mas **não** autenticam a origem nem a autoria; um adversário que recalcule todos os hashes não é detectado localmente (há testes que documentam esse limite).
 - A camada portável de SHA-256 não foi executada em navegador real nesta fase; só se verifica que ela não importa `node:*`.
+- A cadeia de ingestão (bruto, normalização, manifesto, correção) depende da fachada Node `hash.js` e **não** é compatível com navegador/PWA nesta fase.
+- O teste de consistência do manifesto é do tipo propriedade com gerador determinístico (2000 casos); não é prova formal.
 - `envelopeSha256` não entra no manifesto de reprodutibilidade (o manifesto cobre registros normalizados e arquivos).
 - Datas: valida calendário gregoriano; não verifica se a data é dia de sorteio real.
 - Política de duplicata "primeira ocorrência vence" é provisória.
@@ -120,3 +122,11 @@ Escolha e validação de fontes oficiais, limites de acesso, parsers reais e map
 5. **Correções.** `validateCorrection` (schema/versão, modalidade, concurso, campo na lista permitida, textos de source/reason/actor, data UTC, formato dos três hashes, ausência de mudança, campos extras) e `correctionSha256`; `replayCorrections` verifica tudo isso, mais modalidade/concurso iguais ao registro, encadeamento, previousValue, validade do resultado e resultSha256. Testada a adulteração de source, date, reason, actor, field, previousValue, newValue, targetSha256, resultSha256 (e outros), com e sem recálculo do hash próprio.
 
 Mudanças de comportamento a observar: `QuarantineStore.add` agora aceita qualquer objeto com o formato de entrada e guarda uma cópia revalidada (antes exigia objeto congelado); `verifyRawEnvelope` ficou mais estrito (envelopes sem `envelopeSha256` são rejeitados). Nenhum teste original precisou ser alterado.
+
+## 12. Revisão complementar (segunda rodada de auditoria)
+1. **Manifesto — regra única.** `manifest.js` exporta `isValidDatasetId`, `isValidDataSchemaVersion` (string com conteúdo não-branco, até `DATA_SCHEMA_VERSION_MAX` = 128 caracteres), `isValidSequence`, `isValidEntryId`, `isValidEntryKind`; `buildManifest` e `validateManifestStructure` usam as mesmas funções, e `buildManifest` ainda roda `validateManifestStructure` no próprio resultado e lança se houver erro. Testes: limites 128 (aceito) / 129 (rejeitado) / só espaços / vazio nos dois lados, e propriedade com 2000 entradas geradas: todo manifesto construído passa em `verifyManifestDetailed` (`structuralOk` e `ok`).
+2. **mediaType — regra única.** `isValidMediaType` (`tipo/subtipo` minúsculo, tokens RFC 6838 simplificados, sem parâmetros) usada em `createRawEnvelope` e `verifyRawEnvelopeDetailed`. `mediaType: null` explícito agora é rejeitado (antes caía no padrão `application/json`; só a ausência usa o padrão). Testes: criação com 15 valores inválidos falha; adulteração com `envelopeSha256` recalculado → hash OK mas rejeição estrutural `RAW_MEDIA_TYPE` e quarentena.
+3. **Quarentena só JSON.** `assertJsonValue` roda antes da cópia/congelamento (em `createQuarantineEntry`, portanto também em `add`). Rejeita Map, Set, Date, RegExp, typed arrays, ArrayBuffer, DataView, funções, símbolos, BigInt, undefined, NaN/±Infinity, ciclos, instâncias de classe (incl. Error, String boxed, Promise, WeakMap), chaves símbolo, acessores (sem executar getters), arrays esparsos ou com propriedades extras. Referências compartilhadas sem ciclo são aceitas. Nenhum teste original dependia de aceitar ciclos na entrada (o teste de ciclo existente usa `deepFreeze` diretamente, que continua seguro para ciclos).
+4. **Escopo de navegador/PWA** explicitado na decisão 8 e nas limitações.
+
+Nenhum teste original (nem da primeira auditoria) foi alterado.
