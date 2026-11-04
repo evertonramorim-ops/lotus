@@ -4,44 +4,42 @@
  *   --private DIR        armazenamento privado (fora do Git)
  *   --plan FILE          JSON [{lottery, contest|null, justification}] (contest null = endpoint "último")
  *   --fetch              executa os GETs (sem esta flag só reconcilia o que já está salvo)
- *   --max N              teto de requisições (padrão 50; recusa plano maior)
- *   --delay-ms MS        espaçamento entre requisições (padrão 6000)
+ *   --max N              teto de requisições: inteiro 1..50 (padrão 50; teto absoluto 50 imposto no código)
+ *   --delay-ms MS        espaçamento entre requisições: inteiro ≥ 6000 (padrão 6000)
  *   --extra-json DIR     amostras JSON já coletadas na Fase 3b.1 (reutilizadas sem nova requisição)
- * Para em 403/429/5xx repetido ou resposta não-JSON (desafio). Todo GET é registrado em request_log.jsonl.
+ * Para em 403, 429, PRIMEIRO 5xx, 3xx, erro de rede ou resposta não-JSON (desafio). Sem repetição automática.
+ * Opções inválidas são rejeitadas antes de qualquer GET. Todo GET é registrado em request_log.jsonl.
  */
 import { readFileSync, readdirSync, existsSync, appendFileSync, mkdirSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { join, resolve } from 'node:path';
 import { adaptJsonResult, compareRecords, divergenceQuarantine, summarize, FIELD_CORRESPONDENCE, RECONCILIATION_SCHEMA, RECONCILIATION_VERSION } from '../src/historical/reconcile.js';
 import { writeOnce, writeJsonOnce, privatePaths } from '../src/historical/store.js';
+import { parseFetchOptions, runControlledFetch, FetchOptionError } from '../src/historical/reconcile-fetch.js';
 
 const arg = k => { const i = process.argv.indexOf(k); return i > 0 ? process.argv[i + 1] : null; };
+let OPTS;
+try { OPTS = parseFetchOptions(process.argv.slice(2)); } catch (e) { if (e instanceof FetchOptionError) { console.error(`RECUSADO (${e.code}): ${e.message}`); process.exit(2); } throw e; }
 const priv = resolve(arg('--private')); const P = privatePaths(priv);
 const plan = JSON.parse(readFileSync(arg('--plan'), 'utf8'));
-const MAX = Number(arg('--max') ?? 50); const DELAY = Number(arg('--delay-ms') ?? 6000);
 const UA = 'LOTUS-research/0.1 (personal non-commercial research; github.com/evertonramorim-ops/lotus)';
 const BASE = 'https://servicebus3.caixa.gov.br/portaldeloterias/api';
-if (plan.length > MAX) { console.error(`plano (${plan.length}) excede o teto ${MAX}`); process.exit(2); }
 const sha = b => createHash('sha256').update(b).digest('hex');
 const brt = d => new Date(d.getTime() - 3 * 3600000).toISOString().replace('Z', '-03:00');
 
 if (process.argv.includes('--fetch')) {
-  let n = 0;
-  for (const item of plan) {
-    const url = `${BASE}/${item.lottery}${item.contest === null ? '' : `/${item.contest}`}`;
-    if (n > 0) await new Promise(r => setTimeout(r, DELAY));
-    n++;
-    const t = new Date(); let status = null, body = Buffer.alloc(0), ctype = null, err = null;
-    try { const res = await fetch(url, { headers: { 'User-Agent': UA, Accept: 'application/json' }, redirect: 'manual', signal: AbortSignal.timeout(30000) }); status = res.status; ctype = res.headers.get('content-type'); body = Buffer.from(await res.arrayBuffer()); }
-    catch (e) { err = String(e && e.message || e); }
-    const h = sha(body); const file = status === 200 ? join('json', item.lottery, `${item.contest ?? 'latest'}-${h}.json`) : null;
-    if (file) writeOnce(join(priv, file), body);
-    appendFileSync(P.requestLog, JSON.stringify({ n, utc: t.toISOString(), brt: brt(t), method: 'GET', url, status, contentType: ctype, bytes: body.length, sha256: h, file, error: err, justification: item.justification, ua: UA }) + '\n');
-    console.log(`#${n} ${status ?? 'ERRO'} ${url} ${body.length}B`);
-    const isJson = /json/i.test(ctype ?? '') && body.length && body[0] === 0x7b;
-    if (status === 403 || status === 429 || (status === 200 && !isJson)) { console.error(`PARADA: status ${status} / content-type ${ctype} — possível bloqueio/desafio`); break; }
-    if (err) { console.error('PARADA: erro de rede', err); break; }
-  }
+  let r;
+  try {
+    r = await runControlledFetch({ plan, options: OPTS, fetchImpl: (u, o) => fetch(u, { ...o, signal: AbortSignal.timeout(30000) }), sleep: ms => new Promise(res => setTimeout(res, ms)),
+      headers: { 'User-Agent': UA, Accept: 'application/json' }, urlFor: item => `${BASE}/${item.lottery}${item.contest === null ? '' : `/${item.contest}`}`,
+      onResponse: ({ n, item, url, status, contentType, body, error, stop }) => {
+        const t = new Date(); const buf = Buffer.from(body); const h = sha(buf); const file = status === 200 && !stop ? join('json', item.lottery, `${item.contest ?? 'latest'}-${h}.json`) : null;
+        if (file) writeOnce(join(priv, file), buf);
+        appendFileSync(P.requestLog, JSON.stringify({ n, utc: t.toISOString(), brt: brt(t), method: 'GET', url, status, contentType, bytes: buf.length, sha256: h, file, error, stop, justification: item.justification, ua: UA }) + '\n');
+        console.log(`#${n} ${status ?? 'ERRO'} ${url} ${buf.length}B${stop ? ' PARADA:' + stop : ''}`);
+      } });
+  } catch (e) { if (e instanceof FetchOptionError) { console.error(`RECUSADO (${e.code}): ${e.message}`); process.exit(2); } throw e; }
+  console.error(`requisições: ${r.requests}; parada: ${r.stoppedBy ?? 'nenhuma'}`);
 }
 
 // ---------- reconciliação offline ----------
