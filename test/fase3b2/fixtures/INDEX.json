@@ -1,0 +1,93 @@
+{
+  "note": "SYNTHETIC_DATA — fixtures geradas por scripts/gerar-fixtures-fase3b2.mjs; nenhum dado real.",
+  "files": {
+    "SYNTHETIC_DATA_valid_megasena.xlsx": {
+      "sha256": "025aa8aca604e76967f703145f09fe6d49e13af17ec9270c69ba0ddd9bfa4829",
+      "bytes": 13129
+    },
+    "SYNTHETIC_DATA_valid_lotofacil.xlsx": {
+      "sha256": "132f620d68723af8b485cd1b6ddfa88adc92f784b6a8229eff8da436a860954f",
+      "bytes": 19181
+    },
+    "SYNTHETIC_DATA_valid_quina.xlsx": {
+      "sha256": "b8cf3dc204a1a8d15022a38eadbd718f79d777fcbb28079ef5e7dc98642d6e0d",
+      "bytes": 13722
+    },
+    "SYNTHETIC_DATA_valid_lotomania.xlsx": {
+      "sha256": "fdcb891f8c1a2a12fe223dca6d64b9eb0d4f552a0d6125ad46d117a7b60737f3",
+      "bytes": 22666
+    },
+    "SYNTHETIC_DATA_valid_megasena_shared_explicit.xlsx": {
+      "sha256": "b96ec77813b26004af25e0bf8059dd515ae3075a0ff21af86a6cdfcb889cd41d",
+      "bytes": 16391
+    },
+    "SYNTHETIC_DATA_valid_megasena_inline_deflate.xlsx": {
+      "sha256": "76182c121b91ac2d9403fe8dc4f4768b12c9629d3c7ab087ee41545cf4f2cb11",
+      "bytes": 3785
+    },
+    "SYNTHETIC_DATA_lotomania_tier_change.xlsx": {
+      "sha256": "68f21ea0801cb58e80fc629a2cfb4a142e868ef07ed313688f31acf721a9a55c",
+      "bytes": 20033
+    },
+    "SYNTHETIC_DATA_mal_corrupt.xlsx": {
+      "sha256": "9e434abe4ed24ff09a307c6a3c195e1b39e60dd85223fa17e245841e736afb6c",
+      "bytes": 13129
+    },
+    "SYNTHETIC_DATA_mal_not_zip.xlsx": {
+      "sha256": "fc286c82405edd620595fcb8bf76cfbf061006f544e8d57835c06ced51b3db1d",
+      "bytes": 34
+    },
+    "SYNTHETIC_DATA_mal_truncated.xlsx": {
+      "sha256": "5ec0352f0f1ee38e7c18697f84ac90faecf57e08224ab2aa8159df92619959e5",
+      "bytes": 6564
+    },
+    "SYNTHETIC_DATA_mal_zip_bomb.xlsx": {
+      "sha256": "b44c673be1d92d7630f2a62a62b57008702e91b19e6f159ffb6e98293d6ad0b6",
+      "bytes": 4216
+    },
+    "SYNTHETIC_DATA_mal_doctype.xlsx": {
+      "sha256": "8af1bb96e81ee0d2266970ed64672645a791739b9bade61655e5f328c4c50589",
+      "bytes": 2918
+    },
+    "SYNTHETIC_DATA_mal_invalid_xml.xlsx": {
+      "sha256": "e9010dc6cdf2d10b7834943f792bee47536e325e62cde060cf7b62aa4f4aa795",
+      "bytes": 161
+    },
+    "SYNTHETIC_DATA_mal_path_traversal.xlsx": {
+      "sha256": "6f9d0620255d7854e5d21e7af91c7a1e10db5a491755a57df6d13c2c295ca6ec",
+      "bytes": 253
+    },
+    "SYNTHETIC_DATA_mal_absolute_path.xlsx": {
+      "sha256": "f67fd0bd1f64254e48d271c787271171c639644437e85da4ad91a8811d655be7",
+      "bytes": 125
+    },
+    "SYNTHETIC_DATA_mal_duplicate_entries.xlsx": {
+      "sha256": "dd9e2a0f85eb80d3fc14136ace21859f8e09dd3c18a345f3853a559d99fad083",
+      "bytes": 266
+    },
+    "SYNTHETIC_DATA_mal_vba.xlsx": {
+      "sha256": "9b5c164522cebc38439840aa82b4494788e8a530b8f8b23657e5d8097335db52",
+      "bytes": 3004
+    },
+    "SYNTHETIC_DATA_mal_external_rel.xlsx": {
+      "sha256": "6788eb93364b185148e2f170b805b796ad838fb1a4874816ffafbbfa21d40e0f",
+      "bytes": 3052
+    },
+    "SYNTHETIC_DATA_mal_encrypted.xlsx": {
+      "sha256": "2fa286b101f8e3ec59645dd2e48a06685c5e054cd64429fcc4c549b3fb7c33ba",
+      "bytes": 144
+    },
+    "SYNTHETIC_DATA_mal_crc.xlsx": {
+      "sha256": "5d599766e11964943e1bcc086079e016fcc4f9d42d8d134886d089b38d560e08",
+      "bytes": 144
+    },
+    "SYNTHETIC_DATA_mal_trailing.xlsx": {
+      "sha256": "8052414a5a00c14e16b8da9df1e97aad167fb6ffda8775e580c4e2c79ac3225e",
+      "bytes": 148
+    },
+    "SYNTHETIC_DATA_mal_cd_local_mismatch.xlsx": {
+      "sha256": "2d8500579fc0443e410343a0118c75332621a5f5899ff6e2573be457732c535b",
+      "bytes": 134
+    }
+  }
+}
