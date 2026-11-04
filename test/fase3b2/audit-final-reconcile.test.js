@@ -45,10 +45,13 @@ test('regressão 3: XLSX sem a faixa, JSON com faixa de valor inválido → VALO
 test('regressão 4: JSON válido + XLSX ausente → classificação de ausência/semântica anterior preservada', () => {
   const x = base(); const t = x.prizeTiers.find(p => p.hits === 5); t.prize = absentMoney(t.prize);
   const rows = compareRecords(x, jsonOf(x, { prize: () => '10.00' }), ctx);
-  assert.equal(row(rows, 'tier[5].winners')[0].class, C.SEMANTICA);
-  assert.equal(row(rows, 'tier[5].prize').length, 0);
+  // Ajuste da auditoria complementar: antes, a ausência do PRÊMIO rebaixava os GANHADORES (válidos) a SEMANTICA e
+  // omitia a linha do prêmio — justamente a omissão corrigida. Agora: ganhadores comparados, prêmio com linha própria.
+  assert.equal(row(rows, 'tier[5].winners')[0].class, C.EQUIVALENTE);
+  assert.equal(row(rows, 'tier[5].prize').length, 1); assert.equal(row(rows, 'tier[5].prize')[0].class, C.SEMANTICA);
   const rows2 = compareRecords(base(), jsonOf(base(), { extra: ['{"descricaoFaixa":"3 acertos","faixa":4,"numeroDeGanhadores":7,"valorPremio":5.00}'] }), ctx);
-  assert.equal(row(rows2, 'tier[3]')[0].class, C.AUSENTE);
+  // Ajuste: faixa só no JSON passa de uma linha genérica tier[3] a linhas independentes (mesma classe AUSENTE).
+  assert.equal(row(rows2, 'tier[3].winners')[0].class, C.AUSENTE); assert.equal(row(rows2, 'tier[3].prize')[0].class, C.AUSENTE);
   assert.ok(!rows.concat(rows2).some(q => q.class === C.VALOR_INVALIDO));
 });
 
