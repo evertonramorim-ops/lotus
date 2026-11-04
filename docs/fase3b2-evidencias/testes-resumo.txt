@@ -1,17 +1,19 @@
-# npm test em clone limpo de phase-3b2-historical-import @ 65a84b2 (env -i)
-ℹ tests 409
+# npm test em clone limpo de phase-3b2-historical-import @ d654dab (env -i)
+ℹ tests 416
 ℹ suites 0
-ℹ pass 409
+ℹ pass 416
 ℹ fail 0
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 3269.838508
+ℹ duration_ms 3190.508587
 
-# testes novos da auditoria (node --test por arquivo)
-audit-fetch-limits: ℹ tests 9 ℹ pass 9 ℹ fail 0 ℹ skipped 0 
-audit-formulas: ℹ tests 9 ℹ pass 9 ℹ fail 0 ℹ skipped 0 
-audit-json-money: ℹ tests 6 ℹ pass 6 ℹ fail 0 ℹ skipped 0 
-audit-provenance-link: ℹ tests 8 ℹ pass 8 ℹ fail 0 ℹ skipped 0 
+# testes de auditoria (node --test por arquivo)
+audit-fetch-limits: tests 9 pass 9 fail 0 skipped 0
+audit-formulas: tests 9 pass 9 fail 0 skipped 0
+audit-json-money: tests 6 pass 6 fail 0 skipped 0
+audit-provenance-link: tests 8 pass 8 fail 0 skipped 0
+audit-final-reconcile (auditoria final): tests 7 pass 7 fail 0 skipped 0
 
-# 377 testes anteriores: git diff 3099934 HEAD -- <80 arquivos de test/ existentes> = vazio (byte-idênticos)
+# 377 testes de baseline: git diff 3099934 HEAD -- <arquivos de test/ em 3099934> = vazio (byte-idênticos)
+# 32 testes da 1ª rodada corretiva: git diff ba1af3e HEAD -- test/fase3b2/audit-{fetch-limits,formulas,json-money,provenance-link}.test.js = vazio

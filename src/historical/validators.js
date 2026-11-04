@@ -1,6 +1,6 @@
 /**
  * Camada D — VALIDADORES independentes e versionados (`lotus.historical-validators`).
- * V01–V10: por registro · V11–V15: por conjunto. Cada problema traz: código (motivo de quarentena),
+ * V01–V10 e V16 (fórmulas): por registro · V11–V15: por conjunto e esquema (lista completa: V01–V16). Cada problema traz: código (motivo de quarentena),
  * validador/versão, regra aplicada, campo, célula, valor original e interpretado, evidência.
  * Reutiliza validateNumbers (Fase 3a) para quantidade/intervalo/repetição.
  * @module historical/validators

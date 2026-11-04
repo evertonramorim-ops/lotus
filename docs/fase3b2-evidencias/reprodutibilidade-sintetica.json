@@ -87,15 +87,16 @@
   ],
   "variableMetadata": [
     {
-      "pid": 603127,
-      "startedAt": "2026-11-04T02:53:50.338Z",
-      "elapsedMs": 93
+      "pid": 628260,
+      "startedAt": "2026-11-04T10:32:34.835Z",
+      "elapsedMs": 97
     },
     {
-      "pid": 603134,
-      "startedAt": "2026-11-04T02:53:50.483Z",
-      "elapsedMs": 87
+      "pid": 628267,
+      "startedAt": "2026-11-04T10:32:34.993Z",
+      "elapsedMs": 102
     }
   ],
-  "distinctProcesses": true
+  "distinctProcesses": true,
+  "nota": "reexecutado na auditoria final @ d654dab, dois processos separados"
 }

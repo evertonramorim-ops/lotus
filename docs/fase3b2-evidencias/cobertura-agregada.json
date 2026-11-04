@@ -62,7 +62,8 @@
       "DIFERENCA_TEMPORAL": 2,
       "SEMANTICA_DESCONHECIDA": 8,
       "DIVERGENCIA_REAL": 0
-    }
+    },
+    "nota": "execução ao vivo (37 GET); classes abaixo com a lógica de 3099934"
   },
   "auditoriaCorretiva": {
     "reimportacao": "nova execução anexada ao ledger (5→10 linhas; 5 linhas anteriores preservadas byte a byte); manifestos sequence 2 (action NEW) porque VALIDATORS_VERSION passou a 1.1.0 (V16) e os aceitos pré-Real ganharam unidadeMonetariaVerificada:false",
@@ -72,5 +73,24 @@
       "DATA_NAO_MONOTONICA": 1
     },
     "reprodutibilidadeReal": "idêntica em 2 processos (hashes apenas no relatório privado)"
+  },
+  "reconciliacaoOfflineAuditoriaFinal": {
+    "requisicoesNovas": 0,
+    "fonte": "somente JSON arquivado da execução ao vivo",
+    "amostras": 54,
+    "classesCampo": {
+      "EQUIVALENTE": 850,
+      "AUSENTE_EM_UMA_FONTE": 1155,
+      "DIFERENCA_REPRESENTACAO": 30,
+      "DIFERENCA_FORMATACAO": 1,
+      "DIFERENCA_TEMPORAL": 2,
+      "SEMANTICA_DESCONHECIDA": 29,
+      "DIVERGENCIA_REAL": 0,
+      "VALOR_INVALIDO": 0
+    },
+    "transicoes": {
+      "EQUIVALENTE->SEMANTICA_DESCONHECIDA (monetários pré-Real)": 21
+    },
+    "quina380": "QUARENTENA, data original preservada"
   }
 }
