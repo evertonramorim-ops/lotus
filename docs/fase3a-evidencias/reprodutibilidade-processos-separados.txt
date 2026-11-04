@@ -1,0 +1,14 @@
+SYNTHETIC_DATA — verificação após a revisão complementar (2026-11-03, America/Sao_Paulo, Node v24.22.1)
+Comando executado duas vezes em processos separados: npm run -s reprodutibilidade:fase3a
+cmp reprodutibilidade.json (execução 1) x (execução 2): IDÊNTICOS
+cmp saída padrão (execução 1) x (execução 2): IDÊNTICAS
+SHA-256 de docs/fase3a-evidencias/reprodutibilidade.json: 4a218672b954ba848eea3de31e64f71fb8468717789e2e8809b9e0a00111aa47
+Saída:
+{
+  "identicalAcrossRuns": true,
+  "rootHash1": "2798516f61d0879083a301cf858da1af2d04c2163d6410c48004dd1fe8feacb9",
+  "rootHash2": "2798516f61d0879083a301cf858da1af2d04c2163d6410c48004dd1fe8feacb9",
+  "accepted": 9,
+  "quarantined": 14,
+  "verificationOk": true
+}
