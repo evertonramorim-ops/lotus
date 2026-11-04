@@ -29,10 +29,11 @@ export const VALIDATORS = Object.freeze({
   V12: { name: 'lacunas', version: '1.0.0', rule: 'Números ausentes entre 1 e o maior concurso presente → CONCURSO_AUSENTE (lacuna não resolvida; não presume erro da fonte)' },
   V13: { name: 'datas-monotonicas', version: '1.0.0', rule: 'Ordenado por concurso, data não pode recuar; outlier isolado vai à quarentena; sem reordenar nem corrigir' },
   V14: { name: 'conflitos', version: '1.0.0', rule: 'Comparação campo a campo entre registros do mesmo concurso (duplicatas ou fontes distintas)' },
+  V16: { name: 'formulas', version: '1.0.0', rule: 'Célula com fórmula (<f>) em campo mapeado (concurso, data, dezena, ganhadores, prêmio, econômico, texto) → FORMULA_EM_CAMPO_HISTORICO (bloqueante); fórmula nunca é avaliada e o valor em cache nunca é aceito' },
   V15: { name: 'esquema', version: '1.0.0', rule: 'Cabeçalhos/planilha diferentes da especificação do adaptador → SCHEMA_INESPERADO' },
 });
 export const VALIDATORS_ID = 'lotus.historical-validators';
-export const VALIDATORS_VERSION = '1.0.0';
+export const VALIDATORS_VERSION = '1.1.0';
 
 const mk = (vid, code, blocking, message, extra = {}) => ({ code, blocking, validatorId: vid, validatorVersion: VALIDATORS[vid].version, rule: VALIDATORS[vid].rule, message, ...extra });
 
@@ -41,6 +42,8 @@ const mk = (vid, code, blocking, message, extra = {}) => ({ code, blocking, vali
  */
 export function validateRecord(rec, ctx) {
   const issues = []; const ann = [];
+  // V16 — fórmula em campo mapeado: bloqueia (valor em cache não é prova do resultado)
+  for (const f of rec.formulaCells ?? []) issues.push(mk('V16', Q.FORMULA_EM_CAMPO_HISTORICO, true, `fórmula em ${f.column} (${f.ref}); valor em cache não aceito`, { field: f.column, ref: f.ref, originalValue: f.cachedValue, evidence: { ref: f.ref, column: f.column, kind: f.kind, expression: f.expression, formulaType: f.formulaType, cachedValue: f.cachedValue, cachedType: f.cachedType } }));
   // V01
   if (!LOTTERY_IDS.includes(rec.lottery) || rec.lottery !== ctx.adapter.lottery) issues.push(mk('V01', Q.MODALIDADE_INVALIDA, true, `modalidade ${rec.lottery}`, { field: 'lottery', originalValue: rec.lottery }));
   // V02

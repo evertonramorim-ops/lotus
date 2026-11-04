@@ -38,7 +38,12 @@ export function normalizeRow(row, spec, src) {
   for (const c of spec.columns.filter(x => x.kind === 'economic')) economic[c.key] = moneyFromCell(colOf(c.header), c.header);
   const text = key => { const sc = spec.columns.find(c => c.kind === 'text' && c.key === key); const cell = colOf(sc.header); return { text: cell ? cell.text : null, raw: cell ? cell.raw : null, absent: !cell || cell.interpreted.kind === 'empty', ref: cell ? cell.ref : null, column: sc.header }; };
   const extras = row.cells.filter(c => c.header === null || !spec.columns.some(s => s.header === c.header)).filter(c => c.interpreted.kind !== 'empty' || c.header !== null)
-    .map(c => ({ origin: 'xlsx', header: c.header, ref: c.ref, col: c.col, type: c.type, raw: c.raw, text: c.text, interpreted: c.interpreted }));
+    .map(c => ({ origin: 'xlsx', header: c.header, ref: c.ref, col: c.col, type: c.type, raw: c.raw, text: c.text, interpreted: c.interpreted, ...(c.hasFormula ? { hasFormula: true, formula: c.formula, cachedValue: c.raw } : {}) }));
+  // Fórmulas em colunas MAPEADAS: nunca avaliadas; registradas com célula, expressão e valor em cache
+  // (a chave só existe quando há fórmula, para não alterar o hash de registros sem fórmula).
+  const mappedHeaders = new Set(spec.columns.map(s => s.header));
+  const formulaCells = row.cells.filter(c => c.hasFormula && c.header !== null && mappedHeaders.has(c.header))
+    .map(c => ({ column: c.header, kind: spec.columns.find(s => s.header === c.header).kind, ref: c.ref, expression: c.formula ? c.formula.expression : null, formulaType: c.formula ? c.formula.type : null, cachedValue: c.raw, cachedType: c.type }));
   return {
     schema: HISTORICAL_SCHEMA, schemaVersion: HISTORICAL_SCHEMA_VERSION, lottery: spec.lottery,
     contest: contest.value, contestField: contest,
@@ -47,6 +52,7 @@ export function normalizeRow(row, spec, src) {
     prizeTiers, economic,
     winnerLocations: text('winnerLocations'), observation: text('observation'),
     extras,
+    ...(formulaCells.length ? { formulaCells } : {}),
     source: { kind: 'XLSX', rawSha256: src.rawSha256, fileName: src.fileName, sheet: row.sheet, row: row.row, adapterId: spec.adapterId, adapterVersion: spec.version, parserId: src.parser.id, parserVersion: src.parser.version, incompleteRow: row.incomplete, missingCellCount: row.missingCellCount },
   };
 }

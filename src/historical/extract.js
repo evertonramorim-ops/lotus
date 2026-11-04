@@ -7,7 +7,7 @@
 export const EXTRACTION_SCHEMA = 'lotus.xlsx-extraction';
 export const EXTRACTION_SCHEMA_VERSION = '1.0.0';
 
-const cellOut = (c, header) => ({ ref: c.ref, col: c.col, header, type: c.type, raw: c.raw, text: c.text, sharedIndex: c.sharedIndex, hasFormula: c.hasFormula, interpreted: c.interpreted });
+const cellOut = (c, header) => ({ ref: c.ref, col: c.col, header, type: c.type, raw: c.raw, text: c.text, sharedIndex: c.sharedIndex, hasFormula: c.hasFormula, ...(c.hasFormula ? { formula: c.formula } : {}), interpreted: c.interpreted });
 
 /**
  * @param {object} parsed resultado de parseXlsx

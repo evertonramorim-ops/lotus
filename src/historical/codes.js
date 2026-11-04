@@ -21,6 +21,7 @@ export const Q = Object.freeze({
   CAMPO_OBRIGATORIO_AUSENTE: 'CAMPO_OBRIGATORIO_AUSENTE',
   INTEGRIDADE_ORIGEM: 'INTEGRIDADE_ORIGEM',
   ARQUIVO_INCOMPATIVEL: 'ARQUIVO_INCOMPATIVEL',
+  FORMULA_EM_CAMPO_HISTORICO: 'FORMULA_EM_CAMPO_HISTORICO',
 });
 /** Anotações (não bloqueiam a aceitação; ficam no relatório de validação). */
 export const A = Object.freeze({

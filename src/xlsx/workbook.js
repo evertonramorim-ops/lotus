@@ -171,9 +171,9 @@ function parseSheet(xml, shared, XML, XL, part) {
         if (col > XL.maxColumns) throw new XlsxError('XLSX_TOO_MANY_COLUMNS', 'coluna além do limite', { part });
         if (++cellCount > XL.maxCells) throw new XlsxError('XLSX_TOO_MANY_CELLS', `mais de ${XL.maxCells} células`, { part });
         maxCol = Math.max(maxCol, col);
-        cell = { ref: indexToCol(col) + row.row, refExplicit: explicit, row: row.row, col, type: a.t ?? 'n', style: a.s ?? null, raw: null, inline: null, hasFormula: false };
+        cell = { ref: indexToCol(col) + row.row, refExplicit: explicit, row: row.row, col, type: a.t ?? 'n', style: a.s ?? null, raw: null, inline: null, hasFormula: false, formula: null };
       } else if (cell) {
-        if (l === 'v') inV = true; else if (l === 'f') { inF = true; cell.hasFormula = true; } else if (l === 'is') { inIs = true; cell.inline = ''; }
+        if (l === 'v') inV = true; else if (l === 'f') { inF = true; cell.hasFormula = true; cell.formula = { expression: '', type: a.t ?? 'normal', sharedIndex: a.si ?? null, sharedRef: a.ref ?? null }; } else if (l === 'is') { inIs = true; cell.inline = ''; }
         else if (l === 'rPh') inRph = true; else if (l === 't' && inIs && !inRph) inIsT = true;
       }
     },
@@ -185,8 +185,8 @@ function parseSheet(xml, shared, XML, XL, part) {
     },
     text(t) {
       if (!cell) return;
-      if (inV) cell.raw = (cell.raw ?? '') + t; else if (inIsT) cell.inline += t; void inF;
-      if ((cell.raw && cell.raw.length > XL.maxStringLength) || (cell.inline && cell.inline.length > XL.maxStringLength)) throw new XlsxError('XLSX_STRING_TOO_LONG', `célula ${cell.ref} longa demais`, { part });
+      if (inV) cell.raw = (cell.raw ?? '') + t; else if (inIsT) cell.inline += t; else if (inF && cell.formula) cell.formula.expression += t;
+      if ((cell.raw && cell.raw.length > XL.maxStringLength) || (cell.inline && cell.inline.length > XL.maxStringLength) || (cell.formula && cell.formula.expression.length > XL.maxStringLength)) throw new XlsxError('XLSX_STRING_TOO_LONG', `célula ${cell.ref} longa demais`, { part });
     },
   }, XML, part);
   return { dimension, rowCount: rows.length, cellCount, maxColumn: maxCol, rows };
