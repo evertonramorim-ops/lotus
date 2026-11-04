@@ -17,7 +17,7 @@ export const JSON_ADAPTER_VERSION = '1.0.0';
 
 export const CLASSES = Object.freeze({
   EQUIVALENTE: 'EQUIVALENTE', FORMATACAO: 'DIFERENCA_FORMATACAO', REPRESENTACAO: 'DIFERENCA_REPRESENTACAO', AUSENTE: 'AUSENTE_EM_UMA_FONTE',
-  DIVERGENCIA: 'DIVERGENCIA_REAL', TEMPORAL: 'DIFERENCA_TEMPORAL', SEMANTICA: 'SEMANTICA_DESCONHECIDA',
+  DIVERGENCIA: 'DIVERGENCIA_REAL', TEMPORAL: 'DIFERENCA_TEMPORAL', SEMANTICA: 'SEMANTICA_DESCONHECIDA', VALOR_INVALIDO: 'VALOR_INVALIDO',
 });
 const C = CLASSES;
 
@@ -42,14 +42,19 @@ const STRUCT = new Set(['contest', 'drawDate', 'numbers', 'winners', 'prize', 't
 export function adaptJsonResult(text) {
   const j = parseJsonPreservingNumbers(text);
   const int = v => (isNum(v) && /^-?\d+$/.test(v.$number) ? Number(v.$number) : null);
-  const cents = v => (isNum(v) ? decimalLiteralToCents(v.$number).cents : null);
-  const tiers = Array.isArray(j.listaRateioPremio) ? j.listaRateioPremio.map(t => { const m = /^(\d+) acertos?$/.exec(String(t.descricaoFaixa ?? '').trim()); return { hits: m ? Number(m[1]) : null, description: t.descricaoFaixa ?? null, faixa: int(t.faixa), winners: int(t.numeroDeGanhadores), prizeCents: cents(t.valorPremio), prizeLiteral: isNum(t.valorPremio) ? t.valorPremio.$number : null }; }) : [];
+  // Valor monetário JSON: literal original + conversão + valid + motivo. Presente-mas-inválido ≠ ausente.
+  const money = v => { if (v === undefined || v === null) return { present: false, literal: null, cents: null, valid: true, invalidReason: null };
+    if (!isNum(v)) return { present: true, literal: typeof v === 'string' ? v : JSON.stringify(v), cents: null, valid: false, invalidReason: 'TIPO_NAO_NUMERICO' };
+    const r = decimalLiteralToCents(v.$number); return { present: true, literal: v.$number, cents: r.cents, valid: r.valid, invalidReason: r.valid ? null : r.invalidReason }; };
+  const cents = v => money(v).cents;
+  const tiers = Array.isArray(j.listaRateioPremio) ? j.listaRateioPremio.map(t => { const m = /^(\d+) acertos?$/.exec(String(t.descricaoFaixa ?? '').trim()); return { hits: m ? Number(m[1]) : null, description: t.descricaoFaixa ?? null, faixa: int(t.faixa), winners: int(t.numeroDeGanhadores), prizeCents: cents(t.valorPremio), prizeMoney: money(t.valorPremio), prizeLiteral: isNum(t.valorPremio) ? t.valorPremio.$number : null }; }) : [];
   const ints = a => (Array.isArray(a) ? a.map(x => (typeof x === 'string' && /^\d+$/.test(x) ? Number(x) : NaN)) : null);
   const known = new Set(['numero', 'dataApuracao', 'listaDezenas', 'dezenasSorteadasOrdemSorteio', 'listaRateioPremio', 'valorArrecadado', 'valorEstimadoProximoConcurso', 'valorAcumuladoConcursoEspecial', 'valorAcumuladoProximoConcurso', 'listaMunicipioUFGanhadores', 'observacao', 'tipoJogo']);
   return {
     adapter: { id: JSON_ADAPTER_ID, version: JSON_ADAPTER_VERSION }, tipoJogo: j.tipoJogo ?? null, contest: int(j.numero), drawDateRaw: j.dataApuracao ?? null, drawDate: typeof j.dataApuracao === 'string' ? (parseBrDate(j.dataApuracao) ?? lenientBrDate(j.dataApuracao)) : null,
     numbers: ints(j.listaDezenas) ? [...ints(j.listaDezenas)].sort((a, b) => a - b) : null, numbersRaw: j.listaDezenas ?? null, drawOrder: ints(j.dezenasSorteadasOrdemSorteio), tiers,
     economic: { totalCollected: cents(j.valorArrecadado), nextPrizeEstimate: cents(j.valorEstimadoProximoConcurso), specialAccumulated: cents(j.valorAcumuladoConcursoEspecial), accumulatedTopTier: cents(j.valorAcumuladoProximoConcurso) },
+    economicMoney: { totalCollected: money(j.valorArrecadado), nextPrizeEstimate: money(j.valorEstimadoProximoConcurso), specialAccumulated: money(j.valorAcumuladoConcursoEspecial), accumulatedTopTier: money(j.valorAcumuladoProximoConcurso) },
     winnerLocationsCount: Array.isArray(j.listaMunicipioUFGanhadores) ? j.listaMunicipioUFGanhadores.length : null, observation: typeof j.observacao === 'string' ? j.observacao : null,
     jsonOnlyFields: Object.keys(j).filter(k => !known.has(k)).sort(),
   };
@@ -66,7 +71,8 @@ const eqArr = (a, b) => Array.isArray(a) && Array.isArray(b) && a.length === b.l
  * @param {{xlsxLastContest:number, xlsxObservedAt:string, jsonObservedAt:string}} ctx
  */
 export function compareRecords(x, j, ctx) {
-  const rows = []; const add = (field, cls, xv, jv, note) => rows.push({ field, class: cls, xlsx: xv ?? null, json: jv ?? null, note: note ?? null, structural: STRUCT.has(field.replace(/^tier\[\d+\]\./, '').replace(/^economic\./, '')) });
+  const rows = []; const add = (field, cls, xv, jv, note, flags) => rows.push({ field, class: cls, xlsx: xv ?? null, json: jv ?? null, note: note ?? null, structural: STRUCT.has(field.replace(/^tier\[\d+\]\./, '').replace(/^economic\./, '')), ...(flags || {}) });
+  const preReal = !!(x && x.drawDate && x.drawDate < '1994-07-01');
   if (!x) {
     if (j.contest > ctx.xlsxLastContest) add('contest', C.TEMPORAL, null, j.contest, `concurso posterior ao último do XLSX (${ctx.xlsxLastContest}); XLSX observado ${ctx.xlsxObservedAt}, JSON ${ctx.jsonObservedAt}`);
     else add('contest', C.AUSENTE, null, j.contest, 'concurso presente no JSON e ausente no XLSX');
@@ -84,6 +90,8 @@ export function compareRecords(x, j, ctx) {
     if (xt && jt) {
       if (xt.winners.absent || xt.prize.absent) { add(`tier[${h}].winners`, C.SEMANTICA, xt.winners.raw, jt.winners, 'XLSX ausente ("-"/vazio) e faixa listada no JSON'); continue; }
       add(`tier[${h}].winners`, xt.winners.value === jt.winners ? C.EQUIVALENTE : C.DIVERGENCIA, xt.winners.raw, jt.winners);
+      if (jt.prizeMoney && jt.prizeMoney.present && !jt.prizeMoney.valid) { add(`tier[${h}].prize`, C.VALOR_INVALIDO, xt.prize.raw, jt.prizeMoney.literal, `literal JSON presente mas não interpretável: ${jt.prizeMoney.invalidReason}`); continue; }
+      if (preReal) { add(`tier[${h}].prize`, xt.prize.cents === jt.prizeCents ? C.EQUIVALENTE : C.SEMANTICA, xt.prize.raw, jt.prizeLiteral, PRE_REAL_NOTE, { unidadeMonetariaVerificada: false }); continue; }
       add(`tier[${h}].prize`, xt.prize.cents === jt.prizeCents ? C.EQUIVALENTE : C.DIVERGENCIA, xt.prize.raw, jt.prizeLiteral, xt.prize.cents === jt.prizeCents ? 'mesmo valor em centavos (texto R$ × literal decimal)' : null);
     } else if (xt && !jt) {
       if (xt.winners.absent && xt.prize.absent) add(`tier[${h}]`, C.REPRESENTACAO, `${xt.winners.raw}|${xt.prize.raw}`, '<faixa não listada>', 'ambas as fontes indicam ausência da faixa');
@@ -91,10 +99,12 @@ export function compareRecords(x, j, ctx) {
     } else add(`tier[${h}]`, C.AUSENTE, '<coluna inexistente>', `${jt.winners}|${jt.prizeLiteral}`);
   }
   for (const k of ['totalCollected', 'nextPrizeEstimate', 'specialAccumulated', 'accumulatedTopTier']) {
-    const xm = x.economic[k]; const jc = j.economic[k];
+    const xm = x.economic[k]; const jc = j.economic[k]; const jm = j.economicMoney ? j.economicMoney[k] : null;
+    if (jm && jm.present && !jm.valid) { add(`economic.${k}`, C.VALOR_INVALIDO, xm ? xm.raw : '<coluna inexistente>', jm.literal, `literal JSON presente mas não interpretável: ${jm.invalidReason}`); continue; }
     if (!xm && jc === null) continue;
     if (!xm || xm.absent || jc === null) { add(`economic.${k}`, C.AUSENTE, xm ? xm.raw : '<coluna inexistente>', jc); continue; }
     const hyp = FIELD_CORRESPONDENCE.find(f => f.lotus === `economic.${k}`).status === 'HIPOTESE';
+    if (preReal) { add(`economic.${k}`, xm.cents === jc ? C.EQUIVALENTE : C.SEMANTICA, xm.raw, jc, PRE_REAL_NOTE, { unidadeMonetariaVerificada: false }); continue; }
     if (xm.cents === jc) add(`economic.${k}`, C.EQUIVALENTE, xm.raw, jc, hyp ? 'valores iguais; correspondência semântica é HIPÓTESE' : null);
     else add(`economic.${k}`, hyp ? C.SEMANTICA : C.DIVERGENCIA, xm.raw, jc, hyp ? 'correspondência semântica não confirmada' : null);
   }
@@ -109,6 +119,8 @@ export function compareRecords(x, j, ctx) {
   for (const f of j.jsonOnlyFields) add(`json:${f}`, C.AUSENTE, null, '<somente JSON>');
   return rows;
 }
+
+const PRE_REAL_NOTE = 'unidade monetária pré-Real NÃO verificada: comparação apenas literal; excluído de comparação financeira em BRL; diferença nunca vira DIVERGENCIA_REAL';
 
 /** Quarentena para divergências reais (stage 'dataset'); o registro XLSX NÃO é alterado. */
 export function divergenceQuarantine(x, j, rows, ctx) {

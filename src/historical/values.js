@@ -41,18 +41,28 @@ export function parseBrlText(text) {
  * Literal decimal JSON (texto exato do número na resposta, ex. "30598.43", "42334170.0", "0.0", "1E+3")
  * → centavos exatos. Só aceita se a parte fracionária significativa tiver ≤ 2 casas. Sem float.
  */
+/** Limites de segurança ANTES de qualquer potência BigInt (evita consumo descontrolado de CPU/memória). */
+export const DECIMAL_LIMITS = Object.freeze({ maxLiteralLength: 64, maxExponentAbs: 30, maxResultDigits: 30 });
 export function decimalLiteralToCents(lit) {
-  if (typeof lit !== 'string') return { cents: null, valid: false };
+  const bad = invalidReason => ({ cents: null, valid: false, invalidReason });
+  if (typeof lit !== 'string') return bad('LITERAL_NAO_TEXTO');
+  if (lit.length > DECIMAL_LIMITS.maxLiteralLength) return bad('LITERAL_LONGO_DEMAIS');
   const m = /^(-)?([0-9]+)(?:\.([0-9]+))?(?:[eE]([+-]?[0-9]+))?$/.exec(lit);
-  if (!m || m[1]) return { cents: null, valid: false };
-  let digits = m[2] + (m[3] ?? ''); let scale = (m[3] ?? '').length - (m[4] ? Number(m[4]) : 0);
+  if (!m) return bad('LITERAL_NAO_DECIMAL');
+  if (m[1]) return bad('VALOR_NEGATIVO');
+  if (m[4] !== undefined && (m[4].replace(/^[+-]/, '').replace(/^0+/, '').length > 3 || Math.abs(Number(m[4])) > DECIMAL_LIMITS.maxExponentAbs)) return bad('EXPOENTE_FORA_DO_LIMITE');
+  let digits = (m[2] + (m[3] ?? '')).replace(/^0+(?=[0-9])/, ''); const scale = (m[3] ?? '').length - (m[4] ? Number(m[4]) : 0);
   // valor = digits × 10^-scale ; centavos = digits × 10^(2-scale)
-  let shift = 2 - scale;
-  if (shift >= 0) return { cents: (BigInt(digits) * 10n ** BigInt(shift)).toString(), valid: true };
+  const shift = 2 - scale;
+  if (shift >= 0) {
+    if (digits !== '0' && digits.length + shift > DECIMAL_LIMITS.maxResultDigits) return bad('RESULTADO_GRANDE_DEMAIS');
+    return { cents: (BigInt(digits) * 10n ** BigInt(shift)).toString(), valid: true, invalidReason: null };
+  }
   const cut = -shift; const tail = digits.slice(-cut).padStart(cut, '0');
-  if (/[^0]/.test(tail)) return { cents: null, valid: false };
+  if (/[^0]/.test(tail)) return bad('FRACAO_ALEM_DE_CENTAVOS');
   digits = digits.length > cut ? digits.slice(0, -cut) : '0';
-  return { cents: BigInt(digits).toString(), valid: true };
+  if (digits.length > DECIMAL_LIMITS.maxResultDigits) return bad('RESULTADO_GRANDE_DEMAIS');
+  return { cents: BigInt(digits).toString(), valid: true, invalidReason: null };
 }
 
 /** Valor monetário de uma célula XLSX (camada C), com referência da célula de origem. */
