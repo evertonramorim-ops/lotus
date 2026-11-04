@@ -17,7 +17,7 @@ import { extractWithAdapter } from './extract.js';
 import { normalizeRow, HISTORICAL_SCHEMA, HISTORICAL_SCHEMA_VERSION } from './normalize.js';
 import { validateRecord, validateDataset, schemaIssues, VALIDATORS_ID, VALIDATORS_VERSION } from './validators.js';
 import { TIER_RULES_ID, TIER_RULES_VERSION } from './tier-rules.js';
-import { createCollectionRecord, validateCollectionRecord, XLSX_MEDIA_TYPE } from './collection.js';
+import { createCollectionRecord, validateCollectionRecord, validateCollectionEnvelopeLink, XLSX_MEDIA_TYPE } from './collection.js';
 import { Q, A, REVIEW_PENDING } from './codes.js';
 
 /** Remove `undefined` (não-JSON) antes de entregar à quarentena da Fase 3a. */
@@ -50,11 +50,12 @@ export function importXlsx({ envelope, collection, lottery, limits }) {
   const spec = getXlsxAdapter(lottery);
   const ev = verifyRawEnvelopeDetailed(envelope);
   const cv = validateCollectionRecord(collection);
+  const lv = validateCollectionEnvelopeLink(collection, envelope, lottery);
   const base = { lottery, adapter: { id: spec.adapterId, version: spec.version }, parser: { id: XLSX_PARSER_ID, version: XLSX_PARSER_VERSION }, schema: `${HISTORICAL_SCHEMA}/${HISTORICAL_SCHEMA_VERSION}`, validators: `${VALIDATORS_ID}/${VALIDATORS_VERSION}`, tierRules: `${TIER_RULES_ID}/${TIER_RULES_VERSION}` };
   const reasonBase = { lottery, reviewStatus: REVIEW_PENDING, humanDecision: null };
-  if (!ev.ok || !cv.valid || collection.sha256 !== envelope.sha256 || collection.envelopeSha256 !== envelope.envelopeSha256 || collection.lottery !== lottery) {
+  if (!ev.ok || !cv.valid || !lv.valid) {
     const q = qe({ rawSha256: envelope && envelope.sha256 || null, stage: 'parse', parserVersion: parserTag(spec), candidate: null,
-      reasons: [{ code: Q.INTEGRIDADE_ORIGEM, message: 'envelope bruto/registro de coleta inválido ou não correspondente', ...reasonBase, evidence: { envelopeErrors: ev.errors.map(e => e.code), collectionErrors: cv.errors } }] });
+      reasons: [{ code: Q.INTEGRIDADE_ORIGEM, message: 'envelope bruto/registro de coleta inválido ou não correspondente', ...reasonBase, evidence: { envelopeErrors: ev.errors.map(e => e.code), collectionErrors: cv.errors, linkErrors: lv.errors } }] });
     return finish({ base, collection, status: 'REJECTED', quarantine: [q], accepted: [], items: [], ds: null, extraction: null, parsed: null, spec, emptyRows: 0 });
   }
   const bytes = rawBytes(envelope);
@@ -97,7 +98,7 @@ export function importXlsx({ envelope, collection, lottery, limits }) {
     const result = toResultRecord(it.rec, collection);
     const r3a = validateResultRecord(result);
     if (!r3a.valid) { quarantine.push(qe({ rawSha256: envelope.sha256, stage: 'validate', parserVersion: parserTag(spec), candidate: it.rec, reasons: r3a.errors.map(e => ({ ...e, ...ev2(it), validatorId: 'FASE3A.validateResultRecord' })) })); continue; }
-    accepted.push({ record: it.rec, recordSha256: it.recordSha256, result, resultSha256: hashJson(result), annotations: it.v.annotations.map(a => a.code), ruleStatus: it.v.ruleStatus });
+    accepted.push({ record: it.rec, recordSha256: it.recordSha256, result, resultSha256: hashJson(result), annotations: it.v.annotations.map(a => a.code), ruleStatus: it.v.ruleStatus, ...(it.v.annotations.some(a => a.code === A.CURRENCY_PRE_REAL_NOT_VERIFIED) ? { unidadeMonetariaVerificada: false } : {}) });
   }
   for (const c of ds.gaps) quarantine.push(qe({ rawSha256: envelope.sha256, stage: 'dataset', parserVersion: parserTag(spec), candidate: null,
     reasons: [{ code: Q.CONCURSO_AUSENTE, message: `concurso ${c} ausente no arquivo (lacuna não resolvida; não se presume erro da fonte)`, anomalyType: Q.CONCURSO_AUSENTE, validatorId: 'V12', validatorVersion: '1.0.0', rule: 'V12', ...reasonBase, contest: c, resolution: 'LACUNA_NAO_RESOLVIDA', evidence: { rawSha256: envelope.sha256 } }] }));

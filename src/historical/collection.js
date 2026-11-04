@@ -50,3 +50,23 @@ export function validateCollectionRecord(c) {
   if ('collectionSha256' in c && isSha256Hex(c.collectionSha256)) { if (computeCollectionSha256(c) !== c.collectionSha256) errors.push('COLLECTION_HASH_MISMATCH'); } else errors.push('COLLECTION_SHA256');
   return { valid: errors.length === 0, errors };
 }
+
+/**
+ * Validação CRUZADA envelope `lotus.raw` × registro `lotus.collection`: prova que ambos descrevem a
+ * MESMA coleta. Um collectionSha256 internamente válido não basta (o registro pode ter sido
+ * adulterado e re-hasheado). @returns {{valid:boolean, errors:string[]}}
+ */
+export function validateCollectionEnvelopeLink(collection, envelope, lottery) {
+  const errors = [];
+  if (!isPlainObject(collection) || !isPlainObject(envelope)) return { valid: false, errors: ['NOT_OBJECT'] };
+  const p = isPlainObject(envelope.provenance) ? envelope.provenance : {};
+  const chk = (ok, code) => { if (!ok) errors.push(code); };
+  chk(collection.sha256 === envelope.sha256, 'LINK_SHA256');
+  chk(collection.envelopeSha256 === envelope.envelopeSha256, 'LINK_ENVELOPE_SHA256');
+  chk(collection.byteLength === envelope.byteLength, 'LINK_BYTE_LENGTH');
+  chk(collection.url === p.sourceId, 'LINK_URL');
+  chk(collection.collectedAt === p.obtainedAt, 'LINK_COLLECTED_AT');
+  chk(collection.sourceType === p.sourceType, 'LINK_SOURCE_TYPE');
+  chk(collection.lottery === lottery, 'LINK_LOTTERY');
+  return { valid: errors.length === 0, errors };
+}
