@@ -20,6 +20,15 @@ import { compareUtf16 } from './jcs.js';
 export const MANIFEST_SCHEMA = 'lotus.manifest';
 export const MANIFEST_SCHEMA_VERSION = '1.0.0';
 const ISO_UTC = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,3})?Z$/;
+/** Regras de campo COMPARTILHADAS por buildManifest e validateManifestStructure (fonte única). */
+export const DATA_SCHEMA_VERSION_MAX = 128;
+export function isValidDatasetId(v) { return typeof v === 'string' && /^[a-z0-9][a-z0-9._-]{0,127}$/.test(v); }
+/** String não vazia, não composta só por espaços, com no máximo 128 caracteres (unidades UTF-16). */
+export function isValidDataSchemaVersion(v) { return typeof v === 'string' && v.trim().length > 0 && v.length <= DATA_SCHEMA_VERSION_MAX; }
+export function isValidSequence(v) { return Number.isSafeInteger(v) && v >= 1; }
+export function isValidEntryId(v) { return typeof v === 'string' && v.length > 0; }
+export function isValidEntryKind(v) { return v === 'record' || v === 'file'; }
+
 const ALLOWED_KEYS = ['schema', 'schemaVersion', 'datasetId', 'dataSchemaVersion', 'sequence', 'createdAt', 'hashAlgorithm', 'canonicalization', 'entries', 'rootHash'];
 
 /** Hash de registro JSON (JCS + SHA-256). */
@@ -40,19 +49,21 @@ export function isIsoUtc(s) {
  *          entries:{id:string, kind?:'record'|'file', sha256:string}[]}} p
  */
 export function buildManifest(p) {
-  if (typeof p.datasetId !== 'string' || !/^[a-z0-9][a-z0-9._-]{0,127}$/.test(p.datasetId)) throw new TypeError('datasetId inválido');
-  if (typeof p.dataSchemaVersion !== 'string' || !p.dataSchemaVersion) throw new TypeError('dataSchemaVersion inválido');
-  if (!Number.isSafeInteger(p.sequence) || p.sequence < 1) throw new TypeError('sequence deve ser inteiro ≥ 1');
+  if (!p || typeof p !== 'object') throw new TypeError('parâmetros ausentes');
+  if (!isValidDatasetId(p.datasetId)) throw new TypeError('datasetId inválido');
+  if (!isValidDataSchemaVersion(p.dataSchemaVersion)) throw new TypeError(`dataSchemaVersion inválido (não vazio, não só espaços, ≤ ${DATA_SCHEMA_VERSION_MAX} caracteres)`);
+  if (!isValidSequence(p.sequence)) throw new TypeError('sequence deve ser inteiro ≥ 1');
   if (!isIsoUtc(p.createdAt)) throw new TypeError('createdAt deve ser ISO-8601 UTC (ex.: 2026-01-01T00:00:00Z)');
   if (!Array.isArray(p.entries) || p.entries.length === 0) throw new TypeError('entries vazio');
   const ids = new Set();
   const entries = p.entries.map(e => {
-    if (typeof e.id !== 'string' || !e.id) throw new TypeError('entry.id inválido');
+    if (!e || typeof e !== 'object') throw new TypeError('entrada inválida');
+    if (!isValidEntryId(e.id)) throw new TypeError('entry.id inválido');
     if (ids.has(e.id)) throw new TypeError(`entry.id duplicado: ${e.id}`);
     ids.add(e.id);
     if (!isSha256Hex(e.sha256)) throw new TypeError(`sha256 inválido em ${e.id}`);
     const kind = e.kind ?? 'record';
-    if (kind !== 'record' && kind !== 'file') throw new TypeError(`kind inválido em ${e.id}`);
+    if (!isValidEntryKind(kind)) throw new TypeError(`kind inválido em ${e.id}`);
     return { id: e.id, kind, sha256: e.sha256 };
   }).sort((a, b) => compareUtf16(a.id, b.id));
   const body = {
@@ -60,7 +71,11 @@ export function buildManifest(p) {
     datasetId: p.datasetId, dataSchemaVersion: p.dataSchemaVersion, sequence: p.sequence, createdAt: p.createdAt,
     hashAlgorithm: 'sha-256', canonicalization: 'rfc8785-jcs', entries,
   };
-  return { ...body, rootHash: hashJson(body) };
+  const manifest = { ...body, rootHash: hashJson(body) };
+  // Garantia de consistência: o construtor nunca entrega algo que o verificador estrutural rejeite.
+  const structural = validateManifestStructure(manifest);
+  if (structural.length) throw new TypeError('manifesto construído é estruturalmente inválido: ' + structural.map(x => x.code).join(','));
+  return manifest;
 }
 
 /** Calcula o rootHash esperado de um manifesto (ignora o campo rootHash presente). */
@@ -68,7 +83,6 @@ export function computeRootHash(m) { const { rootHash, ...body } = m; void rootH
 
 const REQUIRED_KEYS = ALLOWED_KEYS;
 const ENTRY_KEYS = ['id', 'kind', 'sha256'];
-const DATASET_ID = /^[a-z0-9][a-z0-9._-]{0,127}$/;
 
 function isPlainObj(v) {
   if (v === null || typeof v !== 'object' || Array.isArray(v)) return false;
@@ -87,9 +101,9 @@ export function validateManifestStructure(m) {
   if ('schema' in m && m.schema !== MANIFEST_SCHEMA) e('MANIFEST_SCHEMA', '$.schema');
   if ('schemaVersion' in m && m.schemaVersion !== MANIFEST_SCHEMA_VERSION) e('MANIFEST_SCHEMA_VERSION', '$.schemaVersion');
   if (('hashAlgorithm' in m && m.hashAlgorithm !== 'sha-256') || ('canonicalization' in m && m.canonicalization !== 'rfc8785-jcs')) e('MANIFEST_ALGORITHM', '$');
-  if ('datasetId' in m && !(typeof m.datasetId === 'string' && DATASET_ID.test(m.datasetId))) e('MANIFEST_DATASET_ID_INVALID', '$.datasetId');
-  if ('dataSchemaVersion' in m && !(typeof m.dataSchemaVersion === 'string' && m.dataSchemaVersion.trim().length > 0 && m.dataSchemaVersion.length <= 128)) e('MANIFEST_DATA_SCHEMA_VERSION_INVALID', '$.dataSchemaVersion');
-  if ('sequence' in m && !(Number.isSafeInteger(m.sequence) && m.sequence >= 1)) e('MANIFEST_SEQUENCE_INVALID', '$.sequence');
+  if ('datasetId' in m && !isValidDatasetId(m.datasetId)) e('MANIFEST_DATASET_ID_INVALID', '$.datasetId');
+  if ('dataSchemaVersion' in m && !isValidDataSchemaVersion(m.dataSchemaVersion)) e('MANIFEST_DATA_SCHEMA_VERSION_INVALID', '$.dataSchemaVersion');
+  if ('sequence' in m && !isValidSequence(m.sequence)) e('MANIFEST_SEQUENCE_INVALID', '$.sequence');
   if ('createdAt' in m && !isIsoUtc(m.createdAt)) e('MANIFEST_CREATED_AT_INVALID', '$.createdAt');
   if ('rootHash' in m && !isSha256Hex(m.rootHash)) e('MANIFEST_ROOT_HASH_FORMAT', '$.rootHash');
   if ('entries' in m) {
@@ -102,10 +116,10 @@ export function validateManifestStructure(m) {
         if (!isPlainObj(en)) { e('ENTRY_NOT_OBJECT', p); prev = null; return; }
         for (const k of Object.keys(en)) if (!ENTRY_KEYS.includes(k)) e('ENTRY_UNKNOWN_FIELD', `${p}.${k}`, k);
         for (const k of ENTRY_KEYS) if (!Object.prototype.hasOwnProperty.call(en, k)) e('ENTRY_MISSING_FIELD', `${p}.${k}`, k);
-        if ('kind' in en && en.kind !== 'record' && en.kind !== 'file') e('ENTRY_KIND_INVALID', `${p}.kind`);
+        if ('kind' in en && !isValidEntryKind(en.kind)) e('ENTRY_KIND_INVALID', `${p}.kind`);
         if ('sha256' in en && !isSha256Hex(en.sha256)) e('ENTRY_SHA256_INVALID', `${p}.sha256`);
         if ('id' in en) {
-          if (typeof en.id !== 'string' || en.id.length === 0) { e('ENTRY_ID_INVALID', `${p}.id`); prev = null; return; }
+          if (!isValidEntryId(en.id)) { e('ENTRY_ID_INVALID', `${p}.id`); prev = null; return; }
           if (ids.has(en.id)) e('ENTRY_ID_DUPLICATE', `${p}.id`, en.id);
           else if (prev !== null && compareUtf16(prev, en.id) > 0) e('MANIFEST_ENTRIES_NOT_SORTED_OR_DUPLICATE', `${p}.id`);
           ids.add(en.id); prev = en.id;
