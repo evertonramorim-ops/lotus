@@ -87,16 +87,16 @@
   ],
   "variableMetadata": [
     {
-      "pid": 628260,
-      "startedAt": "2026-11-04T10:32:34.835Z",
-      "elapsedMs": 97
+      "pid": 653134,
+      "startedAt": "2026-11-04T11:29:25.575Z",
+      "elapsedMs": 94
     },
     {
-      "pid": 628267,
-      "startedAt": "2026-11-04T10:32:34.993Z",
-      "elapsedMs": 102
+      "pid": 653141,
+      "startedAt": "2026-11-04T11:29:25.728Z",
+      "elapsedMs": 93
     }
   ],
   "distinctProcesses": true,
-  "nota": "reexecutado na auditoria final @ d654dab, dois processos separados"
+  "nota": "reexecutado na auditoria complementar @ afb5fd4, dois processos separados"
 }

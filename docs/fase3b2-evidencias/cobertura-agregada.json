@@ -92,5 +92,22 @@
       "EQUIVALENTE->SEMANTICA_DESCONHECIDA (monetários pré-Real)": 21
     },
     "quina380": "QUARENTENA, data original preservada"
+  },
+  "reconciliacaoOfflineAuditoriaComplementar": {
+    "requisicoesNovas": 0,
+    "amostras": 54,
+    "classesCampo": {
+      "EQUIVALENTE": 850,
+      "AUSENTE_EM_UMA_FONTE": 1155,
+      "DIFERENCA_REPRESENTACAO": 30,
+      "DIFERENCA_FORMATACAO": 1,
+      "DIFERENCA_TEMPORAL": 2,
+      "SEMANTICA_DESCONHECIDA": 29,
+      "DIVERGENCIA_REAL": 0,
+      "VALOR_INVALIDO": 0
+    },
+    "transicoes": {},
+    "nota": "contagem idêntica à auditoria final; nenhum caso real nos novos cenários",
+    "quina380": "QUARENTENA, data original preservada"
   }
 }

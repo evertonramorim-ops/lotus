@@ -1,19 +1,24 @@
-# npm test em clone limpo de phase-3b2-historical-import @ d654dab (env -i)
-ℹ tests 416
+# Node v24.22.1 · clone limpo de phase-3b2-historical-import @ afb5fd4
+# comando: env -i PATH="$PATH" HOME=/tmp npm test
+ℹ tests 427
 ℹ suites 0
-ℹ pass 416
+ℹ pass 427
 ℹ fail 0
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 3190.508587
+ℹ duration_ms 3207.693025
 
-# testes de auditoria (node --test por arquivo)
+# testes de reconciliação e auditoria isolados — comando: env -i PATH="$PATH" HOME=/tmp node --test <arquivo>
+reconcile: tests 5 pass 5 fail 0 skipped 0
 audit-fetch-limits: tests 9 pass 9 fail 0 skipped 0
 audit-formulas: tests 9 pass 9 fail 0 skipped 0
 audit-json-money: tests 6 pass 6 fail 0 skipped 0
 audit-provenance-link: tests 8 pass 8 fail 0 skipped 0
-audit-final-reconcile (auditoria final): tests 7 pass 7 fail 0 skipped 0
+audit-final-reconcile: tests 7 pass 7 fail 0 skipped 0
+audit-complementar-reconcile: tests 11 pass 11 fail 0 skipped 0
 
 # 377 testes de baseline: git diff 3099934 HEAD -- <arquivos de test/ em 3099934> = vazio (byte-idênticos)
-# 32 testes da 1ª rodada corretiva: git diff ba1af3e HEAD -- test/fase3b2/audit-{fetch-limits,formulas,json-money,provenance-link}.test.js = vazio
+# 32 testes da 1ª rodada: git diff ba1af3e HEAD -- test/fase3b2/audit-{fetch-limits,formulas,json-money,provenance-link}.test.js = vazio
+# 7 testes da auditoria final: 2 asserts ajustados na regressão 4 (justificativa em docs/FASE3B2.md, item 10); git diff f7287a9 HEAD = 6 inserções, 3 remoções
+# falha-antes: audit-complementar-reconcile contra o reconcile.js de f7287a9 = 10 falhas, 1 aprovado (o 11º é regressão)

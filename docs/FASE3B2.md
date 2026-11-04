@@ -63,11 +63,11 @@ Resultado (agregado): 37 GET, todos HTTP 200, 0 bloqueios; 54 amostras; **0 DIVE
 - ADR-6: classes de reconciliação fechadas; só `DIVERGENCIA_REAL` gera quarentena `DIVERGENCIA_JSON_XLSX`.
 
 ## 10. Reprodução
-`npm test` (416/416, 0 falhas, 0 skip — 377 de baseline intactos + 32 da 1ª rodada + 7 da auditoria final); `npm run reprodutibilidade:fase3b2` (2 processos distintos, hashes idênticos); `npm run fixtures:fase3b2 -- --check`.
+`npm test` (427/427, 0 falhas, 0 skip — 377 de baseline intactos + 32 da 1ª rodada + 7 da auditoria final + 11 da auditoria complementar); `npm run reprodutibilidade:fase3b2` (2 processos distintos, hashes idênticos); `npm run fixtures:fase3b2 -- --check`.
 
 ## 10a. Correções da auditoria (PR #4)
 
-Histórico de HEADs: `3099934` = HEAD inicialmente auditado; `ba1af3e` = HEAD da 1ª rodada corretiva (itens 1–6 abaixo); a 2ª rodada (auditoria final, itens 7–8) é o HEAD atual do PR.
+Histórico de HEADs: `3099934` = HEAD inicialmente auditado; `ba1af3e` = HEAD da 1ª rodada corretiva (itens 1–6); `f7287a9` = HEAD da auditoria final (itens 7–8); a auditoria complementar (itens 9–10) é o HEAD atual do PR.
 
 ### 1ª rodada corretiva (3099934 → ba1af3e)
 1. **Limites da reconciliação (bloqueio).** Lógica extraída para `src/historical/reconcile-fetch.js` com `fetch`/`sleep` injetáveis. `parseFetchOptions` aceita apenas inteiros decimais (`--max` 1..50; `--delay-ms` ≥ 6000) e rejeita negativo, zero, decimal, vazio, NaN, Infinity, exponencial, hex e opção repetida antes de qualquer GET (exit 2). `runControlledFetch` revalida as opções, recusa plano maior que o teto e nunca executa mais que `min(max, 50)` requisições; para no primeiro 403/429/5xx/3xx/erro de rede/não-JSON. A política anterior documentada ("5xx repetido") foi substituída pela mais conservadora (primeiro 5xx). Testes: 9 (inclui propriedade com 200 planos aleatórios).
@@ -80,6 +80,24 @@ Histórico de HEADs: `3099934` = HEAD inicialmente auditado; `ba1af3e` = HEAD da
 ### 2ª rodada corretiva — auditoria final (a partir de ba1af3e)
 7. **VALOR_INVALIDO em faixas (bloqueio).** Em `compareRecords`, a verificação `prizeMoney.present && !prizeMoney.valid` passou a ocorrer sempre que a faixa existe no JSON, antes de qualquer `continue` e também quando o XLSX não tem a faixa. A linha `tier[k].prize` recebe `VALOR_INVALIDO` com `jsonLiteral` e `invalidReason`; a ausência no XLSX continua registrada à parte (`tier[k].winners` `SEMANTICA_DESCONHECIDA` ou `AUSENTE_EM_UMA_FONTE`). Valor inválido nunca vira zero, ausência ou `DIVERGENCIA_REAL`. Campos econômicos já verificavam o valor inválido antes de qualquer outra regra; agora também registram `jsonLiteral`/`invalidReason`.
 8. **Pré-Real sem equivalência em centavos (bloqueio).** Antes de 01/07/1994, comparações monetárias (prêmio e econômicos) são **sempre** `SEMANTICA_DESCONHECIDA`, mesmo quando os centavos coincidem, com `unidadeMonetariaVerificada: false`, `xlsxLiteral` e `jsonLiteral`. Sem conversão, fator tributário ou 0,7; nunca `DIVERGENCIA_REAL`. Campos não monetários (concurso, data, dezenas) seguem a comparação normal. Testes: 7 em `audit-final-reconcile.test.js` (5 de regressão das faixas + 2 de pré-Real); 5 deles falham no código de ba1af3e e passam no atual.
+
+### Auditoria complementar (a partir de f7287a9)
+9. **Validade monetária nas duas fontes (bloqueio).** Antes de qualquer comparação monetária (`tier[k].prize` e `economic.totalCollected`, `nextPrizeEstimate`, `specialAccumulated`, `accumulatedTopTier`), `compareRecords` verifica a célula XLSX (`moneyFromCell` com `absent:false, valid:false`) e o literal JSON. Qualquer lado inválido → `VALOR_INVALIDO` com `invalidSource` = `XLSX` | `JSON` | `AMBOS` e evidência completa: `xlsxLiteral`, `xlsxRef`, `xlsxColumn`, `xlsxValid`, `xlsxInvalidReason`, `jsonLiteral`, `jsonValid`, `jsonInvalidReason` e `invalidReason` (resumo; em `AMBOS`, "XLSX: …; JSON: …"). Nunca `DIVERGENCIA_REAL`, zero ou ausência. Isso torna seguro que o script de reconciliação inclua registros em quarentena. Faixa no XLSX ausente do JSON mantém a linha de faixa inteira e, se o prêmio XLSX for inválido, marca `xlsxPrizeInvalid` com a mesma evidência.
+10. **Ganhadores e prêmio independentes (bloqueio).** Removido o `continue` que descartava a faixa inteira quando um dos campos estava ausente. Quando a faixa existe no JSON, `tier[k].winners` e `tier[k].prize` sempre recebem uma linha própria cada.
+
+Classes finais por campo (faixa listada no JSON):
+
+| Situação | winners | prize / econômico |
+|---|---|---|
+| inválido em alguma fonte | `VALOR_INVALIDO` (`invalidSource:'XLSX'`) | `VALOR_INVALIDO` com `invalidSource` |
+| faixa/coluna inexistente no XLSX | `AUSENTE_EM_UMA_FONTE` | `AUSENTE_EM_UMA_FONTE` (ou `VALOR_INVALIDO` se o JSON for inválido) |
+| XLSX ausente ("-"/vazio), JSON com valor | `SEMANTICA_DESCONHECIDA` | prêmio: `SEMANTICA_DESCONHECIDA` (ex.: Quina faixa 2 antes de 4085); econômico: `AUSENTE_EM_UMA_FONTE` |
+| ausente nas duas fontes / só no JSON ausente | — / `AUSENTE_EM_UMA_FONTE` | `AUSENTE_EM_UMA_FONTE` |
+| dois valores válidos, pré-Real | comparação normal | `SEMANTICA_DESCONHECIDA` (`unidadeMonetariaVerificada:false`) |
+| dois valores válidos | `EQUIVALENTE` / `DIVERGENCIA_REAL` | `EQUIVALENTE` / `DIVERGENCIA_REAL` (correspondência HIPÓTESE: `SEMANTICA_DESCONHECIDA` quando diferentes) |
+
+Em pré-Real, linhas monetárias de ausência/invalidade conservam sua classe e recebem `unidadeMonetariaVerificada:false`. Equivalência ou divergência só existe com dois valores válidos e comparáveis. Testes: 11 em `audit-complementar-reconcile.test.js`, dos quais 10 falham no código de f7287a9 (o 11º é regressão das correções anteriores). Dois asserts de `audit-final-reconcile.test.js` (regressão 4) foram ajustados porque descreviam a omissão corrigida: (a) ganhadores válidos com prêmio ausente passam de `SEMANTICA_DESCONHECIDA` a `EQUIVALENTE`, e a linha do prêmio passa a existir (`SEMANTICA_DESCONHECIDA`); (b) faixa só no JSON passa de uma linha `tier[3]` a `tier[3].winners` + `tier[3].prize`, ambas `AUSENTE_EM_UMA_FONTE`. As demais garantias dos 7 testes ficaram intactas.
+Reconciliação offline sobre o JSON arquivado (0 requisições): contagem de classes idêntica à rodada anterior. Nas 54 amostras reais nenhum caso se enquadra nos novos cenários.
 
 Observação: o comentário da 1ª linha de `test/fase3b2/import-validation.test.js` ainda cita "V01–V15"; ele pertence aos 377 testes de baseline, que não podem ser editados, e por isso foi mantido.
 
