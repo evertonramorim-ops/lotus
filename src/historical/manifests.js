@@ -6,7 +6,7 @@
  * O rootHash prova integridade/consistência interna — NÃO autenticidade da fonte.
  * @module historical/manifests
  */
-import { buildManifest, ManifestLedger, verifyManifest } from '../integrity/manifest.js';
+import { buildManifest, ManifestLedger, verifyManifest, verifyManifestDetailed, hashRecord, hashFile } from '../integrity/manifest.js';
 import { hashJson } from '../integrity/hash.js';
 import { HISTORICAL_SCHEMA, HISTORICAL_SCHEMA_VERSION } from './normalize.js';
 
@@ -62,17 +62,68 @@ export function manifestRun(ledger, results, { runId, createdAt }) {
   return { runId, modality, runReport, runManifest: p.manifest, runAction: p.action, runRootHash: p.manifest.rootHash };
 }
 
-/** Verifica um manifesto da modalidade contra o conteúdo recalculado (detecta adulteração). */
-export function verifyModalityManifest(manifest, imp, collection, rawBytesOrNull) {
-  const contents = {};
-  for (const e of modalityEntries(imp, collection)) contents[e.id] = e.kind === 'file' ? rawBytesOrNull : null;
-  const map = Object.fromEntries(modalityEntries(imp, collection).map(e => [e.id, e.sha256]));
-  const errors = [];
-  for (const e of manifest.entries) if (e.id !== 'chain:previous' && map[e.id] !== e.sha256) errors.push({ code: 'ENTRY_HASH_MISMATCH', id: e.id });
-  for (const id of Object.keys(map)) if (!manifest.entries.some(e => e.id === id)) errors.push({ code: 'ENTRY_MISSING', id });
-  const s = verifyManifest(manifest);
-  if (!s.ok) errors.push(...s.errors);
-  void contents;
-  return { ok: errors.length === 0, errors };
+export const MODALITY_DATA_SCHEMA_VERSION = `${HISTORICAL_SCHEMA}/${HISTORICAL_SCHEMA_VERSION}`;
+
+/**
+ * Conteúdo REAL de cada entrada do manifesto da modalidade (nunca hashes declarados): bytes do XLSX, registro de coleta,
+ * relatório, quarentena, duplicatas e cada registro aceito (o hash é recalculado de `a.record`, não lido de `recordSha256`).
+ * @returns {Map<string, {kind:'file', bytes:Uint8Array}|{kind:'record', value:any}>}
+ */
+export function modalityContents(imp, collection, rawBytes) {
+  const L = imp.report.lottery; const m = new Map();
+  if (rawBytes) m.set(`file:${L}:${collection.sha256}`, { kind: 'file', bytes: rawBytes });
+  m.set('record:collection', { kind: 'record', value: collection });
+  m.set('record:import-report', { kind: 'record', value: clean(imp.report) });
+  m.set('record:quarantine', { kind: 'record', value: clean(imp.quarantine) });
+  m.set('record:duplicates-identical', { kind: 'record', value: clean(imp.duplicatesIdentical) });
+  for (const a of imp.accepted) m.set(`record:draw:${L}:${String(a.record.contest).padStart(6, '0')}`, { kind: 'record', value: clean(a.record) });
+  return m;
+}
+
+/**
+ * Verifica um manifesto da modalidade contra o CONTEÚDO real recalculado (verifyManifestDetailed): bytes do XLSX,
+ * coleta, relatório, quarentena, duplicatas e cada registro aceito; IDs, kinds, hashes, entradas faltantes e extras;
+ * datasetId, dataSchemaVersion, sequence e encadeamento (chain:previous) contra o manifesto anterior OU o rootHash
+ * esperado. Sem bytes do XLSX, ou sequence > 1 sem anterior/rootHash esperado → falha (nunca "passa sem verificar").
+ * @param {object} manifest
+ * @param {object} imp resultado de importXlsx (ou artefatos equivalentes lidos do armazenamento)
+ * @param {object} collection registro de coleta
+ * @param {Uint8Array|null} rawBytes bytes originais do XLSX
+ * @param {{previous?:object, expectedPreviousRootHash?:string, expectedDatasetId?:string, expectedDataSchemaVersion?:string, expectedSequence?:number}} [opt]
+ * @returns {{ok:boolean, errors:object[], checked:object}}
+ */
+export function verifyModalityManifest(manifest, imp, collection, rawBytes, opt = {}) {
+  const errors = []; const L = imp && imp.report ? imp.report.lottery : null;
+  if (!rawBytes) errors.push({ code: 'FILE_BYTES_NOT_PROVIDED', id: `file:${L}:${collection && collection.sha256}` });
+  else if (hashFile(rawBytes) !== collection.sha256) errors.push({ code: 'FILE_BYTES_MISMATCH_COLLECTION', id: `file:${L}:${collection.sha256}` });
+  const contents = modalityContents(imp, collection, rawBytes);
+  // registros aceitos: hash declarado em recordSha256 conferido contra o recalculado (adulteração do declarado)
+  for (const a of imp.accepted) if (a.recordSha256 !== undefined && a.recordSha256 !== hashRecord(clean(a.record))) errors.push({ code: 'DECLARED_RECORD_HASH_MISMATCH', id: `record:draw:${L}:${String(a.record.contest).padStart(6, '0')}` });
+  const d = verifyManifestDetailed(manifest, contents);
+  const chainEntry = manifest && Array.isArray(manifest.entries) ? manifest.entries.find(e => e.id === 'chain:previous') : undefined;
+  for (const e of d.errors) if (!(e.code === 'ENTRY_MISSING' && e.id === 'chain:previous')) errors.push(e);
+  if (!rawBytes) for (const i in errors) if (errors[i].code === 'ENTRY_MISSING' && /^file:/.test(errors[i].id)) errors[i] = { ...errors[i], code: 'ENTRY_NOT_VERIFIED_NO_BYTES' };
+  const wantDs = opt.expectedDatasetId ?? (L ? modalityDatasetId(L) : null);
+  if (manifest && manifest.datasetId !== wantDs) errors.push({ code: 'DATASET_ID_MISMATCH', expected: wantDs, found: manifest && manifest.datasetId });
+  const wantSchema = opt.expectedDataSchemaVersion ?? MODALITY_DATA_SCHEMA_VERSION;
+  if (manifest && manifest.dataSchemaVersion !== wantSchema) errors.push({ code: 'DATA_SCHEMA_VERSION_MISMATCH', expected: wantSchema, found: manifest.dataSchemaVersion });
+  if (opt.expectedSequence !== undefined && manifest && manifest.sequence !== opt.expectedSequence) errors.push({ code: 'SEQUENCE_MISMATCH', expected: opt.expectedSequence, found: manifest.sequence });
+  // encadeamento
+  let chain = 'NAO_APLICAVEL';
+  if (manifest && manifest.sequence === 1) { if (chainEntry) errors.push({ code: 'CHAIN_UNEXPECTED_IN_FIRST_MANIFEST' }); else chain = 'PRIMEIRO_MANIFESTO'; }
+  else if (manifest && Number.isSafeInteger(manifest.sequence) && manifest.sequence > 1) {
+    if (!chainEntry) errors.push({ code: 'CHAIN_MISSING' });
+    else if (chainEntry.kind !== 'record') errors.push({ code: 'CHAIN_KIND_MISMATCH' });
+    const prev = opt.previous ?? null; const want = prev ? prev.rootHash : opt.expectedPreviousRootHash ?? null;
+    if (!want) errors.push({ code: 'CHAIN_NOT_VERIFIABLE', detail: 'informe o manifesto anterior ou o rootHash esperado' });
+    else if (chainEntry && chainEntry.sha256 !== want) errors.push({ code: 'CHAIN_PREVIOUS_MISMATCH', expected: want, found: chainEntry.sha256 });
+    if (prev) {
+      const pv = verifyManifest(prev); if (!pv.ok) errors.push({ code: 'CHAIN_PREVIOUS_INVALID', errors: pv.errors });
+      if (prev.datasetId !== manifest.datasetId) errors.push({ code: 'CHAIN_PREVIOUS_DATASET_MISMATCH' });
+      if (prev.sequence !== manifest.sequence - 1) errors.push({ code: 'CHAIN_PREVIOUS_SEQUENCE_MISMATCH', expected: manifest.sequence - 1, found: prev.sequence });
+    }
+    if (!errors.some(e => /^CHAIN_/.test(e.code))) chain = prev ? 'VERIFICADO_CONTRA_ANTERIOR' : 'VERIFICADO_CONTRA_ROOTHASH_ESPERADO';
+  }
+  return { ok: errors.length === 0, errors, checked: { entries: contents.size, acceptedRecords: imp.accepted.length, fileBytes: !!rawBytes, rootHashOk: d.hashOk, structuralOk: d.structuralOk, chain } };
 }
 export { ManifestLedger };

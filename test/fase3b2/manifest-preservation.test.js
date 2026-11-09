@@ -45,15 +45,25 @@ test('manifestos por modalidade e por execução: válidos, contagens, hash raiz
   const m0 = r.run.modality[0].manifest; const res = r.results[0];
   assert.ok(m0.entries.some(e => e.kind === 'file' && e.sha256 === res.collection.sha256));
   assert.equal(m0.entries.filter(e => e.id.startsWith('record:draw:')).length, res.imp.report.counts.accepted);
-  assert.ok(verifyModalityManifest(m0, res.imp, res.collection, res.bytes).ok);
+  // [3b.2-integral 5.2 — teste antigo incorreto] `res.bytes` não existe nos resultados do pipeline (era undefined) e a
+  // verificação antiga nem olhava os bytes; agora os bytes reais do envelope são exigidos e conferidos.
+  const v0 = verifyModalityManifest(m0, res.imp, res.collection, rawBytes(res.envelope)); assert.ok(v0.ok, JSON.stringify(v0.errors)); assert.equal(v0.checked.fileBytes, true);
+  assert.equal(verifyModalityManifest(m0, res.imp, res.collection, null).ok, false, 'sem bytes não passa');
 });
 
 test('adulteração de registro aceito invalida o manifesto', () => {
   const r = runPipeline({ inputs: inputs(), runId: 'r1', createdAt: T });
   const res = r.results[1]; const m = r.run.modality[1].manifest;
+  // [3b.2-integral 5.1/5.2 — teste antigo incorreto] adulterar só o hash DECLARADO (recordSha256) não altera o conteúdo:
+  // a verificação antiga comparava hashes declarados entre si. Agora: declarado adulterado → DECLARED_RECORD_HASH_MISMATCH;
+  // conteúdo adulterado (hash recalculado do registro) → ENTRY_HASH_MISMATCH.
+  const bytes = rawBytes(res.envelope);
   const tampered = { ...res.imp, accepted: res.imp.accepted.map((a, i) => (i === 0 ? { ...a, recordSha256: 'f'.repeat(64) } : a)) };
-  const v = verifyModalityManifest(m, tampered, res.collection, null);
-  assert.equal(v.ok, false); assert.ok(v.errors.some(e => e.code === 'ENTRY_HASH_MISMATCH'));
+  const v = verifyModalityManifest(m, tampered, res.collection, bytes);
+  assert.equal(v.ok, false); assert.ok(v.errors.some(e => e.code === 'DECLARED_RECORD_HASH_MISMATCH'));
+  const content = { ...res.imp, accepted: res.imp.accepted.map((a, i) => (i === 0 ? { ...a, record: { ...a.record, numbers: [...a.record.numbers].reverse() } } : a)) };
+  const vc = verifyModalityManifest(m, content, res.collection, bytes);
+  assert.equal(vc.ok, false); assert.ok(vc.errors.some(e => e.code === 'ENTRY_HASH_MISMATCH' && e.id.startsWith('record:draw:')));
   const m2 = structuredClone(m); m2.entries[0].sha256 = '0'.repeat(64);
   assert.equal(verifyManifest(m2).ok, false);
 });
