@@ -67,7 +67,7 @@ Resultado (agregado): 37 GET, todos HTTP 200, 0 bloqueios; 54 amostras; **0 DIVE
 
 ## 10a. Correções da auditoria (PR #4)
 
-Histórico de HEADs: `3099934` = HEAD inicialmente auditado; `ba1af3e` = 1ª rodada corretiva (itens 1–6); `f7287a9` = auditoria final (itens 7–8); `5e049f1` = auditoria complementar (itens 9–10); a auditoria consolidada (item 11, seção 10b) é o HEAD atual do PR.
+Histórico de HEADs: `3099934` = HEAD inicialmente auditado; `ba1af3e` = 1ª rodada corretiva (itens 1–6); `f7287a9` = auditoria final (itens 7–8); `5e049f1` = auditoria complementar (itens 9–10); `5bc2689` = auditoria consolidada (item 11, seção 10b); `f55363f` = código do fechamento consolidado (item 12, seção 10c); o commit de documentação seguinte é o HEAD atual do PR.
 
 ### 1ª rodada corretiva (3099934 → ba1af3e)
 1. **Limites da reconciliação (bloqueio).** Lógica extraída para `src/historical/reconcile-fetch.js` com `fetch`/`sleep` injetáveis. `parseFetchOptions` aceita apenas inteiros decimais (`--max` 1..50; `--delay-ms` ≥ 6000) e rejeita negativo, zero, decimal, vazio, NaN, Infinity, exponencial, hex e opção repetida antes de qualquer GET (exit 2). `runControlledFetch` revalida as opções, recusa plano maior que o teto e nunca executa mais que `min(max, 50)` requisições; para no primeiro 403/429/5xx/3xx/erro de rede/não-JSON. A política anterior documentada ("5xx repetido") foi substituída pela mais conservadora (primeiro 5xx). Testes: 9 (inclui propriedade com 200 planos aleatórios).
@@ -128,7 +128,7 @@ Limitações preservadas: Quina 380 permanece em quarentena, data não alterada;
 - `dataApuracao`: ausente/nula, válida, malformada/inexistente (`DATA_MALFORMADA_OU_INEXISTENTE`) ou tipo incorreto (`TIPO_NAO_TEXTO`).
 - `listaDezenas`/`dezenasSorteadasOrdemSorteio`: itens preservados, sem `NaN`. Validadas tipo, vazio, inteiro, quantidade = `draw`, intervalo `minNumber..maxNumber` e duplicatas, pelas regras de `src/lotteries/config.js`.
 - `numeroDeGanhadores`: inteiro seguro ≥ 0.
-- `listaRateioPremio`: ausente/nula → linha `AUSENTE` e faixas sem lado JSON. Não-lista → `DADO_INVALIDO` e faixas `SEMANTICA_DESCONHECIDA`. Entradas não mapeadas/duplicadas/não previstas → linha `DADO_INVALIDO` com elementos originais preservados. Faixa duplicada → `DADO_INVALIDO` nos dois campos. Com entradas não mapeadas, a falta de uma faixa não é conclusiva (`SEMANTICA_DESCONHECIDA`).
+- `listaRateioPremio`: ausente/nula → linha `AUSENTE` e faixas sem lado JSON. Não-lista → `DADO_INVALIDO` e faixas `SEMANTICA_DESCONHECIDA`. Entradas não mapeadas/duplicadas/não previstas → linha `DADO_INVALIDO` com elementos originais preservados. Faixa duplicada → `DADO_INVALIDO` nos dois campos (precedência por campo refinada na seção 10c). Com entradas não mapeadas, a falta de uma faixa não é conclusiva (`SEMANTICA_DESCONHECIDA`).
 
 Os mesmos critérios valem para o lado XLSX, inclusive registros em quarentena: data inválida, dezenas inválidas/duplicadas/fora do intervalo e ganhadores inválidos → `DADO_INVALIDO` com origem XLSX.
 
@@ -147,10 +147,37 @@ Apenas em `POS_REAL` dois valores válidos podem ser `EQUIVALENTE`/`DIVERGENCIA_
 
 Testes: 125 em `audit-consolidada-reconcile.test.js` (matriz monetária 1–10, matriz econômica 4 campos × 4 estados XLSX × 6 estados JSON, estruturais, quarentena, regime e propriedade global com PRNG semeado em 400 iterações). Contra o código de 5e049f1, 71 falham. Os 54 que passam lá são sobretudo combinações econômicas já corretas e casos de comparação válida. Reconciliação offline: classes de 1.0.0 preservadas; as faixas só no XLSX passam a ter linhas por campo (+14 `AUSENTE_EM_UMA_FONTE`, +16 `SEMANTICA_DESCONHECIDA`); 0 inválidos e 0 divergências reais nas amostras reais.
 
+## 10c. Fechamento consolidado da auditoria de reconciliação (a partir de 5bc2689) — reconciliação 1.2.0
+
+12. Revisão única da família "faixas e evidências" em `src/historical/reconcile.js`, extração da classificação do script para `src/historical/reconcile-sample.js` e 15 testes novos em `test/fase3b2/audit-fechamento-reconcile.test.js`. Commit de código: `f55363f`. Nenhum arquivo de teste anterior foi alterado.
+
+**União completa XLSX ∪ JSON.** `adaptJsonResult` passa a expor `tierEntries` (todas as entradas mapeadas, inclusive duplicadas e não previstas, com índice, descrição, literal de `faixa`, ganhadores, prêmio e o elemento original). `tierList.duplicates[]` guarda, além de `hits` e `indexes`, `entries` com índice e elemento original de cada entrada, antes de qualquer exclusão. A união usa as faixas do XLSX e TODAS as faixas de `tierEntries`. Uma faixa duplicada que só existe no JSON não desaparece mais (antes, só entrava na união se também existisse no XLSX). A lista `unrecognized` do resumo `json:listaRateioPremio` passa a considerar também as entradas duplicadas.
+
+**Faixa duplicada: precedência por campo** (`tier[k].winners` e `tier[k].prize` independentes):
+
+| Situação no campo | Classe | `invalidSource` |
+|---|---|---|
+| prêmio presente e monetariamente inválido (XLSX e/ou qualquer entrada JSON) | `VALOR_INVALIDO` | só o(s) lado(s) com valor inválido |
+| ganhadores presentes e inválidos (XLSX e/ou qualquer entrada JSON) | `DADO_INVALIDO` | só o(s) lado(s) com valor inválido |
+| valores individualmente válidos, ao menos uma entrada JSON com o campo | `DADO_INVALIDO` (`FAIXA_DUPLICADA_ASSOCIACAO_AMBIGUA`) | `JSON` |
+| nenhuma entrada JSON traz o campo | `AUSENTE_EM_UMA_FONTE` | — |
+
+`AMBOS` só aparece quando o valor do XLSX e o de ao menos uma entrada JSON são inválidos naquele campo. A ambiguidade estrutural fica registrada à parte, em `jsonTierIssue {source:'JSON', reasons:['FAIXA_DUPLICADA', …], indexes}`, e nunca apaga a validade individual: `jsonEntries[]` traz, por entrada, `index`, `description`, `faixa`, `hits`, `element` e, para ganhadores e prêmio, `present`, `literal`, `valid` e `invalidReason`. `jsonInvalidReason` identifica a entrada (ex.: `[6] FRACAO_ALEM_DE_CENTAVOS`). A faixa duplicada nunca produz `DIVERGENCIA_REAL`.
+
+**Faixa não prevista para a modalidade** (ex.: Mega-Sena "2 acertos"): as linhas por campo recebem `jsonTierIssue` com `FAIXA_NAO_PREVISTA_NA_MODALIDADE`, além de `jsonEntries` com índice, descrição, literais e validade. Valores inválidos seguem a precedência acima (`VALOR_INVALIDO`/`DADO_INVALIDO`, origem `JSON`). Para valores **válidos** de faixa não prevista presente só no JSON, a classe continua `AUSENTE_EM_UMA_FONTE` neste commit: três testes anteriores e protegidos (`audit-complementar` nº 9, `audit-final` regressões 3 e 4) exigem exatamente essa classe para "3 acertos" da Mega-Sena, enquanto o fechamento pede `DADO_INVALIDO`. As duas exigências se contradizem, e a decisão fica com o responsável (pendência abaixo). A mudança completa (código + 3 expectativas anteriores + o teste consolidado de `tier[2].prize`) está preparada e testada localmente, fora do PR (567/567), e não foi publicada.
+
+**Rastreabilidade das dezenas.** Em linha inválida de `numbers`, a evidência passa a transportar `xlsxRefs` (todas as células Bola1..BolaN), `xlsxCells` (`side`, `index`, `ref`, `column`, `raw`, `value`, `absent`, `valid`) e `xlsxInvalidCells`, com as células relevantes e o motivo de cada uma: `CELULA_AUSENTE` (+ `absenceReason`), `CELULA_INVALIDA` (+ `cellInvalidReason`), `FORA_DO_INTERVALO_min_max` (+ `value`) ou `DEZENA_DUPLICADA` (+ `duplicateIndexes`). Do lado JSON, `jsonInvalidItems` traz `index`, `literal` e motivo de cada item. O motivo agregado (`xlsxInvalidReason`/`jsonInvalidReason`) não mudou.
+
+**Caminho do script.** `classifyJsonContest(j)` devolve `JSON_DADO_INVALIDO` (concurso presente e inválido), `JSON_SEM_RESULTADO` (ausente ou nulo) ou `VALIDO`. `reconcileSample({sample, text, jsonSha256, xlsxRecords, meta})` devolve `{status, entry, rows, quarantine}` e trata também `JSON_INVALIDO` (texto não-JSON). As duas funções são puras: não leem disco nem rede. `scripts/reconciliar-fase3b2.mjs` só lê os arquivos, calcula o SHA-256 e delega a decisão. Os testes não precisam da pasta privada.
+
+**Matriz de testes (15):** 1 faixa não prevista só no JSON · 2 duplicada só no JSON (prevista e não prevista) · 3 duplicada nas duas fontes · 4 duplicada com prêmio JSON inválido numa entrada · 5 duplicada com prêmio XLSX inválido · 6 duplicada com ganhadores inválidos (JSON e XLSX) · 7 só uma fonte inválida · 8 ambas inválidas (`AMBOS`) · 9 células exatas em dezenas duplicadas · 10 células exatas fora do intervalo, ausentes ou inválidas, e itens JSON · 11 classificação do script · 12 linha legada `tier[k]` + duas linhas por campo. Invariantes: divergência válida em `POS_REAL` preservada e hipótese econômica nunca diverge; pré-Real intacto em faixa duplicada; propriedade com PRNG semeado (300 iterações): toda faixa da união tem exatamente uma linha `winners` e uma `prize`, inválido/ausente/duplicado nunca diverge, `AMBOS` só com os dois lados inválidos. **Falha-antes:** contra o `reconcile.js` de `5bc2689`, 11 dos 15 falham. Passam lá os casos 7 e 12 e os dois invariantes, que são guardas de regressão.
+
+**Preservação:** `git diff 5bc2689 f55363f -- test/` só mostra o arquivo novo. Os 427 testes anteriores (377 + 32 + 7 + 11) e os 125 da auditoria consolidada estão byte-idênticos. Hashes sintéticos inalterados. Reconciliação offline das 54 amostras já arquivadas, sem rede (`unshare -rn`) e sem nova requisição: 2097 linhas, todas com a mesma classe por campo que na 1.1.0 (`AUSENTE_EM_UMA_FONTE` 1169, `EQUIVALENTE` 850, `SEMANTICA_DESCONHECIDA` 45, `DIFERENCA_REPRESENTACAO` 30, `DIFERENCA_TEMPORAL` 2, `DIFERENCA_FORMATACAO` 1; 0 inválidos, 0 divergências reais). As amostras reais não têm faixa duplicada nem faixa não prevista. `request_log.jsonl` continua com 37 linhas.
+
 ## 11. Limitações e riscos
 - Completude do histórico não é declarada; XLSX é fonte única oficial disponível, JSON é amostral.
 - Semântica de campos econômicos parcialmente hipotética.
 - Endpoint público pode mudar/bloquear; nenhum contorno é feito.
 
 ## 12. Pendências
-Originais DOU de regras históricas; regras pré-2025 por modalidade; fator 0,7 e limiares; divergência de limite de apostas múltiplas da Mega entre Portaria e produto; semântica dos campos econômicos; Quina faixa 2 antes de 4085; tratamento de moeda pré-Real; decisão humana sobre Quina 380.
+Originais DOU de regras históricas; regras pré-2025 por modalidade; fator 0,7 e limiares; divergência de limite de apostas múltiplas da Mega entre Portaria e produto; semântica dos campos econômicos; Quina faixa 2 antes de 4085; tratamento de moeda pré-Real; decisão humana sobre Quina 380; decisão sobre a contradição entre o fechamento consolidado (faixa não prevista com valores válidos → `DADO_INVALIDO`) e três testes anteriores protegidos que exigem `AUSENTE_EM_UMA_FONTE` (seção 10c).

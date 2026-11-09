@@ -136,5 +136,36 @@
       "QUARENTENA": 1
     },
     "quina380": "QUARENTENA, data original preservada"
+  },
+  "reconciliacaoOfflineFechamentoConsolidado": {
+    "versaoReconciliacao": "1.2.0",
+    "commitCodigo": "f55363f",
+    "requisicoesNovas": 0,
+    "rede": "desabilitada no processo (unshare -rn); somente JSON já arquivado",
+    "amostras": 54,
+    "linhas": 2097,
+    "classesCampo": {
+      "EQUIVALENTE": 850,
+      "AUSENTE_EM_UMA_FONTE": 1169,
+      "DIFERENCA_REPRESENTACAO": 30,
+      "DIFERENCA_FORMATACAO": 1,
+      "DIFERENCA_TEMPORAL": 2,
+      "SEMANTICA_DESCONHECIDA": 45,
+      "DIVERGENCIA_REAL": 0,
+      "VALOR_INVALIDO": 0,
+      "DADO_INVALIDO": 0
+    },
+    "transicoes": {
+      "linhas com classe alterada em relação à 1.1.0": 0,
+      "linhas novas ou removidas": 0,
+      "linhas com jsonTierIssue (faixa duplicada ou não prevista)": 0
+    },
+    "statusAmostras": {
+      "ACEITO": 51,
+      "AUSENTE": 2,
+      "QUARENTENA": 1
+    },
+    "requestLogLinhas": 37,
+    "quina380": "QUARENTENA, data original preservada"
   }
 }
