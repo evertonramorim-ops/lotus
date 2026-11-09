@@ -5,7 +5,9 @@
  * @module historical/extract
  */
 export const EXTRACTION_SCHEMA = 'lotus.xlsx-extraction';
-export const EXTRACTION_SCHEMA_VERSION = '1.0.0';
+// 1.1.0: cabeçalho MAPEADO duplicado → alerta DUPLICATE_MAPPED_HEADER BLOQUEANTE (antes: a 2ª coluna era ignorada em
+// silêncio, pois normalizeRow usa a 1ª ocorrência); cabeçalho desconhecido duplicado segue preservado em `extras`.
+export const EXTRACTION_SCHEMA_VERSION = '1.1.0';
 
 const cellOut = (c, header) => ({ ref: c.ref, col: c.col, header, type: c.type, raw: c.raw, text: c.text, sharedIndex: c.sharedIndex, hasFormula: c.hasFormula, ...(c.hasFormula ? { formula: c.formula } : {}), interpreted: c.interpreted });
 
@@ -24,16 +26,22 @@ export function extractWithAdapter(parsed, spec) {
   if (!headerRow) return { compatible: false, sheet: sheet.name, rows: [], schemaAnalysis: { alerts: [...alerts, { code: 'HEADER_ROW_MISSING' }], blocking: true } };
   const byHeader = new Map(spec.columns.map(c => [c.header, c]));
   const colMap = new Map(); // col index → {header, spec|null}
-  const seen = new Map(); const unknown = []; const nonText = [];
+  const seen = new Map(); const unknown = []; const nonText = []; const dupMapped = new Map();
   for (const c of headerRow.cells) {
     const h = c.interpreted.kind === 'text' ? c.text : null;
     if (h === null) { if (c.interpreted.kind !== 'empty') nonText.push({ ref: c.ref, type: c.type, raw: c.raw }); continue; }
-    if (seen.has(h)) { alerts.push({ code: 'DUPLICATE_HEADER', header: h, refs: [seen.get(h), c.ref] }); colMap.set(c.col, { header: h, spec: null, duplicate: true }); continue; }
+    if (seen.has(h)) {
+      if (byHeader.has(h)) { const d = dupMapped.get(h) ?? { code: 'DUPLICATE_MAPPED_HEADER', header: h, refs: [seen.get(h)] }; d.refs.push(c.ref); dupMapped.set(h, d); }
+      else alerts.push({ code: 'DUPLICATE_HEADER', header: h, refs: [seen.get(h), c.ref] });
+      colMap.set(c.col, { header: h, spec: null, duplicate: true }); continue;
+    }
     seen.set(h, c.ref);
     const s = byHeader.get(h) ?? null;
     if (!s) unknown.push({ header: h, ref: c.ref, col: c.col });
     colMap.set(c.col, { header: h, spec: s });
   }
+  // Cabeçalho mapeado duplicado: qual coluna é a verdadeira é indecidível → arquivo bloqueado (nenhum valor descartado em silêncio).
+  for (const d of dupMapped.values()) alerts.push({ ...d, blocking: true });
   if (nonText.length) alerts.push({ code: 'NON_TEXT_HEADER_CELLS', cells: nonText });
   if (unknown.length) alerts.push({ code: 'UNKNOWN_COLUMNS', columns: unknown });
   const missingRequired = spec.columns.filter(c => c.required && !seen.has(c.header)).map(c => c.header);
@@ -56,8 +64,9 @@ export function extractWithAdapter(parsed, spec) {
   }
   const beyondRows = rows.filter(r => r.cellsBeyondHeader.length).length;
   if (beyondRows) alerts.push({ code: 'CELLS_BEYOND_HEADER', rows: beyondRows });
+  const blocking = missingRequired.length > 0 || dupMapped.size > 0;
   return {
-    compatible: missingRequired.length === 0, sheet: sheet.name, rows, colMap: [...colMap.entries()].map(([col, v]) => ({ col, header: v.header, mapped: !!v.spec })),
-    schemaAnalysis: { alerts, blocking: missingRequired.length > 0, headerCount, unknownColumns: unknown.map(u => u.header), missingRequired, missingOptional, schemaChanged: alerts.some(a => ['UNKNOWN_COLUMNS', 'MISSING_REQUIRED_COLUMNS', 'MISSING_OPTIONAL_COLUMNS', 'COLUMN_ORDER_CHANGED', 'DUPLICATE_HEADER', 'SHEET_NAME_CHANGED', 'EXTRA_SHEETS', 'NON_TEXT_HEADER_CELLS', 'CELLS_BEYOND_HEADER'].includes(a.code)) },
+    compatible: !blocking, sheet: sheet.name, rows, colMap: [...colMap.entries()].map(([col, v]) => ({ col, header: v.header, mapped: !!v.spec })),
+    schemaAnalysis: { alerts, blocking, headerCount, unknownColumns: unknown.map(u => u.header), missingRequired, missingOptional, duplicateMappedHeaders: [...dupMapped.keys()], schemaChanged: alerts.some(a => ['UNKNOWN_COLUMNS', 'MISSING_REQUIRED_COLUMNS', 'MISSING_OPTIONAL_COLUMNS', 'COLUMN_ORDER_CHANGED', 'DUPLICATE_HEADER', 'DUPLICATE_MAPPED_HEADER', 'SHEET_NAME_CHANGED', 'EXTRA_SHEETS', 'NON_TEXT_HEADER_CELLS', 'CELLS_BEYOND_HEADER'].includes(a.code)) },
   };
 }

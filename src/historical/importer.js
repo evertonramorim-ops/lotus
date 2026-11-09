@@ -2,7 +2,8 @@
  * Pipeline de importação XLSX (camadas A→B→C→D), DETERMINÍSTICO: sem relógio, sem aleatoriedade,
  * sem rede. A mesma entrada produz exatamente o mesmo resultado lógico.
  * Nunca descarta: todo registro termina ACEITO, DUPLICATA IDÊNTICA (registrada, não duplicada) ou
- * em QUARENTENA (reutiliza createQuarantineEntry da Fase 3a). Lacunas viram entradas CONCURSO_AUSENTE.
+ * em QUARENTENA (reutiliza createQuarantineEntry da Fase 3a). Linha inválida nunca descarta linha válida do mesmo
+ * concurso (V11 1.1.0). Lacunas viram entradas CONCURSO_AUSENTE, uma por INTERVALO compacto (V12 1.1.0).
  * @module historical/importer
  */
 import { createRawEnvelope, rawBytes, verifyRawEnvelopeDetailed } from '../data/raw.js';
@@ -15,7 +16,7 @@ import { XlsxError } from '../xlsx/errors.js';
 import { getXlsxAdapter } from './adapters/index.js';
 import { extractWithAdapter } from './extract.js';
 import { normalizeRow, HISTORICAL_SCHEMA, HISTORICAL_SCHEMA_VERSION } from './normalize.js';
-import { validateRecord, validateDataset, schemaIssues, VALIDATORS_ID, VALIDATORS_VERSION } from './validators.js';
+import { validateRecord, validateDataset, schemaIssues, VALIDATORS_ID, VALIDATORS_VERSION, VALIDATORS, GAP_FORMAT } from './validators.js';
 import { TIER_RULES_ID, TIER_RULES_VERSION } from './tier-rules.js';
 import { createCollectionRecord, validateCollectionRecord, validateCollectionEnvelopeLink, XLSX_MEDIA_TYPE } from './collection.js';
 import { Q, A, REVIEW_PENDING } from './codes.js';
@@ -25,7 +26,9 @@ const clean = v => JSON.parse(JSON.stringify(v));
 const qe = o => createQuarantineEntry(clean(o));
 
 export const IMPORT_REPORT_SCHEMA = 'lotus.import-report';
-export const IMPORT_REPORT_SCHEMA_VERSION = '1.0.0';
+// 2.0.0 (incompatível): coverage.missing (lista de concursos) → coverage.missingRanges [{from,to,count}] + missingCount
+// (formato lotus.gap-ranges/1.0.0); uma entrada de quarentena CONCURSO_AUSENTE por INTERVALO; counts.invalidDuplicates.
+export const IMPORT_REPORT_SCHEMA_VERSION = '2.0.0';
 
 /** Cria envelope (camada A) + registro de coleta a partir dos bytes e metadados HTTP. */
 export function captureRaw(bytes, meta) {
@@ -89,6 +92,8 @@ export function importXlsx({ envelope, collection, lottery, limits }) {
   const byRow = new Map(items.map(it => [it.rec.source.row, it]));
   for (const c of ds.conflicts) for (const row of c.rows) addReason(byRow.get(row), { code: Q.CONCURSO_DUPLICADO_CONFLITANTE, message: `concurso ${c.contest} em ${c.rows.length} linhas com conteúdo diferente`, anomalyType: Q.CONCURSO_DUPLICADO_CONFLITANTE, validatorId: c.validatorId, validatorVersion: c.validatorVersion, rule: 'V11/V14', ...ev2(byRow.get(row), { rows: c.rows, diffs: c.diffs, canonicalSha256: c.canonicalSha256 }) }, 'dataset');
   for (const d of ds.dateAnomalies) addReason(byRow.get(d.row), { code: Q.DATA_NAO_MONOTONICA, message: `data ${d.raw} (${d.interpreted}) quebra a ordem cronológica (${d.classification})`, anomalyType: Q.DATA_NAO_MONOTONICA, validatorId: d.validatorId, validatorVersion: d.validatorVersion, rule: 'V13', originalValue: d.raw, interpretedValue: d.interpreted, ...ev2(byRow.get(d.row), { ref: d.ref, previous: d.previous ?? null, next: d.next ?? null, pair: d.pair ?? null, classification: d.classification }) }, 'dataset');
+  // contexto de duplicata de linha inelegível: anexado à evidência de cada motivo próprio (não cria motivo novo)
+  for (const d of ds.invalidDuplicates) for (const r of reasonsByRow.get(d.row) ?? []) r.evidence = { ...r.evidence, duplicateContext: { groupRows: d.groupRows, eligibleRows: d.eligibleRows, keptRow: d.keptRow, referenceRow: d.referenceRow, referenceEligible: d.referenceEligible, sameCanonicalAsReference: d.sameCanonicalAsReference, diffsVsReference: d.diffsVsReference, validatorId: d.validatorId, validatorVersion: d.validatorVersion } };
   const dupRows = new Set(ds.duplicatesIdentical.flatMap(d => d.duplicateRows));
   const accepted = [];
   for (const it of items) {
@@ -100,8 +105,8 @@ export function importXlsx({ envelope, collection, lottery, limits }) {
     if (!r3a.valid) { quarantine.push(qe({ rawSha256: envelope.sha256, stage: 'validate', parserVersion: parserTag(spec), candidate: it.rec, reasons: r3a.errors.map(e => ({ ...e, ...ev2(it), validatorId: 'FASE3A.validateResultRecord' })) })); continue; }
     accepted.push({ record: it.rec, recordSha256: it.recordSha256, result, resultSha256: hashJson(result), annotations: it.v.annotations.map(a => a.code), ruleStatus: it.v.ruleStatus, ...(it.v.annotations.some(a => a.code === A.CURRENCY_PRE_REAL_NOT_VERIFIED) ? { unidadeMonetariaVerificada: false } : {}) });
   }
-  for (const c of ds.gaps) quarantine.push(qe({ rawSha256: envelope.sha256, stage: 'dataset', parserVersion: parserTag(spec), candidate: null,
-    reasons: [{ code: Q.CONCURSO_AUSENTE, message: `concurso ${c} ausente no arquivo (lacuna não resolvida; não se presume erro da fonte)`, anomalyType: Q.CONCURSO_AUSENTE, validatorId: 'V12', validatorVersion: '1.0.0', rule: 'V12', ...reasonBase, contest: c, resolution: 'LACUNA_NAO_RESOLVIDA', evidence: { rawSha256: envelope.sha256 } }] }));
+  for (const g of ds.gapRanges) quarantine.push(qe({ rawSha256: envelope.sha256, stage: 'dataset', parserVersion: parserTag(spec), candidate: null,
+    reasons: [{ code: Q.CONCURSO_AUSENTE, message: g.count === 1 ? `concurso ${g.from} ausente no arquivo (lacuna não resolvida; não se presume erro da fonte)` : `concursos ${g.from}–${g.to} (${g.count}) ausentes no arquivo (lacuna não resolvida; não se presume erro da fonte)`, anomalyType: Q.CONCURSO_AUSENTE, validatorId: 'V12', validatorVersion: VALIDATORS.V12.version, rule: 'V12', ...reasonBase, contest: g.from, contestRange: { from: g.from, to: g.to, count: g.count, format: GAP_FORMAT }, resolution: 'LACUNA_NAO_RESOLVIDA', evidence: { rawSha256: envelope.sha256 } }] }));
   return finish({ base, collection, status: 'IMPORTED', quarantine, accepted, items, ds, extraction, parsed, spec, emptyRows });
 }
 
@@ -119,26 +124,26 @@ function finish({ base, collection, status, quarantine, accepted, items, ds, ext
     counts: {
       rowsExtracted: extraction ? extraction.rows.length : 0, emptyRows, normalized: items.length, accepted: accepted.length,
       quarantinedRecords: quarantinedRows, quarantineEntries: quarantine.length, duplicatesIdentical: ds ? ds.duplicatesIdentical.reduce((s, d) => s + d.duplicateRows.length, 0) : 0,
-      conflictingContests: ds ? ds.conflicts.length : 0, missingContests: ds ? ds.gaps.length : 0, dateAnomalies: ds ? ds.dateAnomalies.length : 0,
+      conflictingContests: ds ? ds.conflicts.length : 0, invalidDuplicates: ds ? ds.invalidDuplicates.length : 0, missingContests: ds ? ds.missingCount : 0, missingRanges: ds ? ds.gapRanges.length : 0, dateAnomalies: ds ? ds.dateAnomalies.length : 0,
     },
     quarantineReasonCounts: sortObj(codeCounts), annotationCounts: sortObj(annCounts), coverage,
   };
   void spec;
-  return { status, report, accepted, quarantine, duplicatesIdentical: ds ? ds.duplicatesIdentical : [], conflicts: ds ? ds.conflicts : [], dateAnomalies: ds ? ds.dateAnomalies : [], gaps: ds ? ds.gaps : [], extraction };
+  return { status, report, accepted, quarantine, duplicatesIdentical: ds ? ds.duplicatesIdentical : [], conflicts: ds ? ds.conflicts : [], invalidDuplicates: ds ? ds.invalidDuplicates : [], dateAnomalies: ds ? ds.dateAnomalies : [], gapRanges: ds ? ds.gapRanges : [], missingCount: ds ? ds.missingCount : 0, extraction };
 }
 
 const sortObj = o => Object.fromEntries(Object.keys(o).sort().map(k => [k, o[k]]));
 
 function computeCoverage(items, accepted, quarantine, ds) {
-  if (!ds || !ds.contestsPresent.length) return { firstContest: null, lastContest: null, distinctContests: 0, expectedRange: null, expectedCount: 0, foundCount: 0, missing: [], firstDate: null, lastDate: null, anomalousDates: 0, acceptedContests: 0, quarantinedContests: 0, contiguous: false, completenessClaim: 'NAO_DECLARADA' };
+  if (!ds || !ds.contestsPresent.length) return { firstContest: null, lastContest: null, distinctContests: 0, expectedRange: null, expectedCount: 0, foundCount: 0, missingFormat: GAP_FORMAT, missingRanges: [], missingCount: 0, firstDate: null, lastDate: null, anomalousDates: 0, acceptedContests: 0, quarantinedContests: 0, contiguous: false, completenessClaim: 'NAO_DECLARADA' };
   const pres = ds.contestsPresent; const first = pres[0], last = pres[pres.length - 1];
   const dates = items.map(i => i.rec.drawDate).filter(Boolean).sort();
   const qContests = new Set(quarantine.filter(q => q.candidate).map(q => q.candidate.contest));
   return {
     firstContest: first, lastContest: last, distinctContests: pres.length, expectedRange: [1, last], expectedCount: last, foundCount: pres.length,
-    missing: ds.gaps, missingBeforeFirst: first > 1 ? first - 1 : 0, firstDate: dates[0] ?? null, lastDate: dates[dates.length - 1] ?? null,
+    missingFormat: GAP_FORMAT, missingRanges: ds.gapRanges, missingCount: ds.missingCount, missingBeforeFirst: first > 1 ? first - 1 : 0, firstDate: dates[0] ?? null, lastDate: dates[dates.length - 1] ?? null,
     anomalousDates: ds.dateAnomalies.length, acceptedContests: accepted.length, quarantinedContests: qContests.size,
-    contiguous: ds.gaps.length === 0, duplicatesIdentical: ds.duplicatesIdentical.length, conflictingContests: ds.conflicts.length,
+    contiguous: ds.missingCount === 0, duplicatesIdentical: ds.duplicatesIdentical.length, conflictingContests: ds.conflicts.length,
     completenessClaim: 'NAO_DECLARADA', completenessNote: 'Contiguidade numérica não prova completude: concursos cancelados/não realizados/excepcionais exigem evidência documental.',
   };
 }

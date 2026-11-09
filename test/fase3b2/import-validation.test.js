@@ -85,7 +85,9 @@ test('V11/V14 duplicata idêntica (1 concurso) × conflitante (quarentena com di
 
 test('V12 lacuna → CONCURSO_AUSENTE (não resolvida), sem inventar o concurso', () => {
   const r = imp('megasena', { mutate: ({ header, rows }) => ({ header, rows: rows.filter((_, i) => i !== 6) }) });
-  assert.deepEqual(r.gaps, [7]);
+  // [3b.2-integral 4.3] formato de lacunas versionado (lotus.gap-ranges/1.0.0): intervalos compactos em vez de lista
+  // expandida (a lista crescia com o maior concurso). Mesma informação: o concurso 7, contagem 1.
+  assert.deepEqual(r.gapRanges, [{ from: 7, to: 7, count: 1 }]); assert.equal(r.missingCount, 1);
   const q = r.quarantine.find(x => x.reasons[0].code === Q.CONCURSO_AUSENTE);
   assert.equal(q.candidate, null); assert.equal(q.reasons[0].resolution, 'LACUNA_NAO_RESOLVIDA');
   assert.equal(r.report.coverage.contiguous, false); assert.equal(r.report.coverage.completenessClaim, 'NAO_DECLARADA');

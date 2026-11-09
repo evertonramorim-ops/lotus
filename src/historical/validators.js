@@ -25,15 +25,20 @@ export const VALIDATORS = Object.freeze({
   V08: { name: 'tipos-monetarios', version: '1.0.0', rule: 'Dinheiro "R$#.###,##" → centavos inteiros; ganhadores inteiro ≥ 0; vazio/"-" = ausência (null), nunca zero' },
   V09: { name: 'obrigatorios', version: '1.0.0', rule: 'Concurso, data, dezenas, faixas e campos econômicos mapeados devem existir (exceto ausência prevista pelo período)' },
   V10: { name: 'integridade-origem', version: '1.0.0', rule: 'rawSha256 do registro = SHA-256 do arquivo bruto; todo campo tipado aponta para célula; adaptador/parser coerentes' },
-  V11: { name: 'duplicatas', version: '1.0.0', rule: 'Mesmo concurso: conteúdo canônico idêntico → duplicata registrada (um só concurso); diferente → conflito' },
-  V12: { name: 'lacunas', version: '1.0.0', rule: 'Números ausentes entre 1 e o maior concurso presente → CONCURSO_AUSENTE (lacuna não resolvida; não presume erro da fonte)' },
+  V11: { name: 'duplicatas', version: '1.1.0', rule: 'Mesmo concurso: só linhas ELEGÍVEIS (sem problema bloqueante individual) disputam o registro. Elegíveis com conteúdo completo idêntico (valores, tipos, fórmulas, valores em cache, validade) → duplicata registrada, mantida a de menor linha; elegíveis diferentes → conflito. Linha inelegível nunca descarta nem bloqueia uma elegível: vai à quarentena pelos próprios motivos, com o contexto da duplicata como evidência. Resultado independente da ordem física.' },
+  V12: { name: 'lacunas', version: '1.1.0', rule: 'Números ausentes entre 1 e o maior concurso presente → CONCURSO_AUSENTE, agrupados em intervalos compactos [{from,to,count}] calculados em O(registros) (lacuna não resolvida; não presume erro da fonte); sem limite histórico arbitrário' },
   V13: { name: 'datas-monotonicas', version: '1.0.0', rule: 'Ordenado por concurso, data não pode recuar; outlier isolado vai à quarentena; sem reordenar nem corrigir' },
   V14: { name: 'conflitos', version: '1.0.0', rule: 'Comparação campo a campo entre registros do mesmo concurso (duplicatas ou fontes distintas)' },
   V16: { name: 'formulas', version: '1.0.0', rule: 'Célula com fórmula (<f>) em campo mapeado (concurso, data, dezena, ganhadores, prêmio, econômico, texto) → FORMULA_EM_CAMPO_HISTORICO (bloqueante); fórmula nunca é avaliada e o valor em cache nunca é aceito' },
   V15: { name: 'esquema', version: '1.0.0', rule: 'Cabeçalhos/planilha diferentes da especificação do adaptador → SCHEMA_INESPERADO' },
 });
 export const VALIDATORS_ID = 'lotus.historical-validators';
-export const VALIDATORS_VERSION = '1.1.0';
+// 1.2.0: V11 (política de duplicatas com elegibilidade e conteúdo completo) e V12 (lacunas em intervalos) — formatos
+// de saída de validateDataset alterados (gapRanges/missingCount; duplicatesIdentical/conflicts/invalidDuplicates).
+export const VALIDATORS_VERSION = '1.2.0';
+export const GAP_FORMAT = 'lotus.gap-ranges/1.0.0';
+/** Limite padrão de expansão de intervalos de lacunas em lista de concursos (expansão é sempre explícita). */
+export const GAP_EXPANSION_MAX = 100000;
 
 const mk = (vid, code, blocking, message, extra = {}) => ({ code, blocking, validatorId: vid, validatorVersion: VALIDATORS[vid].version, rule: VALIDATORS[vid].rule, message, ...extra });
 
@@ -116,6 +121,42 @@ export function canonicalContent(rec) {
   };
 }
 
+/**
+ * Conteúdo COMPLETO (sem localização física: nunca ref nem número de linha) usado na decisão de duplicata:
+ * conteúdo canônico + células com fórmula (coluna, tipo de campo, expressão, tipo da fórmula, valor e tipo em cache)
+ * + estado de interpretação por campo (validade/representação/tipo) + validade (códigos de problemas, em ordem estável).
+ */
+export function fullContent(rec, v) {
+  return {
+    canonical: canonicalContent(rec),
+    formulas: (rec.formulaCells ?? []).map(f => ({ column: f.column, kind: f.kind, expression: f.expression ?? null, formulaType: f.formulaType ?? null, cachedValue: f.cachedValue ?? null, cachedType: f.cachedType ?? null })).sort((a, b) => (a.column < b.column ? -1 : a.column > b.column ? 1 : 0)),
+    fieldStates: fieldStatesOf(rec),
+    validity: v ? v.issues.map(i => `${i.code}:${i.blocking ? 'B' : 'N'}:${i.field ?? ''}`).sort() : [],
+  };
+}
+/** Estado de interpretação por campo (validade, motivo, representação, divergência de tipo) — equivale ao tipo da célula. */
+function fieldStatesOf(rec) {
+  const st = (k, f) => `${k}|${f ? [f.valid ?? null, f.invalidReason ?? null, f.representation ?? null, f.typeMismatch ?? false, f.absent ?? null].join('|') : 'NA'}`;
+  const t = [st('drawDate', rec.drawDateField)];
+  (rec.numberFields ?? []).forEach((b, i) => t.push(st(`ball${i}`, b)));
+  for (const p of rec.prizeTiers ?? []) t.push(st(`winners${p.hits}`, p.winners), st(`prize${p.hits}`, p.prize));
+  for (const [k, m] of Object.entries(rec.economic ?? {})) t.push(st(`economic.${k}`, m));
+  return t.sort();
+}
+
+/** Expande intervalos de lacunas em lista de concursos, com limite explícito (sem truncamento silencioso). */
+export function expandGapRanges(ranges, { max = GAP_EXPANSION_MAX } = {}) {
+  const total = ranges.reduce((s, r) => s + r.count, 0);
+  if (total > max) throw new RangeError(`expansão de lacunas recusada: ${total} concursos > limite ${max}`);
+  const out = []; for (const r of ranges) for (let c = r.from; c <= r.to; c++) out.push(c); return out;
+}
+/** V12 — intervalos de lacunas em [1, último] a partir dos concursos presentes ORDENADOS, em O(registros). */
+export function gapRangesOf(present) {
+  const ranges = []; let prev = 0;
+  for (const c of present) { if (c > prev + 1) ranges.push({ from: prev + 1, to: c - 1, count: c - 1 - prev }); prev = c; }
+  return ranges;
+}
+
 /** V14 — diferença campo a campo entre dois objetos JSON (caminhos folha). */
 export function fieldDiff(a, b, path = '$', out = []) {
   const isObj = v => v !== null && typeof v === 'object';
@@ -128,21 +169,36 @@ export function fieldDiff(a, b, path = '$', out = []) {
 
 /**
  * V11–V15 sobre o conjunto. @param {{rec:object, row:number}[]} items registros normalizados com resultado individual
- * @returns {{duplicatesIdentical:object[], conflicts:object[], gaps:object[], dateAnomalies:object[], contestsPresent:number[]}}
+ * @returns {{duplicatesIdentical:object[], conflicts:object[], invalidDuplicates:object[], gapRanges:{from:number,to:number,count:number}[], missingCount:number, gapFormat:string, dateAnomalies:object[], contestsPresent:number[]}}
  */
 export function validateDataset(items, lottery) {
+  void lottery;
   const groups = new Map();
   for (const it of items) if (Number.isSafeInteger(it.rec.contest)) { if (!groups.has(it.rec.contest)) groups.set(it.rec.contest, []); groups.get(it.rec.contest).push(it); }
-  const duplicatesIdentical = []; const conflicts = [];
-  for (const [contest, list] of groups) {
-    if (list.length < 2) continue;
-    const hashes = list.map(it => hashJson(canonicalContent(it.rec)));
-    if (hashes.every(h => h === hashes[0])) duplicatesIdentical.push({ contest, keptRow: list[0].rec.source.row, duplicateRows: list.slice(1).map(it => it.rec.source.row), canonicalSha256: hashes[0], validatorId: 'V11', validatorVersion: VALIDATORS.V11.version });
-    else conflicts.push({ contest, rows: list.map(it => it.rec.source.row), canonicalSha256: hashes, diffs: list.slice(1).map(it => ({ rowA: list[0].rec.source.row, rowB: it.rec.source.row, fields: fieldDiff(canonicalContent(list[0].rec), canonicalContent(it.rec)) })), validatorId: 'V11+V14', validatorVersion: VALIDATORS.V14.version });
+  const duplicatesIdentical = []; const conflicts = []; const invalidDuplicates = [];
+  const rowOf = it => it.rec.source.row;
+  const eligible = it => !(it.v && it.v.issues.some(i => i.blocking));
+  for (const [contest, list0] of groups) {
+    if (list0.length < 2) continue;
+    // ordem estável por conteúdo (hash) e só então por linha: a DECISÃO não depende da ordem física
+    const list = [...list0].sort((a, b) => rowOf(a) - rowOf(b));
+    const el = list.filter(eligible); const inel = list.filter(it => !eligible(it));
+    const fh = it => hashJson(fullContent(it.rec, it.v)); const ch = it => hashJson(canonicalContent(it.rec));
+    let keptRow = null;
+    if (el.length >= 2) {
+      const hashes = el.map(fh);
+      if (hashes.every(h => h === hashes[0])) { keptRow = rowOf(el[0]); duplicatesIdentical.push({ contest, keptRow, duplicateRows: el.slice(1).map(rowOf), canonicalSha256: ch(el[0]), fullContentSha256: hashes[0], validatorId: 'V11', validatorVersion: VALIDATORS.V11.version }); }
+      else conflicts.push({ contest, rows: el.map(rowOf), canonicalSha256: el.map(ch), fullContentSha256: hashes, diffs: el.slice(1).map(it => ({ rowA: rowOf(el[0]), rowB: rowOf(it), fields: fieldDiff(fullContent(el[0].rec, el[0].v), fullContent(it.rec, it.v)) })), validatorId: 'V11+V14', validatorVersion: VALIDATORS.V14.version });
+    } else if (el.length === 1) keptRow = rowOf(el[0]);
+    // linhas inelegíveis: contexto preservado (relação com a(s) elegível(is) e com as demais inelegíveis), nunca descartam ninguém
+    // referência: 1ª elegível; sem elegível, 1ª linha do grupo (diferenças entre inelegíveis também ficam registradas)
+    const ref = el.length ? el[0] : list[0];
+    for (const it of inel) invalidDuplicates.push({ contest, row: rowOf(it), groupRows: list.map(rowOf), eligibleRows: el.map(rowOf), keptRow: conflicts.some(c => c.contest === contest) ? null : keptRow,
+      referenceRow: rowOf(ref), referenceEligible: el.length > 0, sameCanonicalAsReference: ref === it ? true : ch(it) === ch(ref), diffsVsReference: ref === it ? [] : fieldDiff(fullContent(ref.rec, ref.v), fullContent(it.rec, it.v)),
+      blockingCodes: [...new Set(it.v.issues.filter(i => i.blocking).map(i => i.code))].sort(), validatorId: 'V11', validatorVersion: VALIDATORS.V11.version });
   }
   const present = [...groups.keys()].sort((a, b) => a - b);
-  const gaps = [];
-  if (present.length) { const set = new Set(present); for (let c = 1; c <= present[present.length - 1]; c++) if (!set.has(c)) gaps.push(c); }
+  const gapRanges = gapRangesOf(present); const missingCount = gapRanges.reduce((s, r) => s + r.count, 0);
   // V13: uma data por concurso (primeira ocorrência), apenas datas válidas
   const seq = present.map(c => ({ contest: c, date: groups.get(c)[0].rec.drawDate, row: groups.get(c)[0].rec.source.row, ref: groups.get(c)[0].rec.drawDateField.ref, raw: groups.get(c)[0].rec.drawDateField.raw })).filter(x => x.date);
   const outliers = new Set(); const dateAnomalies = [];
@@ -157,7 +213,7 @@ export function validateDataset(items, lottery) {
     for (const k of [i - 1, i]) if (!dateAnomalies.some(d => d.contest === seq[k].contest)) dateAnomalies.push({ contest: seq[k].contest, row: seq[k].row, ref: seq[k].ref, raw: seq[k].raw, interpreted: seq[k].date, pair: [seq[i - 1].contest, seq[i].contest], classification: 'PAIR_INVERSION', validatorId: 'V13', validatorVersion: VALIDATORS.V13.version });
   }
   void lottery;
-  return { duplicatesIdentical, conflicts, gaps, dateAnomalies, contestsPresent: present };
+  return { duplicatesIdentical, conflicts, invalidDuplicates, gapRanges, missingCount, gapFormat: GAP_FORMAT, dateAnomalies, contestsPresent: present };
 }
 
 /** V15 — alertas de esquema → motivo SCHEMA_INESPERADO (um por arquivo). */
