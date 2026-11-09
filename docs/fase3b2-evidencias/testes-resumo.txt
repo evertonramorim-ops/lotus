@@ -1,31 +1,49 @@
-# Node v24.22.1 · npm 11.21.1 · clone limpo (git clone novo, sem node_modules) de phase-3b2-historical-import @ f55363f
-# comando: env -i PATH="$PATH" HOME=/tmp npm test
-ℹ tests 567
+# Node v24.22.1 · npm 11.21.1 · clone limpo (git clone novo, sem node_modules) de phase-3b2-historical-import @ 2c7b2dd (código; o commit seguinte só altera docs)
+# comando: env -i PATH="$PATH" HOME=/tmp unshare -rn npm test   (rede desabilitada no processo)
+ℹ tests 626
 ℹ suites 0
-ℹ pass 567
+ℹ pass 626
 ℹ fail 0
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 3297.26171
+ℹ duration_ms 3160.456727
 
-# reconciliação/auditoria isolados — comando: env -i PATH="$PATH" HOME=/tmp node --test test/fase3b2/<arquivo>.test.js
-reconcile: tests 5 pass 5 fail 0 skipped 0
+# por arquivo (fase3b2) — comando: env -i PATH="$PATH" HOME=/tmp unshare -rn node --test test/fase3b2/<arquivo>.test.js
 audit-complementar-reconcile: tests 11 pass 11 fail 0 skipped 0
 audit-consolidada-reconcile: tests 125 pass 125 fail 0 skipped 0
 audit-fechamento-reconcile: tests 15 pass 15 fail 0 skipped 0
 audit-fetch-limits: tests 9 pass 9 fail 0 skipped 0
 audit-final-reconcile: tests 7 pass 7 fail 0 skipped 0
 audit-formulas: tests 9 pass 9 fail 0 skipped 0
+audit-integral-fetch-paths: tests 5 pass 5 fail 0 skipped 0
+audit-integral-import: tests 7 pass 7 fail 0 skipped 0
+audit-integral-invariantes: tests 13 pass 13 fail 0 skipped 0
+audit-integral-manifest: tests 12 pass 12 fail 0 skipped 0
+audit-integral-reconcile: tests 15 pass 15 fail 0 skipped 0
+audit-integral-xlsx: tests 7 pass 7 fail 0 skipped 0
 audit-json-money: tests 6 pass 6 fail 0 skipped 0
 audit-provenance-link: tests 8 pass 8 fail 0 skipped 0
+import-validation: tests 14 pass 14 fail 0 skipped 0
+manifest-preservation: tests 7 pass 7 fail 0 skipped 0
+offline-security: tests 3 pass 3 fail 0 skipped 0
+reconcile: tests 5 pass 5 fail 0 skipped 0
+xlsx-parser: tests 8 pass 8 fail 0 skipped 0
 
-# npm run reprodutibilidade:fase3b2 → exit 0, idêntico em 2 processos; logical 7ca43692…d482, run root 4602d296…dc00 (inalterados; ver reprodutibilidade-sintetica.json)
-# npm run fixtures:fase3b2 -- --check → exit 0, "OK: fixtures idênticas" (o script já inclui --check; o argumento extra é redundante)
+# fases anteriores (test/*.test.js, test/fase2, test/fase3a): nenhum arquivo alterado (git diff f8f970d 2c7b2dd -- test/ só toca test/fase3b2)
 
-# preservação
-# git diff 5bc2689 f55363f -- test/ → somente o arquivo novo audit-fechamento-reconcile.test.js
-# 427 anteriores (377 baseline + 32 + 7 + 11) e 125 da auditoria consolidada: byte-idênticos (nenhuma expectativa ajustada)
-# falha-antes: audit-fechamento-reconcile contra reconcile.js de 5bc2689 (import dinâmico de reconcile-sample.js) = 11 falhas / 4 aprovados de 15
-#   aprovados lá: casos 7 e 12 e os 2 invariantes (guardas de regressão)
-# execução feita pelo agente no ambiente de trabalho; não é execução independente
+# npm run reprodutibilidade:fase3b2 → exit 0, idêntico em 2 processos distintos; logical 6ac44b89…5b51, run root a25cfe76…e465
+#   (antes, em f8f970d: logical 7ca43692…d482, run root 4602d296…dc00 — mudança esperada: versões do parser 1.1.0,
+#    validadores 1.2.0, relatório 2.0.0 e novos campos de contagem; ver reprodutibilidade-sintetica.json)
+# npm run fixtures:fase3b2 -- --check → exit 0, "OK: fixtures idênticas"
+
+# falha-antes (testes novos copiados para um worktree em f8f970d; fetch global substituído por stub que falha):
+#   audit-integral-reconcile 13/15 · audit-integral-fetch-paths 5/5 · audit-integral-import 6/7 · audit-integral-manifest 9/12
+#   audit-integral-xlsx 5/7 · audit-integral-invariantes 11/13 → 49 de 59 falham no código anterior
+#   (em f8f970d o script antigo TENTOU GET para planos adulterados — interceptado pelo stub; nenhuma requisição saiu)
+
+# testes antigos com expectativa alterada (justificativa no próprio teste, marcador [3b.2-integral …]):
+#   audit-complementar 9 · audit-final regressões 3 e 4 · audit-consolidada listaRateioPremio (tier[2].prize) — regra 2.1
+#   audit-consolidada econômico accumulatedTopTier/specialAccumulated XLSX valido × JSON valido — regra 3.5
+#   audit-fechamento 1, 2, 10, 11 — formas de evidência (motivo renomeado, estado/tipo, serialização fiel, concurso ausente/nulo validado)
+#   import-validation V12 — formato de lacunas versionado; manifest-preservation (2 testes) — res.bytes inexistente / hash declarado

@@ -2,33 +2,33 @@
   "mode": "SYNTHETIC_DATA",
   "identical": true,
   "logicalSha256": [
-    "7ca4369233e48d97ac187473ba9248321b64c34478b5e673ccd621b3def3d482",
-    "7ca4369233e48d97ac187473ba9248321b64c34478b5e673ccd621b3def3d482"
+    "6ac44b89250b6df6282603a07d6ab98e6a425bc85a7d15045f24c889c8a05b51",
+    "6ac44b89250b6df6282603a07d6ab98e6a425bc85a7d15045f24c889c8a05b51"
   ],
   "runRootHash": [
-    "4602d29668decc5d1b22220de83735f1d692fe4b40fcbd2fe71d5c462cc6dc00",
-    "4602d29668decc5d1b22220de83735f1d692fe4b40fcbd2fe71d5c462cc6dc00"
+    "a25cfe76c9a3e20a04cdfbd21466e2f3ed140437119f3492e917ae1bb127e465",
+    "a25cfe76c9a3e20a04cdfbd21466e2f3ed140437119f3492e917ae1bb127e465"
   ],
   "modalityRootHashes": [
     {
       "lottery": "megasena",
       "sequence": 1,
-      "rootHash": "d7f81c1647ebc858a875e28033d6b7b85d968bd9e76368f364726bab33d5c3ee"
+      "rootHash": "3707aa483e7f5109932ea900b99f1d5b4ec6e541e83e64c71b54f956089b4bb3"
     },
     {
       "lottery": "lotofacil",
       "sequence": 1,
-      "rootHash": "dd3d9e0e029d79a37ca533ee5d8079bc6d134dd88c4100b99da649670bc74d4f"
+      "rootHash": "b9685414fed653b10df95af934e3d832510dc55b91ddd1357d52c6d9cda2e989"
     },
     {
       "lottery": "quina",
       "sequence": 1,
-      "rootHash": "c3de14a1cd180ddf15f8f6abb419ef0492ec19b0b95486ba39a0790e428a3e33"
+      "rootHash": "ae4d53246181fa10c85565ceb6eb93a0416fe9a0945110434c578545fd98bf58"
     },
     {
       "lottery": "lotomania",
       "sequence": 1,
-      "rootHash": "6e19675823620e8d6795eddfcf84c10e628b7b96e33c53a6eaa012dea0af1082"
+      "rootHash": "2af6a61bb61b8650e1807b8651d9154d132d52eebeafe85bcdb368436f58795b"
     }
   ],
   "counts": [
@@ -42,7 +42,9 @@
       "quarantineEntries": 0,
       "duplicatesIdentical": 0,
       "conflictingContests": 0,
+      "invalidDuplicates": 0,
       "missingContests": 0,
+      "missingRanges": 0,
       "dateAnomalies": 0
     },
     {
@@ -55,7 +57,9 @@
       "quarantineEntries": 0,
       "duplicatesIdentical": 0,
       "conflictingContests": 0,
+      "invalidDuplicates": 0,
       "missingContests": 0,
+      "missingRanges": 0,
       "dateAnomalies": 0
     },
     {
@@ -68,7 +72,9 @@
       "quarantineEntries": 0,
       "duplicatesIdentical": 0,
       "conflictingContests": 0,
+      "invalidDuplicates": 0,
       "missingContests": 0,
+      "missingRanges": 0,
       "dateAnomalies": 0
     },
     {
@@ -81,22 +87,23 @@
       "quarantineEntries": 0,
       "duplicatesIdentical": 0,
       "conflictingContests": 0,
+      "invalidDuplicates": 0,
       "missingContests": 0,
+      "missingRanges": 0,
       "dateAnomalies": 0
     }
   ],
   "variableMetadata": [
     {
-      "pid": 674423,
-      "startedAt": "2026-11-04T12:09:44.375Z",
-      "elapsedMs": 92
+      "pid": 89378,
+      "startedAt": "2026-11-09T12:47:10.276Z",
+      "elapsedMs": 91
     },
     {
-      "pid": 674430,
-      "startedAt": "2026-11-04T12:09:44.534Z",
-      "elapsedMs": 99
+      "pid": 89385,
+      "startedAt": "2026-11-09T12:47:10.422Z",
+      "elapsedMs": 92
     }
   ],
-  "distinctProcesses": true,
-  "nota": "npm run reprodutibilidade:fase3b2 em clone limpo @ e0934fd (auditoria consolidada), dois processos"
+  "distinctProcesses": true
 }

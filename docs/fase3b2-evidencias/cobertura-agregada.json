@@ -167,5 +167,82 @@
     },
     "requestLogLinhas": 37,
     "quina380": "QUARENTENA, data original preservada"
+  },
+  "reconciliacaoOfflineAuditoriaIntegral": {
+    "versaoReconciliacao": "2.0.0",
+    "versaoAdaptadorJson": "2.0.0",
+    "commitCodigo": "2c7b2dd",
+    "requisicoesNovas": 0,
+    "rede": "desabilitada no processo (unshare -rn); somente JSON já arquivado",
+    "amostras": 54,
+    "linhas": 2175,
+    "classesCampo": {
+      "EQUIVALENTE": 736,
+      "AUSENTE_EM_UMA_FONTE": 1274,
+      "DIFERENCA_REPRESENTACAO": 7,
+      "DIFERENCA_FORMATACAO": 1,
+      "DIFERENCA_TEMPORAL": 2,
+      "SEMANTICA_DESCONHECIDA": 155,
+      "DIVERGENCIA_REAL": 0,
+      "VALOR_INVALIDO": 0,
+      "DADO_INVALIDO": 0
+    },
+    "transicoes": {
+      "economic.specialAccumulated: EQUIVALENTE->SEMANTICA_DESCONHECIDA (correspondência HIPOTESE, 3.5)": 38,
+      "economic.accumulatedTopTier: EQUIVALENTE->SEMANTICA_DESCONHECIDA (correspondência HIPOTESE, 3.5)": 49,
+      "winnerLocations: DIFERENCA_REPRESENTACAO->SEMANTICA_DESCONHECIDA (HIPOTESE, ambos com conteúdo)": 23,
+      "winnerLocations: EQUIVALENTE->AUSENTE_EM_UMA_FONTE (ambos vazios: ausência, não equivalência)": 29,
+      "linhas novas nas 2 amostras sem registro XLSX (lotofacil 3820, quina 7158; JSON validado por inteiro, 3.1)": 78,
+      "linhas novas: AUSENTE_EM_UMA_FONTE": 76,
+      "linhas novas: EQUIVALENTE (observation, ausente nas duas fontes)": 2,
+      "linhas removidas": 0,
+      "linhas de faixa fora da configuração atual": 0,
+      "ordens de sorteio coerentes com listaDezenas": 54
+    },
+    "statusAmostras": {
+      "ACEITO": 51,
+      "AUSENTE": 2,
+      "QUARENTENA": 1
+    },
+    "linhasDeLogRecusadas": 0,
+    "requestLogLinhas": 37,
+    "quina380": "QUARENTENA, data original preservada"
+  },
+  "verificacaoManifestosReais": {
+    "commitCodigo": "2c7b2dd",
+    "modo": "somente leitura, rede desabilitada (unshare -rn), sem reimportação",
+    "manifestosVerificados": 12,
+    "falhas": 0,
+    "detalhe": "3 execuções × 4 modalidades; conteúdo real: bytes do XLSX, coleta, relatório, quarentena, duplicatas e cada registro aceito (hash recalculado); sequence 2 encadeada ao sequence 1 do ledger (VERIFICADO_CONTRA_ANTERIOR); controle negativo em memória (bytes, registro e quarentena alterados; sem anterior) detectado",
+    "entradasPorModalidade": {
+      "megasena": {
+        "entradas": 3085,
+        "aceitos": 3080
+      },
+      "lotofacil": {
+        "entradas": 3824,
+        "aceitos": 3819
+      },
+      "quina": {
+        "entradas": 7161,
+        "aceitos": 7156
+      },
+      "lotomania": {
+        "entradas": 2999,
+        "aceitos": 2994
+      }
+    }
+  },
+  "parserXlsx110SobreArquivosReais": {
+    "modo": "somente leitura",
+    "celulasIdenticasAo100": true,
+    "celulas": {
+      "megasena": 61620,
+      "lotofacil": 126060,
+      "quina": 150318,
+      "lotomania": 122795
+    },
+    "relacoesExternas": 0,
+    "efeito": "ignoredParts 16→13 (customXml/_rels/item1..3.xml.rels agora validadas)"
   }
 }
