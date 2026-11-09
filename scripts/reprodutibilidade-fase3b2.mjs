@@ -8,8 +8,7 @@
  *      node scripts/reprodutibilidade-fase3b2.mjs --real DIR (arquivos brutos privados em DIR/raw/<modalidade>/*.xlsx)
  */
 import { spawnSync } from 'node:child_process';
-import { readFileSync, readdirSync, existsSync } from 'node:fs';
-import { join } from 'node:path';
+import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 const self = fileURLToPath(import.meta.url);
@@ -19,9 +18,11 @@ async function child(realDir) {
   const { runPipeline } = await import('../src/historical/pipeline.js');
   let inputs;
   if (realDir) {
-    inputs = L4.map(l => { const d = join(realDir, 'raw', l); const x = readdirSync(d).filter(f => f.endsWith('.xlsx')).sort()[0];
-      const col = JSON.parse(readFileSync(join(d, x.replace(/\.xlsx$/, '.collection.json')), 'utf8'));
-      return { lottery: l, bytes: new Uint8Array(readFileSync(join(d, x))), meta: { collectionRunId: col.collectionRunId, url: col.url, method: col.method, httpStatus: col.httpStatus, contentType: col.contentType, contentDisposition: col.contentDisposition, originalFileName: col.originalFileName, collectedAt: col.collectedAt, sourceType: col.sourceType, note: col.note } }; });
+    // leitura confinada (store.js): links simbólicos em raw/<modalidade> ou nos arquivos são recusados
+    const { listDirConfined, readConfined } = await import('../src/historical/store.js');
+    inputs = L4.map(l => { const d = `raw/${l}`; const x = listDirConfined(realDir, d).filter(f => /^[0-9a-f]{64}\.xlsx$/.test(f)).sort()[0];
+      const col = JSON.parse(readConfined(realDir, `${d}/${x.replace(/\.xlsx$/, '.collection.json')}`).toString('utf8'));
+      return { lottery: l, bytes: new Uint8Array(readConfined(realDir, `${d}/${x}`)), meta: { collectionRunId: col.collectionRunId, url: col.url, method: col.method, httpStatus: col.httpStatus, contentType: col.contentType, contentDisposition: col.contentDisposition, originalFileName: col.originalFileName, collectedAt: col.collectedAt, sourceType: col.sourceType, note: col.note } }; });
   } else {
     const { syntheticWorkbook, SYNTH_META } = await import('../test/fase3b2/_xlsx-writer.js');
     inputs = L4.map(l => ({ lottery: l, bytes: syntheticWorkbook(l, { count: 40, seed: 2026 }), meta: SYNTH_META(l, 'repro') }));
