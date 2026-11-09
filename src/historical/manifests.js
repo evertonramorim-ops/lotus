@@ -6,7 +6,7 @@
  * O rootHash prova integridade/consistência interna — NÃO autenticidade da fonte.
  * @module historical/manifests
  */
-import { buildManifest, ManifestLedger, verifyManifest, verifyManifestDetailed, hashRecord, hashFile } from '../integrity/manifest.js';
+import { buildManifest, ManifestLedger, verifyManifest, verifyManifestDetailed, hashRecord, hashFile, isIsoUtc } from '../integrity/manifest.js';
 import { hashJson } from '../integrity/hash.js';
 import { HISTORICAL_SCHEMA, HISTORICAL_SCHEMA_VERSION } from './normalize.js';
 
@@ -236,7 +236,10 @@ export function verifyPersistedRuns({ ledgerText, runs }) {
     if (!last || m.sequence >= last.sequence) lastSeq.set(m.datasetId, { sequence: m.sequence, rootHash: m.rootHash });
   };
   let entriesChecked = 0;
-  for (const run of [...runs].sort((a, b) => (a.runId < b.runId ? -1 : a.runId > b.runId ? 1 : 0))) {
+  // ORDEM AUTORITATIVA (correção final 3b.2): posição da linha do manifesto de execução no ledger revalidado (= sequence
+  // do datasetId de execução), NEW antes de UNCHANGED_REPLAY da mesma sequence. Nunca runId, nome de pasta ou createdAt.
+  const { ordered, warnings } = orderRunsByLedger(runs, ledger);
+  for (const run of ordered) {
     const verified = [];
     for (const mod of run.modalities) {
       const scope = { scope: 'modality', run: run.runId, lottery: mod.lottery };
@@ -260,8 +263,53 @@ export function verifyPersistedRuns({ ledgerText, runs }) {
     runResults.push({ ...scope, ok: v.ok && okL, datasetId: rm.datasetId, sequence: rm.sequence, entries: v.checked.entries, chain: v.checked.chain });
   }
   for (const [k, le] of ledger.byKey) if (!referenced.has(k)) errors.push({ scope: 'ledger', code: 'LEDGER_ENTRY_WITHOUT_RUN', key: k, line: le.line });
-  return { ok: errors.length === 0, ledger: { lines: ledger.lines, accepted: ledger.accepted, chainOk: ledger.ok },
+  return { ok: errors.length === 0, order: ordered.map(r => r.runId), warnings, ledger: { lines: ledger.lines, accepted: ledger.accepted, chainOk: ledger.ok },
     modalityManifestsVerified: modalityResults.filter(r => r.ok).length, modalityManifestsTotal: modalityResults.length,
     runManifestsVerified: runResults.filter(r => r.ok).length, runManifestsTotal: runResults.length, entriesChecked, errors, modalityResults, runResults };
+}
+
+const RUN_ACTION_RANK = { NEW: 0, UNCHANGED_REPLAY: 1 };
+/**
+ * Ordena execuções persistidas pela posição AUTORITATIVA no ledger revalidado: linha do manifesto de execução (sequence
+ * crescente do datasetId `lotus.historical.run`); para a mesma linha, NEW antes de UNCHANGED_REPLAY (um replay da sequence k
+ * só pode ocorrer depois do NEW k e antes do NEW k+1). Execuções sem manifesto legível ou fora do ledger vão ao fim (e falham
+ * na verificação). runId entra SOMENTE como desempate entre replays da mesma sequence — verificados contra o mesmo manifesto,
+ * portanto sem efeito no resultado. createdAt é apenas validado (formato) e comparado para AVISO, nunca para ordenar.
+ * @returns {{ordered:object[], warnings:object[]}}
+ */
+export function orderRunsByLedger(runs, ledger) {
+  const keyed = runs.map(run => {
+    const f = run.runManifestFile; const m = f && f.manifest;
+    const le = m && typeof m === 'object' && m.datasetId === RUN_DATASET_ID && Number.isSafeInteger(m.sequence) ? ledger.byKey.get(keyOf(m.datasetId, m.sequence)) : undefined;
+    return { run, line: le ? le.line : Number.POSITIVE_INFINITY, rank: f && RUN_ACTION_RANK[f.action] !== undefined ? RUN_ACTION_RANK[f.action] : 2, createdAt: m && typeof m === 'object' ? m.createdAt : undefined };
+  });
+  keyed.sort((a, b) => a.line - b.line || a.rank - b.rank || (a.run.runId < b.run.runId ? -1 : a.run.runId > b.run.runId ? 1 : 0));
+  const warnings = []; let prevNew = null;
+  for (const k of keyed) {
+    if (k.createdAt !== undefined && !isIsoUtc(k.createdAt)) warnings.push({ code: 'RUN_CREATED_AT_INVALID', run: k.run.runId });
+    if (k.rank === 0 && Number.isFinite(k.line) && isIsoUtc(k.createdAt)) {
+      if (prevNew && Date.parse(k.createdAt) < Date.parse(prevNew.createdAt)) warnings.push({ code: 'RUN_CREATED_AT_NOT_MONOTONIC', run: k.run.runId, createdAt: k.createdAt, previousRun: prevNew.run.runId, previousCreatedAt: prevNew.createdAt, note: 'createdAt informado pelo operador é retroativo; a ordem verificada é a do ledger' });
+      prevNew = k;
+    }
+  }
+  return { ordered: keyed.map(k => k.run), warnings };
+}
+
+/**
+ * Execução usada pela reconciliação offline: a execução NEW cujo manifesto é IDÊNTICO ao último manifesto de execução do
+ * ledger revalidado (maior sequence). Nunca a "última" por nome de pasta/runId/createdAt.
+ * @param {{ledgerText:string, runs:{runId:string, runManifestFile:{action:string, manifest:object}|null}[]}} p
+ * @returns {{ok:true, runId:string, sequence:number, rootHash:string}|{ok:false, reason:string, candidates?:string[], errors?:object[]}}
+ */
+export function selectLatestRun({ ledgerText, runs }) {
+  const ledger = verifyLedgerChain(ledgerText);
+  if (!ledger.ok) return { ok: false, reason: 'LEDGER_INVALIDO', errors: ledger.errors };
+  const latest = ledger.latest.get(RUN_DATASET_ID);
+  if (!latest) return { ok: false, reason: 'LEDGER_SEM_EXECUCAO' };
+  const want = hashJson(latest);
+  const hits = runs.filter(r => r.runManifestFile && r.runManifestFile.action === 'NEW' && r.runManifestFile.manifest && typeof r.runManifestFile.manifest === 'object' && hashJson(clean(r.runManifestFile.manifest)) === want).map(r => r.runId).sort();
+  if (hits.length === 0) return { ok: false, reason: 'EXECUCAO_NEW_DA_ULTIMA_SEQUENCIA_AUSENTE', sequence: latest.sequence };
+  if (hits.length > 1) return { ok: false, reason: 'EXECUCAO_NEW_DUPLICADA_PARA_A_MESMA_SEQUENCIA', candidates: hits };
+  return { ok: true, runId: hits[0], sequence: latest.sequence, rootHash: latest.rootHash };
 }
 export { ManifestLedger };
