@@ -2,33 +2,33 @@
   "mode": "SYNTHETIC_DATA",
   "identical": true,
   "logicalSha256": [
-    "6ac44b89250b6df6282603a07d6ab98e6a425bc85a7d15045f24c889c8a05b51",
-    "6ac44b89250b6df6282603a07d6ab98e6a425bc85a7d15045f24c889c8a05b51"
+    "25bd11f5a629982023f14be2ff19fc8938909ddb1718f6eed0153cea540fc14d",
+    "25bd11f5a629982023f14be2ff19fc8938909ddb1718f6eed0153cea540fc14d"
   ],
   "runRootHash": [
-    "a25cfe76c9a3e20a04cdfbd21466e2f3ed140437119f3492e917ae1bb127e465",
-    "a25cfe76c9a3e20a04cdfbd21466e2f3ed140437119f3492e917ae1bb127e465"
+    "b02c77455f18751118b201e99b2ea16884cdcd9ef67e4bf0c6bd9833695abb59",
+    "b02c77455f18751118b201e99b2ea16884cdcd9ef67e4bf0c6bd9833695abb59"
   ],
   "modalityRootHashes": [
     {
       "lottery": "megasena",
       "sequence": 1,
-      "rootHash": "3707aa483e7f5109932ea900b99f1d5b4ec6e541e83e64c71b54f956089b4bb3"
+      "rootHash": "e83466bc7fbd66ce19339b03fba4c59c31eb4853be5a14c88fb3100f130bdddb"
     },
     {
       "lottery": "lotofacil",
       "sequence": 1,
-      "rootHash": "b9685414fed653b10df95af934e3d832510dc55b91ddd1357d52c6d9cda2e989"
+      "rootHash": "6f370c7b488f66617398c896b1f13c64f85f61a11f758a0f6590bd428f0a8208"
     },
     {
       "lottery": "quina",
       "sequence": 1,
-      "rootHash": "ae4d53246181fa10c85565ceb6eb93a0416fe9a0945110434c578545fd98bf58"
+      "rootHash": "114353f6dcfa4c0839fb61f99c7110b13dd1c22e820c149a97700acc38362372"
     },
     {
       "lottery": "lotomania",
       "sequence": 1,
-      "rootHash": "2af6a61bb61b8650e1807b8651d9154d132d52eebeafe85bcdb368436f58795b"
+      "rootHash": "815c03ef0ac9be0d535760898fdf7f1dabd3dc86c4fdbd79093945ee7496b49a"
     }
   ],
   "counts": [
@@ -95,14 +95,14 @@
   ],
   "variableMetadata": [
     {
-      "pid": 89378,
-      "startedAt": "2026-11-09T12:47:10.276Z",
-      "elapsedMs": 91
+      "pid": 127217,
+      "startedAt": "2026-11-09T13:49:30.572Z",
+      "elapsedMs": 96
     },
     {
-      "pid": 89385,
-      "startedAt": "2026-11-09T12:47:10.422Z",
-      "elapsedMs": 92
+      "pid": 127224,
+      "startedAt": "2026-11-09T13:49:30.718Z",
+      "elapsedMs": 94
     }
   ],
   "distinctProcesses": true

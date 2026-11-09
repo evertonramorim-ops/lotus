@@ -244,5 +244,72 @@
     },
     "relacoesExternas": 0,
     "efeito": "ignoredParts 16→13 (customXml/_rels/item1..3.xml.rels agora validadas)"
+  },
+  "integracaoFinal": {
+    "head_base": "88fba95",
+    "reconciliacaoOffline": {
+      "versao": "3.0.0",
+      "modo": "rede desabilitada (unshare -rn), 0 requisições; request_log com 37 linhas",
+      "amostras": 54,
+      "linhas": 2175,
+      "classes": {
+        "EQUIVALENTE": 736,
+        "AUSENTE_EM_UMA_FONTE": 1274,
+        "SEMANTICA_DESCONHECIDA": 155,
+        "DIFERENCA_REPRESENTACAO": 7,
+        "DIFERENCA_TEMPORAL": 2,
+        "DIFERENCA_FORMATACAO": 1,
+        "DIVERGENCIA_REAL": 0,
+        "VALOR_INVALIDO": 0,
+        "DADO_INVALIDO": 0
+      },
+      "mudancasDeClasseVsAnterior": 0,
+      "linhasComparadas": "2175 de 2175 com a mesma classe por campo",
+      "estados": {
+        "ACEITO": 51,
+        "AUSENTE": 2,
+        "QUARENTENA": 1
+      },
+      "selecaoXlsx": {
+        "ACEITO": 51,
+        "QUARENTENA": 1,
+        "semRegistro": 2,
+        "AMBIGUO": 0,
+        "aceitosComCandidatoEmQuarentenaDoMesmoConcurso": 0
+      },
+      "winnerLocations": {
+        "SEMANTICA_DESCONHECIDA": 23,
+        "AUSENTE_EM_UMA_FONTE": 31,
+        "conteudoEmApenasUmaFonte": 0
+      },
+      "proveniencia": {
+        "VERIFICADA_POR_HASH": 54,
+        "NAO_VERIFICADA_SEM_HASH_NO_LOG": 0,
+        "REJEITADA": 0,
+        "origem": {
+          "FASE3B2": 37,
+          "FASE3B1": 17
+        }
+      }
+    },
+    "verificacaoCompletaManifestos": {
+      "modo": "somente leitura, rede desabilitada, sem reimportação",
+      "ledger": {
+        "linhas": 10,
+        "aceitas": 10,
+        "cadeiaValida": true
+      },
+      "manifestosModalidade": {
+        "verificados": 12,
+        "total": 12
+      },
+      "manifestosExecucao": {
+        "verificados": 3,
+        "total": 3
+      },
+      "entradasConferidas": 51227,
+      "erros": 0,
+      "observacao": "12 = 3 execuções × 4 modalidades (a execução UNCHANGED_REPLAY reapresenta os manifestos sequence 1); distintos no ledger: 8 de modalidade + 2 de execução"
+    }
   }
 }

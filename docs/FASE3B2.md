@@ -210,10 +210,80 @@ Commits de código: `3785165` (blocos 2, 3 e 7), `4153e40` (bloco 4), `8b368e8` 
 
 **Reconciliação offline 2.0.0** (54 amostras arquivadas, rede desabilitada): 2097 → 2175 linhas. EQUIVALENTE 850 → 736 · AUSENTE 1169 → 1274 · SEMANTICA 45 → 155 · REPRESENTACAO 30 → 7 · TEMPORAL 2 · FORMATACAO 1 · DIVERGENCIA/VALOR_INVALIDO/DADO_INVALIDO 0. Mudanças: `specialAccumulated` EQUIVALENTE → SEMANTICA (38) e `accumulatedTopTier` (49) — HIPOTESE; `winnerLocations` REPRESENTACAO → SEMANTICA (23) e EQUIVALENTE → AUSENTE (29, ambos vazios); 78 linhas novas nas 2 amostras sem registro XLSX (Lotofácil 3820, Quina 7158), agora validadas por inteiro (76 AUSENTE, 2 EQUIVALENTE). Nenhuma linha removida; nenhuma faixa fora da configuração; as 54 ordens de sorteio coerentes com `listaDezenas`. Estados: ACEITO 51 · AUSENTE 2 · QUARENTENA 1 (Quina 380).
 
+## 10e. Correção integrada final (a partir de 88fba95) — reconciliação 3.0.0
+
+Escopo restrito a 5 problemas residuais de integração e verificação; blocos da seção 10d não foram reabertos. Nenhuma requisição à CAIXA (`request_log.jsonl` com 37 linhas); dados privados não alterados (só uma nova saída de reconciliação offline); importação real não reexecutada; Quina 380 segue em quarentena.
+
+**1. Seleção do registro XLSX** (`buildXlsxRecordIndex`, em `src/historical/reconcile-sample.js`, usado pelo script). Antes, `new Map([...aceitos, ...quarentena])` deixava a linha em quarentena sobrescrever o aceito do mesmo concurso.
+- Agora:
+  - 1 aceito → `ACEITO`; as linhas em quarentena do concurso ficam só em `quarantineRefs`.
+  - 2+ aceitos → `AMBIGUO` (`MULTIPLOS_REGISTROS_ACEITOS`).
+  - Só quarentena com 1 linha → `QUARENTENA`.
+  - Só quarentena com 2+ linhas → `AMBIGUO` (`MULTIPLOS_CANDIDATOS_EM_QUARENTENA`), nunca "a última do array".
+- Fonte ambígua não é comparada: o JSON é validado por inteiro, e os campos recebem `DADO_INVALIDO` de origem XLSX (`FONTE_XLSX_AMBIGUA`, com as candidatas). Isso segue o precedente da 10c para associação ambígua; invalidade do próprio JSON fica com origem `AMBOS`.
+- A entrada registra `xlsxSource` (seleção, candidatas, `quarantineRefs`) ou `xlsxAmbiguity`.
+
+**2. Cronologia V13 1.1.0.** A data de cada concurso vem de registro **elegível**; a escolha entre elegíveis com a mesma data é determinística (menor linha).
+- Sem elegível → `SEM_REGISTRO_ELEGIVEL`.
+- Elegíveis com datas diferentes → `DATAS_CONFLITANTES_ENTRE_ELEGIVEIS`.
+- Nos dois casos o concurso fica fora da cronologia, com as linhas candidatas em `chronologyExclusions` do relatório; a data de linha inválida nunca é usada.
+- O resultado independe da ordem física. No código anterior, uma duplicata com fórmula e data diferente gerava ou não anomalia conforme a ordem.
+
+**3. Verificação completa** (`verifyPersistedRuns`, `verifyLedgerChain` e `verifyRunManifest`, usados por `scripts/verificar-manifestos-fase3b2.mjs`).
+- O ledger inteiro é revalidado na ordem das linhas:
+  - JSON, estrutura e rootHash;
+  - sem regressão, substituição ou reapresentação;
+  - sequência +1;
+  - `chain:previous` igual ao rootHash anterior.
+- Cada manifesto (modalidade e execução) é comparado com a linha do ledger por conteúdo idêntico, não por `ledger.some()`.
+- O `run-report.json` é **recalculado** a partir dos artefatos verificados. As 4 referências `manifest:<modalidade>` são conferidas contra os rootHashes efetivamente verificados.
+- Sucessão entre execuções: `NEW` = anterior + 1; `UNCHANGED_REPLAY` = mesmo manifesto. Toda linha do ledger precisa ser referenciada por uma execução.
+
+**4. Proveniência das amostras JSON** (`verifySampleProvenance`).
+- O hash, o tamanho e o status HTTP registrados no log (3b.2 e 3b.1) são preservados. O SHA-256 dos bytes armazenados é comparado **antes do parse**.
+- Divergência de hash ou tamanho, hash malformado ou status ≠ 200 → `PROVENIENCIA_REJEITADA`, sem parse, com os dois hashes e os tamanhos esperado e observado.
+- Log sem hash → `NAO_VERIFICADA_SEM_HASH_NO_LOG` (limitação, nunca "verificada").
+
+**5. winnerLocations (HIPOTESE).**
+
+| Situação | Classe |
+|---|---|
+| Ambas vazias | `AUSENTE_EM_UMA_FONTE` |
+| Conteúdo em só uma fonte | `SEMANTICA_DESCONHECIDA` (antes `AUSENTE`) |
+| Ambas com conteúdo | `SEMANTICA_DESCONHECIDA` |
+| Tipo JSON incorreto | `DADO_INVALIDO` |
+| Registro XLSX inteiro inexistente | `AUSENTE` (ausência do registro, como nos demais campos) |
+
+Nunca `EQUIVALENTE`.
+
+**Versões** (só onde o contrato mudou):
+- reconciliação 2.0.0 → **3.0.0**: classe de winnerLocations, novo estado `PROVENIENCIA_REJEITADA`, `xlsxStatus: AMBIGUO`;
+- V13 1.0.0 → **1.1.0** e validadores 1.2.0 → **1.3.0**;
+- relatório de importação 2.0.0 → **2.1.0**: campo aditivo `chronologyExclusions`.
+- Inalterados: adaptador JSON 2.0.0, parser 1.1.0, `lotus.manifest` 1.0.0, `lotus.import-run` 1.0.0.
+
+**Testes.** `test/fase3b2/audit-integracao-final.test.js`: 16 testes de integração, usando o `importXlsx()` sintético, a persistência simulada como o script grava e o próprio índice até `reconcileSample()`. Os 16 falham em `88fba95`. Nenhuma expectativa antiga foi alterada. Clone limpo (Node v24.22.1, npm 11.21.1, rede desabilitada):
+- `npm test`: 642/642, 0 skip;
+- reprodutibilidade idêntica em 2 processos: logical `25bd11f5…c14d`, run root `b02c7745…bb59`. Mudaram por causa das versões acima;
+- fixtures idênticas.
+
+**Dados reais (somente leitura, sem rede).**
+- **Manifestos:**
+  - ledger com 10 de 10 linhas válidas e cadeia íntegra;
+  - **12/12** manifestos de modalidade e **3/3** de execução verificados (distintos no ledger: 8 de modalidade e 2 de execução);
+  - 51227 entradas conferidas, 0 erros.
+- **Reconciliação offline 3.0.0:**
+  - 54 amostras, todas `VERIFICADA_POR_HASH` (37 da 3b.2 e 17 da 3b.1), 0 sem hash, 0 rejeitadas;
+  - 2175 linhas, **nenhuma mudança de classe**, conferido linha a linha: EQUIVALENTE 736, AUSENTE 1274, SEMANTICA 155, REPRESENTACAO 7, TEMPORAL 2, FORMATACAO 1, inválidos e DIVERGENCIA_REAL 0;
+  - nas amostras reais não há winnerLocations com conteúdo em uma só fonte, nem concurso com aceito e quarentena ao mesmo tempo;
+  - estados: ACEITO 51, AUSENTE 2, QUARENTENA 1 (Quina 380).
+- **V13 1.1.0 no XLSX real** (em memória, nada gravado): aceitos iguais e nenhuma exclusão cronológica. Quina 380 continua `ISOLATED_OUTLIER`.
+- Uma reimportação mudaria o relatório (2.1.0 e tags de validadores 1.3.0), além do efeito já descrito na 10d. **Não** foi feita.
+
 ## 11. Limitações e riscos
 - Completude do histórico não é declarada; XLSX é fonte única oficial disponível, JSON é amostral.
 - Semântica de campos econômicos parcialmente hipotética.
 - Endpoint público pode mudar/bloquear; nenhum contorno é feito.
 
 ## 12. Pendências
-Originais DOU de regras históricas; regras pré-2025 por modalidade; fator 0,7 e limiares; divergência de limite de apostas múltiplas da Mega entre Portaria e produto; semântica dos campos econômicos; Quina faixa 2 antes de 4085; tratamento de moeda pré-Real; decisão humana sobre Quina 380; regras históricas **verificadas** de faixas por período (enquanto todos os períodos forem `RULE_NOT_VERIFIED`, faixas fora da configuração atual permanecem `SEMANTICA_DESCONHECIDA`, seção 10d); decisão sobre reimportar com os novos formatos (geraria manifestos sequence 3). A contradição da seção 10c foi resolvida na 10d.
+Originais DOU de regras históricas; regras pré-2025 por modalidade; fator 0,7 e limiares; divergência de limite de apostas múltiplas da Mega entre Portaria e produto; semântica dos campos econômicos; Quina faixa 2 antes de 4085; tratamento de moeda pré-Real; decisão humana sobre Quina 380; regras históricas **verificadas** de faixas por período (enquanto todos os períodos forem `RULE_NOT_VERIFIED`, faixas fora da configuração atual permanecem `SEMANTICA_DESCONHECIDA`, seção 10d); decisão sobre reimportar com os novos formatos (geraria manifestos sequence 3; seções 10d e 10e). A contradição da seção 10c foi resolvida na 10d.

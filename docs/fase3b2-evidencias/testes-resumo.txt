@@ -1,3 +1,19 @@
+# === Correção integrada final (base 88fba95) ===
+# Node v24.22.1 · npm 11.21.1 · clone limpo de phase-3b2-historical-import @ 6f905f7 (código; o commit seguinte só altera docs/evidências)
+# comando: env -i PATH="$PATH" HOME=/tmp unshare -rn npm test   (rede desabilitada no processo)
+ℹ tests 642
+ℹ pass 642
+ℹ fail 0
+ℹ skipped 0
+# novo: test/fase3b2/audit-integracao-final.test.js — 16 testes (§1: 3 · §2: 4 · §3: 6 · §4: 2 · §5: 1), 16/16 passam
+# falha-antes: o mesmo arquivo copiado para um worktree em 88fba95 → 16/16 falham
+#   (§2 reproduzido diretamente: no código antigo a anomalia V13 aparece ou não conforme a ordem física da duplicata com fórmula)
+# testes antigos: nenhuma expectativa alterada nesta rodada
+# npm run reprodutibilidade:fase3b2 → exit 0, idêntico em 2 processos; logical 25bd11f5…c14d, run root b02c7745…bb59
+#   (antes, em 88fba95: 6ac44b89…5b51 / a25cfe76…e465 — mudança esperada: validadores 1.3.0, relatório de importação 2.1.0)
+# npm run fixtures:fase3b2 -- --check → exit 0, "OK: fixtures idênticas"
+
+# === Rodada anterior (auditoria integral, base f8f970d) — mantida como histórico ===
 # Node v24.22.1 · npm 11.21.1 · clone limpo (git clone novo, sem node_modules) de phase-3b2-historical-import @ 2c7b2dd (código; o commit seguinte só altera docs)
 # comando: env -i PATH="$PATH" HOME=/tmp unshare -rn npm test   (rede desabilitada no processo)
 ℹ tests 626
