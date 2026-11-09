@@ -1,14 +1,42 @@
 /**
  * Parser JSON que PRESERVA o texto exato dos números ({"$number":"30598.43"}) — evita que valores
  * monetários da API passem por ponto flutuante. Rejeita chaves duplicadas, profundidade > 64 e
- * entradas > 4 MiB. Strings decodificadas conforme RFC 8259 (surrogates isolados rejeitados).
+ * entradas > 4 MiB (BYTES UTF-8 reais, não unidades UTF-16). Strings decodificadas conforme RFC 8259
+ * (surrogates isolados rejeitados).
+ * Tokens numéricos são objetos congelados registrados num WeakSet PRIVADO deste módulo: um objeto
+ * recebido do JSON externo com a chave "$number" (ex.: {"numero":{"$number":"7"}}) NÃO é token numérico.
  * @module historical/jsonnum
  */
-export const isNum = v => v !== null && typeof v === 'object' && !Array.isArray(v) && Object.keys(v).length === 1 && typeof v.$number === 'string';
+const TOKENS = new WeakSet();
+export const JSON_MAX_BYTES = 4 * 1024 * 1024;
+/** Token numérico criado por este parser (identidade privada; não reproduzível por JSON externo). */
+export const isNum = v => v !== null && typeof v === 'object' && TOKENS.has(v);
+const numToken = lit => { const t = Object.freeze({ $number: lit }); TOKENS.add(t); return t; };
+/** Bytes UTF-8 de uma string bem formada, sem alocar (surrogate par = 4 bytes). */
+export function utf8ByteLength(text) {
+  let n = 0;
+  for (let i = 0; i < text.length; i++) {
+    const c = text.charCodeAt(i);
+    if (c < 0x80) n += 1; else if (c < 0x800) n += 2;
+    else if (c >= 0xd800 && c <= 0xdbff && i + 1 < text.length && (text.charCodeAt(i + 1) & 0xfc00) === 0xdc00) { n += 4; i++; }
+    else n += 3;
+  }
+  return n;
+}
+/** Serializa um valor do parser como texto JSON fiel: tokens numéricos voltam ao literal original (sem aspas). */
+export function toJsonText(v) {
+  if (isNum(v)) return v.$number;
+  if (Array.isArray(v)) return `[${v.map(toJsonText).join(',')}]`;
+  if (v !== null && typeof v === 'object') return `{${Object.keys(v).map(k => `${JSON.stringify(k)}:${toJsonText(v[k])}`).join(',')}}`;
+  return JSON.stringify(v);
+}
+/** Tipo JSON de um valor do parser: undefined (ausente) | null | number | string | boolean | array | object. */
+export const jsonType = v => (v === undefined ? 'undefined' : v === null ? 'null' : isNum(v) ? 'number' : Array.isArray(v) ? 'array' : typeof v);
 
-export function parseJsonPreservingNumbers(text, { maxDepth = 64, maxBytes = 4 * 1024 * 1024 } = {}) {
+export function parseJsonPreservingNumbers(text, { maxDepth = 64, maxBytes = JSON_MAX_BYTES } = {}) {
   if (typeof text !== 'string') throw new TypeError('JSON deve ser string');
-  if (text.length > maxBytes) throw new RangeError('JSON grande demais');
+  // limite em BYTES UTF-8: text.length conta unidades UTF-16 e subestima texto não-ASCII
+  if (text.length > maxBytes || utf8ByteLength(text) > maxBytes) throw new RangeError('JSON grande demais');
   let i = 0; const ws = () => { while (i < text.length && ' \t\n\r'.includes(text[i])) i++; };
   const fail = m => { throw new SyntaxError(`JSON inválido na posição ${i}: ${m}`); };
   function value(depth) {
@@ -26,7 +54,7 @@ export function parseJsonPreservingNumbers(text, { maxDepth = 64, maxBytes = 4 *
     if (text.startsWith('null', i)) { i += 4; return null; }
     const m = /-?(0|[1-9][0-9]*)(\.[0-9]+)?([eE][+-]?[0-9]+)?/y; m.lastIndex = i; const r = m.exec(text);
     if (!r || r[0] === '' || r[0] === '-') fail('valor inesperado');
-    i = m.lastIndex; return { $number: r[0] };
+    i = m.lastIndex; return numToken(r[0]);
   }
   function str() {
     i++; let s = '';

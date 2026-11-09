@@ -96,9 +96,13 @@ test('8: ganhadores e prêmio ausentes no XLSX → duas linhas, sem divergência
 test('9: faixa inexistente no XLSX e presente no JSON (válida e inválida) → linhas independentes', () => {
   const x = base();
   const rv = compareRecords(x, jsonOf(x, { extra: ['{"descricaoFaixa":"3 acertos","faixa":4,"numeroDeGanhadores":7,"valorPremio":5.00}'] }), ctx);
-  assert.equal(one(rv, 'tier[3].winners').class, C.AUSENTE); assert.equal(one(rv, 'tier[3].prize').class, C.AUSENTE);
+  // [3b.2-integral 2.1 — expectativa antiga demonstradamente incorreta] "3 acertos" na Mega-Sena está fora da
+  // configuração atual e o período histórico é RULE_NOT_VERIFIED: SEMANTICA_DESCONHECIDA (não AUSENTE). Valor inválido
+  // continua prevalecendo (VALOR_INVALIDO); linhas seguem independentes; nenhuma divergência.
+  assert.equal(one(rv, 'tier[3].winners').class, C.SEMANTICA); assert.equal(one(rv, 'tier[3].prize').class, C.SEMANTICA);
+  assert.equal(one(rv, 'tier[3].prize').tierRule.verificationStatus, 'RULE_NOT_VERIFIED');
   const ri = compareRecords(x, jsonOf(x, { extra: ['{"descricaoFaixa":"3 acertos","faixa":4,"numeroDeGanhadores":7,"valorPremio":1.5e-3}'] }), ctx);
-  assert.equal(one(ri, 'tier[3].winners').class, C.AUSENTE);
+  assert.equal(one(ri, 'tier[3].winners').class, C.SEMANTICA);
   const p = one(ri, 'tier[3].prize'); assert.equal(p.class, C.VALOR_INVALIDO); assert.equal(p.invalidSource, 'JSON'); assert.equal(p.xlsx, '<faixa inexistente no XLSX>');
   assert.equal(rv.concat(ri).filter(q => q.field === 'tier[3]').length, 0);
   noDiv(rv.concat(ri));

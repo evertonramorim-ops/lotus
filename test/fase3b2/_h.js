@@ -10,3 +10,5 @@ export function imp(lottery, opt = {}, bytes = null) {
 export const setCell = (i, h, v) => ({ header, rows }) => { rows[i][header.indexOf(h)] = v; return { header, rows }; };
 export const chain = (...fs) => d => fs.reduce((acc, f) => f(acc), d);
 export const reasons = r => r.quarantine.flatMap(q => q.reasons.map(x => x.code));
+/** Embaralhamento Fisher–Yates com PRNG semeado (determinístico; nunca `sort(() => random() - 0.5)`, que é enviesado). */
+export function shuffle(arr, rnd) { const a = [...arr]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }

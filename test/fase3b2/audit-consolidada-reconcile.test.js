@@ -115,6 +115,10 @@ for (const k of ECON) for (const [xn, xf] of Object.entries(XS)) for (const [jn,
     if (xInv || jInv) { assert.deepEqual([r.xlsxPresent, r.xlsxValid, r.jsonPresent, r.jsonValid], [xPres, xPres ? !xInv : null, jPres, jPres ? !jInv : null], 'presença/validade por fonte'); assert.equal(r.class, C.VALOR_INVALIDO); assert.equal(r.invalidSource, xInv && jInv ? 'AMBOS' : xInv ? 'XLSX' : 'JSON'); if (xInv) assert.equal(r.xlsxLiteral, '??'); if (jInv) assert.ok(r.jsonLiteral); }
     else if (xn !== 'valido' || jAbs) assert.equal(r.class, C.AUSENTE);
     else if (jn === 'diferente') assert.equal(r.class, hyp ? C.SEMANTICA : C.DIVERGENCIA);
+    // [3b.2-integral 3.5 — expectativa antiga demonstradamente incorreta] correspondência HIPOTESE (campo XLSX ↔ chave
+    // JSON não documentada) nunca é EQUIVALENTE, mesmo com valores coincidentes: SEMANTICA_DESCONHECIDA, coincidência
+    // registrada à parte (numericCoincidence).
+    else if (hyp) { assert.equal(r.class, C.SEMANTICA); assert.equal(r.correspondence, 'HIPOTESE'); assert.equal(r.numericCoincidence, true); }
     else assert.equal(r.class, C.EQUIVALENTE);
     if (jn !== 'diferente') noDiv(rows);
   });
@@ -187,7 +191,10 @@ test('listaRateioPremio: ausente / nula / não-array / descrição inválida / d
   const ds = dup.find(r => r.field === 'json:listaRateioPremio'); assert.equal(ds.duplicates.length, 1);
   assert.equal(one(dup, `tier[${missing}].winners`).class, C.DADO_INVALIDO); assert.equal(one(dup, `tier[${missing}].prize`).class, C.DADO_INVALIDO); noDiv(dup);
   const un = compareRecords(x, J(x, { listaRateioPremio: `[${tl.join(',')},{"descricaoFaixa":"2 acertos","faixa":9,"numeroDeGanhadores":1,"valorPremio":1.00}]` }), ctx);
-  assert.equal(un.find(r => r.field === 'json:listaRateioPremio').unrecognized[0].hits, 2); assert.equal(one(un, 'tier[2].prize').class, C.AUSENTE); noDiv(un);
+  assert.equal(un.find(r => r.field === 'json:listaRateioPremio').unrecognized[0].hits, 2);
+  // [3b.2-integral 2.1 — expectativa antiga demonstradamente incorreta] "2 acertos" fora da configuração atual, período
+  // RULE_NOT_VERIFIED → SEMANTICA_DESCONHECIDA (não AUSENTE).
+  assert.equal(one(un, 'tier[2].prize').class, C.SEMANTICA); noDiv(un);
 });
 
 test('registro XLSX em quarentena com data ou dezenas inválidas → DADO_INVALIDO (origem XLSX), nunca DIVERGENCIA_REAL', () => {

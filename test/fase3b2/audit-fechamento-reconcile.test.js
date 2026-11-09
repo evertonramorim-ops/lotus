@@ -3,7 +3,7 @@
 // por célula e caminho de classificação do script. Offline e determinístico; nenhum dado real.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { imp } from './_h.js';
+import { imp, shuffle } from './_h.js';
 import { adaptJsonResult, compareRecords, CLASSES as C, MONETARY_REGIME as R } from '../../src/historical/reconcile.js';
 import { LOTTERIES } from '../../src/lotteries/config.js';
 // import dinâmico: permite medir falha-antes por teste contra o código anterior (módulo inexistente lá)
@@ -36,12 +36,16 @@ test('1: faixa não prevista (Mega-Sena 2 acertos) só no JSON → linhas própr
   const rows = compareRecords(x, J(x, [...L, ent(2, 1, '1.00', 9)]), ctx);
   for (const f of ['winners', 'prize']) {
     const r = one(rows, `tier[2].${f}`);
-    assert.deepEqual(r.jsonTierIssue, { source: 'JSON', reasons: ['FAIXA_NAO_PREVISTA_NA_MODALIDADE'], indexes: [L.length] });
+    // [3b.2-integral 2.1] motivo renomeado: a faixa está fora da configuração ATUAL e não há regra histórica comprovada
+    // (todos os períodos de tier-rules.js são RULE_NOT_VERIFIED) — não é "proibida", é semântica desconhecida.
+    assert.deepEqual(r.jsonTierIssue, { source: 'JSON', reasons: ['FAIXA_FORA_DA_CONFIGURACAO_ATUAL_SEM_REGRA_HISTORICA_COMPROVADA'], indexes: [L.length] });
+    assert.equal(r.class, C.SEMANTICA); assert.equal(r.tierRule.verificationStatus, 'RULE_NOT_VERIFIED');
     assert.equal(r.jsonEntries.length, 1); assert.equal(r.jsonEntries[0].index, L.length); assert.equal(r.jsonEntries[0].description, '2 acertos'); assert.equal(r.jsonEntries[0].faixa, '9');
-    assert.deepEqual(r.jsonEntries[0].winners, { present: true, literal: '1', valid: true, invalidReason: null });
-    assert.deepEqual(r.jsonEntries[0].prize, { present: true, literal: '1.00', valid: true, invalidReason: null });
+    // [3b.2-integral 2.2/3.4] evidência por entrada ganhou estado e tipo JSON (sem mudar literal/validade).
+    assert.deepEqual(r.jsonEntries[0].winners, { present: true, state: 'PRESENTE', type: 'number', literal: '1', valid: true, invalidReason: null });
+    assert.deepEqual(r.jsonEntries[0].prize, { present: true, state: 'PRESENTE', type: 'number', literal: '1.00', valid: true, invalidReason: null });
   }
-  assert.deepEqual(one(rows, 'json:listaRateioPremio').unrecognized, [{ index: L.length, hits: 2, reason: 'FAIXA_NAO_PREVISTA_NA_MODALIDADE' }]);
+  assert.deepEqual(one(rows, 'json:listaRateioPremio').unrecognized, [{ index: L.length, hits: 2, status: 'DESCONHECIDA_SEM_REGRA_HISTORICA_COMPROVADA', reason: 'FAIXA_FORA_DA_CONFIGURACAO_ATUAL_SEM_REGRA_HISTORICA_COMPROVADA' }]);
   noDiv(rows);
   // valores inválidos na faixa não prevista: precedência do valor (VALOR_INVALIDO / DADO_INVALIDO), origem JSON
   const bad = compareRecords(x, J(x, [...L, ent(2, -1, '0.125', 9)]), ctx);
@@ -63,10 +67,10 @@ test('2: faixa duplicada só no JSON (prevista e não prevista) não desaparece 
     assert.deepEqual(r.jsonEntries.map(e => e.faixa), ['3', '4']); assert.deepEqual(r.jsonTierIssue.reasons, ['FAIXA_DUPLICADA']);
   }
   const s = one(rows, 'json:listaRateioPremio'); assert.equal(s.duplicates.length, 1);
-  assert.deepEqual(s.duplicates[0].indexes, [L.length, L.length + 1]); assert.equal(s.duplicates[0].entries.length, 2); assert.match(s.duplicates[0].entries[1].element, /"valorPremio":"20.00"/);
+  assert.deepEqual(s.duplicates[0].indexes, [L.length, L.length + 1]); assert.equal(s.duplicates[0].entries.length, 2); assert.match(s.duplicates[0].entries[1].element, /"valorPremio":20\.00[,}]/); // [3b.2-integral 3.3] elemento serializado fielmente (literal numérico, não string)
   noDiv(rows);
   const un = compareRecords(x, J(x, [...L, ent(3, 1, '1.00', 7), ent(3, 2, '2.00', 8)]), ctx);
-  for (const f of ['winners', 'prize']) { const r = one(un, `tier[3].${f}`); assert.equal(r.class, C.DADO_INVALIDO); assert.deepEqual(r.jsonTierIssue.reasons, ['FAIXA_DUPLICADA', 'FAIXA_NAO_PREVISTA_NA_MODALIDADE']); assert.equal(r.jsonEntries.length, 2); }
+  for (const f of ['winners', 'prize']) { const r = one(un, `tier[3].${f}`); assert.equal(r.class, C.DADO_INVALIDO); assert.deepEqual(r.jsonTierIssue.reasons, ['FAIXA_DUPLICADA', 'FAIXA_FORA_DA_CONFIGURACAO_ATUAL_SEM_REGRA_HISTORICA_COMPROVADA']); assert.equal(r.jsonEntries.length, 2); }
   noDiv(un);
 });
 
@@ -155,7 +159,7 @@ test('10: dezenas XLSX fora do intervalo / célula ausente / célula inválida �
   assert.equal(q.xlsxInvalidCells[1].cellInvalidReason, 'esperado inteiro ≥ 0');
   const z = base(); const jl = `[${z.numbers.slice(1).map(n => `"${n}"`).join(',')},"99"]`;
   const jr = one(compareRecords(z, J(z, std(z), { listaDezenas: jl }), ctx), 'numbers');
-  assert.equal(jr.invalidSource, 'JSON'); assert.deepEqual(jr.jsonInvalidItems, [{ side: 'JSON', index: 5, literal: '99', value: 99, reason: 'FORA_DO_INTERVALO_1_60' }]);
+  assert.equal(jr.invalidSource, 'JSON'); assert.deepEqual(jr.jsonInvalidItems, [{ side: 'JSON', index: 5, literal: '99', type: 'string', value: 99, reason: 'FORA_DO_INTERVALO_1_60' }] /* [3b.2-integral 3.4] item com tipo JSON */);
   assert.deepEqual(jr.xlsxInvalidCells, [], 'XLSX válido: nenhuma célula inválida'); assert.equal(jr.xlsxValid, true);
 });
 
@@ -171,7 +175,13 @@ test('11: classificação do script (função pura, sem pasta privada): JSON_DAD
     assert.equal(r.entry.contest, null); assert.equal(r.entry.contestLiteral, lit.replace(/"/g, ''));
     assert.equal(one(r.rows, 'contest').class, C.DADO_INVALIDO); assert.equal(r.entry.classes.DADO_INVALIDO, 1); assert.equal(r.quarantine, null);
   }
-  for (const lit of [undefined, 'null']) { const r = run(body({ numero: lit })); assert.equal(r.status, ST.JSON_SEM_RESULTADO); assert.equal(r.entry.status, 'JSON_SEM_RESULTADO'); assert.deepEqual(r.rows, []); assert.equal(r.entry.file, undefined); }
+  // [3b.2-integral 3.1] concurso ausente/nulo NÃO encerra a validação: os demais campos do JSON continuam verificados
+  // (antes: rows = []). Ausente × nulo distinguidos em contestState.
+  for (const [lit, st] of [[undefined, 'AUSENTE'], ['null', 'NULO']]) {
+    const r = run(body({ numero: lit })); assert.equal(r.status, ST.JSON_SEM_RESULTADO); assert.equal(r.entry.status, 'JSON_SEM_RESULTADO'); assert.equal(r.entry.file, undefined);
+    assert.equal(r.entry.contestState, st); assert.equal(one(r.rows, 'contest').jsonState, st); assert.equal(one(r.rows, 'numbers').class, C.AUSENTE); noDiv(r.rows);
+    const bad = run(body({ numero: lit, listaDezenas: '["01","01","02","03","04","05"]' })); assert.equal(one(bad.rows, 'numbers').class, C.DADO_INVALIDO, 'JSON inválido sem concurso continua detectado');
+  }
   const ok = run(body({})); assert.equal(ok.status, ST.VALIDO); assert.equal(ok.entry.xlsxStatus, 'ACEITO'); assert.equal(ok.entry.contest, x.contest); assert.equal(one(ok.rows, 'numbers').class, C.EQUIVALENTE); assert.equal(ok.quarantine, null);
   const div = run(body({ dataApuracao: '"01/01/1990"' })); assert.equal(div.status, ST.VALIDO); assert.ok(div.quarantine, 'divergência real segue para quarentena');
   const miss = run(body({ numero: '50' })); assert.equal(miss.entry.xlsxStatus, 'AUSENTE'); assert.equal(one(miss.rows, 'contest').class, C.AUSENTE);
@@ -219,7 +229,7 @@ test('propriedade: união completa (toda faixa de qualquer fonte tem exatamente 
     }
     for (const h of [0, 1, 2, 3, 7]) if (rnd() < 0.2) { const n = rnd() < 0.3 ? 2 : 1; for (let k = 0; k < n; k++) L.push(ent(h, pick(['1', '-1']), pick(['1.00', '0.125']))); jHits.add(h); if (n > 1) dupHits.add(h); unrec++; }
     if (rnd() < 0.3) x.prizeTiers = x.prizeTiers.filter(t => t.hits !== 4);
-    const rows = compareRecords(x, J(x, L.sort(() => rnd() - 0.5)), ctx);
+    const rows = compareRecords(x, J(x, shuffle(L, rnd)) /* Fisher–Yates semeado */, ctx);
     for (const h of new Set([...x.prizeTiers.map(t => t.hits), ...jHits])) { one(rows, `tier[${h}].winners`); one(rows, `tier[${h}].prize`); }
     for (const h of dupHits) for (const f of ['winners', 'prize']) { const r = one(rows, `tier[${h}].${f}`); assert.ok([C.DADO_INVALIDO, C.VALOR_INVALIDO, C.AUSENTE].includes(r.class)); assert.ok(r.jsonEntries.length >= 2); }
     for (const r of rows) {
