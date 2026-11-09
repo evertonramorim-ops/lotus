@@ -42,13 +42,15 @@ Bytes originais gravados write-once (`wx`) em `raw/<modalidade>/<sha256>.xlsx` c
 node scripts/importar-historico-fase3b2.mjs --private <DIR_PRIVADO_FORA_DO_GIT> --from-3b1 <dir> [--created-at ISO]
 ```
 Reexecução com mesmo conteúdo → `UNCHANGED_REPLAY`. Mudança → nova sequência encadeada (`chain:previous`).
+`--created-at` precisa ser ISO-8601 UTC válido; pode ser retroativo (aviso), mas a ordem histórica é sempre a do ledger (seção 10f). Pasta de execução já existente é recusada antes de tocar o ledger. Linhas inválidas do log da 3b.1 são rejeitadas com número e motivo.
 
 ## 8. Reconciliação XLSX × JSON
 ```
 node scripts/reconciliar-fase3b2.mjs --private <DIR> --plan <plano.json> --fetch --max 50 --delay-ms 6000
 ```
 Limites impostos pelo código (`src/historical/reconcile-fetch.js`): teto absoluto de 50 GET por execução; `--max` só inteiro 1..50; `--delay-ms` só inteiro ≥ 6000; padrões 50/6000; opção inválida recusada antes de qualquer GET. Parada em 403, 429, **primeiro** 5xx, 3xx, erro de rede/timeout e 200 não-JSON; sem retentativa automática. Toda requisição registrada em `request_log.jsonl`.
-Classes: `VALOR_INVALIDO` (literal JSON presente mas não interpretável em centavos — nunca tratado como ausência), `EQUIVALENTE`, `DIFERENCA_FORMATACAO`, `DIFERENCA_REPRESENTACAO`, `AUSENTE_EM_UMA_FONTE`, `DIVERGENCIA_REAL`, `DIFERENCA_TEMPORAL`, `SEMANTICA_DESCONHECIDA`.
+Classes: `VALOR_INVALIDO` (literal JSON presente mas não interpretável em centavos — nunca tratado como ausência), `EQUIVALENTE`, `DIFERENCA_FORMATACAO`, `DIFERENCA_REPRESENTACAO`, `AUSENTE_EM_UMA_FONTE`, `DIVERGENCIA_REAL`, `DIFERENCA_TEMPORAL`, `SEMANTICA_DESCONHECIDA`, `DADO_INVALIDO`, `FONTE_AMBIGUA` (4.0.0: fonte XLSX sem registro único; não é dado inválido).
+Reconciliação somente offline (sem `--fetch`): `node scripts/reconciliar-fase3b2.mjs --private <DIR> [--extra-json <dir 3b.1>] [--out <DIR_SAIDA>]`; usa a execução NEW da última sequence do ledger.
 Tabela de correspondência (`FIELD_CORRESPONDENCE` em `src/historical/reconcile.js`): concurso, data, dezenas, ganhadores/prêmio por faixa, arrecadação e estimativa = `CONFIRMADO_ESTRUTURAL`; acumulado especial e acumulado faixa principal = `HIPOTESE`; ordem de sorteio, `dataProximoConcurso` etc. = `SEM_CORRESPONDENTE`.
 Amostras justificadas no plano: primeiro/último concurso, fronteiras de mudança de faixa (Quina 4084/4085, Lotomania 1651–1653), troca de moeda (Quina 28/29, Lotofácil 428/429), anomalia de data (Quina 379–381), reset atípico (Mega 3010), concurso "mais recente".
 
@@ -280,10 +282,91 @@ Nunca `EQUIVALENTE`.
 - **V13 1.1.0 no XLSX real** (em memória, nada gravado): aceitos iguais e nenhuma exclusão cronológica. Quina 380 continua `ISOLATED_OUTLIER`.
 - Uma reimportação mudaria o relatório (2.1.0 e tags de validadores 1.3.0), além do efeito já descrito na 10d. **Não** foi feita.
 
+## 10f. Auditoria integrada final (a partir de 2389cd8) — reconciliação 4.0.0
+
+HEAD inicial confirmado no remoto: `2389cd8`. Rodada sem requisição à CAIXA e sem `--fetch` (`request_log.jsonl` segue com 37 linhas). Os XLSX reais não foram reimportados. Os 150 arquivos privados têm SHA-256 idêntico antes e depois da rodada. Quina 380 segue em quarentena. Itens já resolvidos só foram reabertos quando havia defeito reproduzível.
+
+**Achados**
+
+| # | Achado | Situação | Prova de falha antes (`2389cd8`) |
+|---|---|---|---|
+| 1.1 | Duplicatas físicas idênticas em quarentena contadas como 2 candidatas → `AMBIGUO` falso; ordem das candidatas dependia da ordem dos arrays | **corrigido** | 2 testes falham |
+| 1.2 | Verificação completa de manifestos | conferido, sem regressão; reforçado pela ordem do ledger (2.3) | — |
+| 1.3 | Proveniência SHA-256 antes do parse; legado sem hash = não verificada | conferido, sem regressão | — |
+| 1.4 / 3.1 | V13 com elegíveis da mesma data e conteúdo divergente | **não reproduzido** (comportamento correto); lacuna de teste fechada | teste passa no código antigo |
+| 1.5 / 3.2 | winnerLocations sem registro XLSX: com JSON vazio a nota dizia "nas duas fontes" (no dado real, 1 amostra da Quina) | **corrigido** | falha |
+| 2.1 | Fonte XLSX ambígua virava `DADO_INVALIDO` (origem XLSX); JSON inválido virava `AMBOS` | **corrigido** | 4 testes falham |
+| 2.2 | `Buffer.toString('utf8')` trocava bytes inválidos por U+FFFD e o JSON era aceito | **corrigido** | falha |
+| 2.3 / 3.3 | Execuções ordenadas por `runId`; reconciliação escolhia a "última" pelo nome da pasta | **corrigido** | 3 testes falham (`RUN_SEQUENCE_INCONSISTENT`) |
+| 2.4 / 3.5 | `new Date(utc).toISOString()` lançava `RangeError` e abortava a coleta ou a importação | **corrigido** | 3 testes falham |
+| 4 | Confinamento só lexical; `join(src, d.file)` aceitava `raw/../../…` (o importador antigo leu e copiou um arquivo externo) | **corrigido**, com limitações documentadas | 2 testes falham |
+
+**Correções**
+- **2.1 `FONTE_AMBIGUA`** (`ambiguousRows`). Campo JSON válido → `FONTE_AMBIGUA`, sem `invalidSource` e com `jsonFieldClass`, que guarda a classe real da validação isolada do JSON. Campo JSON inválido → classe preservada (`DADO_INVALIDO`/`VALOR_INVALIDO`) com origem `JSON`. `AMBOS` só aparece quando **todas** as candidatas XLSX, comparadas uma a uma, demonstram o campo inválido no próprio XLSX; essa prova fica em `xlsxCandidatesEvidence`. Candidatas, motivo (`xlsxAmbiguityReason`) e quantidade ficam em cada linha e em `xlsxAmbiguity`. Nunca há `EQUIVALENTE` ou `DIVERGENCIA_REAL`.
+- **1.1 Seleção.** Uma candidata em quarentena é um grupo de linhas com o mesmo `fullContent` (V11/V14, sem posição) e os mesmos motivos. As duplicatas físicas ficam em `physicalRows`, e o representante é a menor linha. Candidatas e referências são ordenadas por (planilha, linha), e o índice é idêntico em todas as permutações testadas.
+- **2.2 UTF-8 estrito** (`decodeUtf8Strict`, `TextDecoder('utf-8', {fatal: true, ignoreBOM: true})`). Falha → estado `CODIFICACAO_INVALIDA`, que não é `JSON_INVALIDO` nem `PROVENIENCIA_REJEITADA`. Não há parse nem comparação. A evidência guarda proveniência completa (hash do log, hash calculado, tamanhos), `encoding.firstInvalidByteOffset` e `byteLength`. Os bytes não são alterados. O BOM mantém o comportamento anterior (o parse o rejeita).
+- **2.3 Ordem autoritativa** (`orderRunsByLedger`). A chave é a linha do manifesto de execução no ledger revalidado (a sequence); com a mesma linha, `NEW` vem antes de `UNCHANGED_REPLAY`. `runId` só desempata replays da mesma sequence, que são verificados contra o mesmo manifesto. `createdAt` não ordena: o formato é validado pelo ledger e um valor retroativo gera o aviso `RUN_CREATED_AT_NOT_MONOTONIC`. `selectLatestRun` escolhe a execução NEW idêntica ao último manifesto de execução do ledger; o script da reconciliação a usa e registra `importRunSelection`. O importador valida `--created-at` e recusa pasta de execução existente **antes** do pipeline, sem deixar linha órfã no ledger. Compatível com os manifestos persistidos: 12/12 e 3/3 verificados, ordem igual à anterior.
+- **2.4 Timestamps** (`parseLogTimestamp`, em `src/historical/timestamps.js`). Exige ISO-8601 com segundos e fuso, e a data precisa existir no calendário. Ausente, nulo, tipo incorreto, formato ou data inválidos → só a linha é rejeitada, com origem, número da linha, motivo e literal. A saída para entradas válidas é a mesma de antes. O log da 3b.1 é lido por `planImportFromLog` (`src/historical/import-log.js`), que rejeita a linha e segue; sem os 4 arquivos válidos, nada é importado.
+- **1.5 winnerLocations.** O registro XLSX inexistente é avaliado antes de "ambas vazias": `AUSENTE_EM_UMA_FONTE` com `absenceScope: REGISTRO_XLSX_INEXISTENTE` e `xlsxRecordPresent: false`, sem conclusão semântica.
+- **4 Confinamento** (`store.js`: `readConfined`, `writeOnceConfined`, `appendConfined`, `existsConfined`, `listDirConfined`; `FileLedger` com `{root, rel}`):
+  - a raiz é resolvida por `realpath` uma única vez;
+  - cada componente intermediário é conferido com `lstat`; link simbólico → `LINK_SIMBOLICO_NO_CAMINHO`;
+  - os diretórios são criados um a um e reconferidos;
+  - no arquivo final, link simbólico (inclusive pendente) → `LINK_SIMBOLICO_NO_ARQUIVO`;
+  - a abertura usa `O_NOFOLLOW`, e a escrita nova usa `O_CREAT|O_EXCL`;
+  - após abrir, `fstat` confere tipo e `dev/ino`, e no Linux `/proc/self/fd/N` confirma que o descritor está dentro da raiz.
+  - Aplicado a todos os caminhos de leitura e escrita dos scripts `importar-`, `reconciliar-`, `verificar-manifestos-` e `reprodutibilidade-fase3b2 --real`. `gerar-fixtures` só toca fixtures do repositório.
+  - Amostra recusada pelo confinamento → `rejectedSampleFiles`; as demais seguem.
+
+**Versões**
+- Reconciliação 3.0.0 → **4.0.0** (incompatível):
+  - nova classe `FONTE_AMBIGUA`;
+  - novo estado `CODIFICACAO_INVALIDA`;
+  - campos `jsonFieldClass`, `xlsxSourceState`, `physicalRows` e `absenceScope`;
+  - `importRunSelection` e `rejectedSampleFiles` no relatório.
+  - Relatórios 3.0.0 antigos continuam legíveis e não foram reescritos.
+- Inalterados: adaptador JSON 2.0.0, parser 1.1.0, validadores 1.3.0, relatório de importação 2.1.0, `lotus.manifest` 1.0.0, `lotus.import-run` 1.0.0. O hash lógico não muda.
+- O texto da 10e sobre fonte ambígua ("`DADO_INVALIDO` de origem XLSX… origem `AMBOS`") foi **substituído** por esta seção.
+
+**Testes.** `test/fase3b2/audit-final-integrada.test.js` traz 16 testes, só com `SYNTHETIC_DATA`. Os scripts rodam de ponta a ponta em diretórios temporários, sem rede. Copiado para `2389cd8`, o arquivo tem **15/16 falhas**; o 16º, a lacuna 3.1, passa no código antigo. Nenhuma expectativa de teste antigo foi alterada (os 642 anteriores passam sem mudança).
+
+**Validação** (clone limpo de `9eac1ca`, Node v24.22.1, npm 11.21.1, `env -i … unshare -rn`, sem rede):
+- `npm test`: **658/658**, 0 falhas, 0 skip.
+- Reprodutibilidade em 2 processos: idêntica, logical `25bd11f5…c14d`, run root `b02c7745…bb59`. **Iguais** à 10e: o pipeline de importação não mudou.
+- Fixtures idênticas.
+- Manifestos sintéticos via scripts (5 execuções: NEW, replay, NEW retroativa, replay, NEW): positivo ok, com o aviso de `createdAt`. Detectados:
+  - run-report adulterado;
+  - linha do ledger removida;
+  - execuções seq 1 e 2 trocadas no ledger;
+  - replay declarado NEW;
+  - `chain:previous` adulterado;
+  - registro aceito adulterado.
+  - Troca entre datasets diferentes é corretamente sem efeito. A reconciliação seleciona a sequence 3.
+
+**Dados reais** (somente leitura; reconciliação com `unshare -rn` e saída em diretório temporário via `--out`, nada gravado no armazenamento privado):
+- Verificador: ledger 10/10, 12/12 manifestos de modalidade, 3/3 de execução, 51227 entradas, 0 erros, sem avisos. A ordem do ledger é igual à dos nomes.
+- Reconciliação 4.0.0:
+  - 54 amostras `VERIFICADA_POR_HASH`; 0 de codificação inválida; 0 linhas de log e 0 arquivos recusados;
+  - mesma execução (sequence 2);
+  - 2175 linhas e **0 mudanças de classe** frente ao relatório 3.0.0;
+  - 2 linhas winnerLocations (registro XLSX inexistente) ganharam `absenceScope`, e uma delas corrigiu a nota "nas duas fontes";
+  - nenhuma fonte ambígua nos dados reais.
+- `reprodutibilidade --real` em memória: idêntica em 2 processos; a Quina mantém 1 em quarentena. Nada foi gravado.
+- Evidências: `docs/fase3b2-evidencias/auditoria-final-integrada.json` e `testes-resumo.txt`.
+
+**Limitações** (o confinamento **não é absoluto**):
+- Sem `openat`/`O_BENEATH` no Node, um processo local com escrita na raiz que troque um diretório intermediário por link entre a verificação e o `open` ainda tem uma janela de corrida.
+  - No Linux, ela é detectada após o `open` (`/proc/self/fd`) e a operação falha.
+  - Na escrita, o arquivo novo (vazio) pode já ter sido criado fora; isso é detectado e reportado, não desfeito.
+- Fora do Linux (sem `/proc`) e sem `O_NOFOLLOW` (Windows), restam só as verificações com `lstat`.
+- A raiz informada pelo operador (`--private`, `--from-3b1`, `--extra-json`, `--out`) é confiável por definição, e um link na própria raiz é seguido.
+- `AMBOS` em fonte ambígua exige comparar cada candidata; uma candidata em quarentena estruturalmente incompleta não conta como prova de invalidez do XLSX.
+
 ## 11. Limitações e riscos
 - Completude do histórico não é declarada; XLSX é fonte única oficial disponível, JSON é amostral.
 - Semântica de campos econômicos parcialmente hipotética.
 - Endpoint público pode mudar/bloquear; nenhum contorno é feito.
+- Confinamento de caminhos robusto, mas não absoluto: janela de corrida residual documentada na seção 10f (Linux detecta; outras plataformas, só `lstat`).
 
 ## 12. Pendências
 Originais DOU de regras históricas; regras pré-2025 por modalidade; fator 0,7 e limiares; divergência de limite de apostas múltiplas da Mega entre Portaria e produto; semântica dos campos econômicos; Quina faixa 2 antes de 4085; tratamento de moeda pré-Real; decisão humana sobre Quina 380; regras históricas **verificadas** de faixas por período (enquanto todos os períodos forem `RULE_NOT_VERIFIED`, faixas fora da configuração atual permanecem `SEMANTICA_DESCONHECIDA`, seção 10d); decisão sobre reimportar com os novos formatos (geraria manifestos sequence 3; seções 10d e 10e). A contradição da seção 10c foi resolvida na 10d.

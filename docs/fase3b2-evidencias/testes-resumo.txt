@@ -1,3 +1,17 @@
+# === Auditoria integrada final (base 2389cd8) ===
+# Node v24.22.1 · npm 11.21.1 · clone limpo de phase-3b2-historical-import @ 9eac1ca (código; o commit seguinte só altera docs/evidências)
+# comando: env -i PATH="$PATH" HOME=/tmp unshare -rn npm test   (rede desabilitada no processo)
+ℹ tests 658
+ℹ pass 658
+ℹ fail 0
+ℹ skipped 0
+# novo: test/fase3b2/audit-final-integrada.test.js — 16 testes (§1.1: 2 · §2.1: 4 · §2.2: 1 · §2.4: 2 · §3.1: 1 · §1.5/3.2: 1 · §2.3: 3 · §4: 2), 16/16 passam
+# falha-antes: o mesmo arquivo copiado para 2389cd8 → 15/16 falham; 3.1 passa (lacuna de teste, sem defeito)
+#   (§4 reproduzido: o importador antigo LEU e COPIOU um arquivo externo via "raw/../../…"; §2.4: RangeError: Invalid time value)
+# testes antigos: nenhuma expectativa alterada nesta rodada (642 anteriores passam)
+# npm run reprodutibilidade:fase3b2 → exit 0, idêntico em 2 processos; logical 25bd11f5…c14d, run root b02c7745…bb59 (iguais à 10e)
+# npm run fixtures:fase3b2 -- --check → exit 0, "OK: fixtures idênticas"
+
 # === Correção integrada final (base 88fba95) ===
 # Node v24.22.1 · npm 11.21.1 · clone limpo de phase-3b2-historical-import @ 6f905f7 (código; o commit seguinte só altera docs/evidências)
 # comando: env -i PATH="$PATH" HOME=/tmp unshare -rn npm test   (rede desabilitada no processo)
