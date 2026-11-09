@@ -126,4 +126,142 @@ export function verifyModalityManifest(manifest, imp, collection, rawBytes, opt 
   }
   return { ok: errors.length === 0, errors, checked: { entries: contents.size, acceptedRecords: imp.accepted.length, fileBytes: !!rawBytes, rootHashOk: d.hashOk, structuralOk: d.structuralOk, chain } };
 }
+
+/* ---------- verificação completa de execuções persistidas (correção integrada 3b.2) ---------- */
+export const RUN_DATA_SCHEMA_VERSION = `${RUN_REPORT_SCHEMA}/${RUN_REPORT_SCHEMA_VERSION}`;
+export const RUN_LOTTERIES = Object.freeze(['megasena', 'lotofacil', 'quina', 'lotomania']);
+const keyOf = (ds, seq) => `${ds}#${seq}`;
+
+/**
+ * Revalida o ledger persistente INTEIRO, na ordem das linhas: cada linha é JSON, é aceita por um ManifestLedger novo
+ * (estrutura, rootHash recalculado, sem regressão/substituição/reapresentação), avança exatamente +1 por datasetId e
+ * tem `chain:previous` igual ao rootHash do anterior do mesmo datasetId (ausente na sequence 1).
+ * @param {string} text conteúdo de manifests.jsonl
+ * @returns {{ok:boolean, errors:object[], lines:number, accepted:number, byKey:Map<string,object>, latest:Map<string,object>}}
+ */
+export function verifyLedgerChain(text) {
+  const errors = []; const L = new ManifestLedger(); const byKey = new Map(); const latest = new Map(); let n = 0; let accepted = 0;
+  const lines = String(text).split('\n'); if (lines[lines.length - 1] === '') lines.pop();
+  for (const [i, line] of lines.entries()) {
+    n++; const lineNo = i + 1;
+    if (!line.trim()) { errors.push({ code: 'LEDGER_LINE_EMPTY', line: lineNo }); continue; }
+    let m; try { m = JSON.parse(line); } catch { errors.push({ code: 'LEDGER_LINE_NOT_JSON', line: lineNo }); continue; }
+    const r = L.submit(m);
+    if (!r.accepted) { errors.push({ code: 'LEDGER_LINE_REJECTED', line: lineNo, reason: r.code, ...(r.errors ? { errors: r.errors.map(e => e.code) } : {}) }); continue; }
+    const prev = latest.get(m.datasetId) ?? null; const ch = m.entries.find(e => e.id === 'chain:previous');
+    if (!prev) { if (m.sequence !== 1) errors.push({ code: 'LEDGER_FIRST_SEQUENCE_NOT_1', line: lineNo, datasetId: m.datasetId, sequence: m.sequence }); if (ch) errors.push({ code: 'LEDGER_CHAIN_UNEXPECTED', line: lineNo, datasetId: m.datasetId }); }
+    else {
+      if (m.sequence !== prev.sequence + 1) errors.push({ code: 'LEDGER_SEQUENCE_GAP', line: lineNo, datasetId: m.datasetId, expected: prev.sequence + 1, found: m.sequence });
+      if (!ch) errors.push({ code: 'LEDGER_CHAIN_MISSING', line: lineNo, datasetId: m.datasetId });
+      else if (ch.sha256 !== prev.rootHash) errors.push({ code: 'LEDGER_CHAIN_BROKEN', line: lineNo, datasetId: m.datasetId, expected: prev.rootHash, found: ch.sha256 });
+    }
+    accepted++; byKey.set(keyOf(m.datasetId, m.sequence), { manifest: m, line: lineNo }); latest.set(m.datasetId, m);
+  }
+  return { ok: errors.length === 0, errors, lines: n, accepted, byKey, latest };
+}
+
+function chainCheck(manifest, previous, errors) {
+  const ch = manifest.entries.find(e => e.id === 'chain:previous');
+  if (manifest.sequence === 1) { if (ch) errors.push({ code: 'CHAIN_UNEXPECTED_IN_FIRST_MANIFEST' }); return ch ? null : 'PRIMEIRO_MANIFESTO'; }
+  if (!ch) { errors.push({ code: 'CHAIN_MISSING' }); return null; }
+  if (!previous) { errors.push({ code: 'CHAIN_NOT_VERIFIABLE' }); return null; }
+  if (ch.sha256 !== previous.rootHash) { errors.push({ code: 'CHAIN_PREVIOUS_MISMATCH', expected: previous.rootHash, found: ch.sha256 }); return null; }
+  return 'VERIFICADO_CONTRA_ANTERIOR';
+}
+
+/**
+ * Verifica o manifesto de UMA execução: conteúdo REAL do run-report (recalculado a partir dos artefatos verificados das
+ * modalidades), as 4 referências `manifest:<modalidade>` contra os rootHashes efetivamente verificados, datasetId,
+ * dataSchemaVersion, rootHash e encadeamento contra o anterior do ledger revalidado.
+ * @param {object} runManifest @param {object} runReport
+ * @param {{lottery:string, ok:boolean, manifest:object, report:object, collection:object}[]} modalities verificadas
+ * @param {object|null} previous manifesto de execução anterior (do ledger revalidado)
+ */
+export function verifyRunManifest(runManifest, runReport, modalities, previous) {
+  const errors = []; let checked = 0;
+  const byL = new Map(modalities.map(m => [m.lottery, m]));
+  for (const l of RUN_LOTTERIES) { const m = byL.get(l); if (!m) errors.push({ code: 'RUN_MODALITY_MISSING', lottery: l }); else if (!m.ok) errors.push({ code: 'RUN_MODALITY_NOT_VERIFIED', lottery: l }); }
+  const ordered = RUN_LOTTERIES.filter(l => byL.has(l)).map(l => byL.get(l));
+  const expected = { schema: RUN_REPORT_SCHEMA, schemaVersion: RUN_REPORT_SCHEMA_VERSION,
+    modalities: ordered.map(m => ({ lottery: m.lottery, status: m.report.status, fileSha256: m.collection.sha256, counts: m.report.counts })),
+    modalityManifests: ordered.map(m => ({ lottery: m.lottery, datasetId: m.manifest.datasetId, sequence: m.manifest.sequence, rootHash: m.manifest.rootHash })) };
+  if (hashJson(clean(runReport)) !== hashJson(expected)) {
+    const fields = ['schema', 'schemaVersion', 'modalities', 'modalityManifests'].filter(k => hashJson(clean(runReport ?? {})[k] ?? null) !== hashJson(expected[k]));
+    errors.push({ code: 'RUN_REPORT_CONTENT_MISMATCH', fields });
+  }
+  const d = verifyManifestDetailed(runManifest, new Map([['record:run-report', { kind: 'record', value: clean(runReport) }]]));
+  for (const e of d.errors) if (!(e.code === 'ENTRY_MISSING' && (/^manifest:/.test(e.id) || e.id === 'chain:previous'))) errors.push(e);
+  if (d.structuralOk) {
+    if (runManifest.entries.some(e => e.id === 'record:run-report')) checked++;
+    for (const e of runManifest.entries.filter(x => /^manifest:/.test(x.id))) {
+      const l = e.id.slice('manifest:'.length); const m = byL.get(l);
+      if (!RUN_LOTTERIES.includes(l)) { errors.push({ code: 'RUN_MODALITY_UNEXPECTED', id: e.id }); continue; }
+      if (!m) continue; checked++;
+      if ((e.kind ?? 'record') !== 'record') errors.push({ code: 'ENTRY_KIND_MISMATCH', id: e.id });
+      if (e.sha256 !== m.manifest.rootHash) errors.push({ code: 'RUN_MODALITY_ROOTHASH_MISMATCH', id: e.id, expected: m.manifest.rootHash, found: e.sha256 });
+    }
+    for (const l of RUN_LOTTERIES) if (!runManifest.entries.some(e => e.id === `manifest:${l}`)) errors.push({ code: 'RUN_MODALITY_REFERENCE_MISSING', lottery: l });
+    if (runManifest.datasetId !== RUN_DATASET_ID) errors.push({ code: 'DATASET_ID_MISMATCH', expected: RUN_DATASET_ID, found: runManifest.datasetId });
+    if (runManifest.dataSchemaVersion !== RUN_DATA_SCHEMA_VERSION) errors.push({ code: 'DATA_SCHEMA_VERSION_MISMATCH', expected: RUN_DATA_SCHEMA_VERSION, found: runManifest.dataSchemaVersion });
+  }
+  const chain = d.structuralOk ? chainCheck(runManifest, previous, errors) : null;
+  if (chain === 'VERIFICADO_CONTRA_ANTERIOR') checked++;
+  return { ok: errors.length === 0, errors, checked: { entries: checked, chain, rootHashOk: d.hashOk } };
+}
+
+/**
+ * Verificação COMPLETA e somente leitura das execuções persistidas: ledger inteiro revalidado em ordem; cada manifesto de
+ * modalidade contra o conteúdo real (verifyModalityManifest) e contra a linha do ledger (conteúdo idêntico, não só
+ * existência); cada manifesto de execução (verifyRunManifest) idem; sucessão entre execuções (NEW = anterior + 1;
+ * UNCHANGED_REPLAY = mesmo manifesto); toda linha do ledger referenciada por alguma execução.
+ * @param {{ledgerText:string, runs:{runId:string, runManifestFile:{action:string, manifest:object}|null, runReport:object|null,
+ *   modalities:{lottery:string, manifestFile:{action:string, manifest:object}, imp:object, collection:object, rawBytes:Uint8Array|null}[]}[]}} p
+ */
+export function verifyPersistedRuns({ ledgerText, runs }) {
+  const ledger = verifyLedgerChain(ledgerText);
+  const errors = ledger.errors.map(e => ({ scope: 'ledger', ...e }));
+  const modalityResults = []; const runResults = []; const referenced = new Set(); const lastSeq = new Map();
+  const inLedger = (m, scope) => {
+    const k = keyOf(m.datasetId, m.sequence); const le = ledger.byKey.get(k); referenced.add(k);
+    if (!le) { errors.push({ ...scope, code: 'MANIFEST_NOT_IN_VALID_LEDGER', datasetId: m.datasetId, sequence: m.sequence }); return false; }
+    if (hashJson(le.manifest) !== hashJson(clean(m))) { errors.push({ ...scope, code: 'MANIFEST_DIFFERS_FROM_LEDGER', datasetId: m.datasetId, sequence: m.sequence, ledgerLine: le.line }); return false; }
+    return true;
+  };
+  const prevOf = m => (m.sequence > 1 ? ledger.byKey.get(keyOf(m.datasetId, m.sequence - 1))?.manifest ?? null : null);
+  const succession = (action, m, scope) => {
+    const last = lastSeq.get(m.datasetId);
+    if (action === 'NEW') { if (m.sequence !== (last ? last.sequence + 1 : 1)) errors.push({ ...scope, code: 'RUN_SEQUENCE_INCONSISTENT', action, datasetId: m.datasetId, expected: last ? last.sequence + 1 : 1, found: m.sequence }); }
+    else if (action === 'UNCHANGED_REPLAY') { if (!last || last.sequence !== m.sequence || last.rootHash !== m.rootHash) errors.push({ ...scope, code: 'RUN_REPLAY_INCONSISTENT', datasetId: m.datasetId, found: m.sequence }); }
+    else errors.push({ ...scope, code: 'RUN_ACTION_INVALID', action });
+    if (!last || m.sequence >= last.sequence) lastSeq.set(m.datasetId, { sequence: m.sequence, rootHash: m.rootHash });
+  };
+  let entriesChecked = 0;
+  for (const run of [...runs].sort((a, b) => (a.runId < b.runId ? -1 : a.runId > b.runId ? 1 : 0))) {
+    const verified = [];
+    for (const mod of run.modalities) {
+      const scope = { scope: 'modality', run: run.runId, lottery: mod.lottery };
+      const m = mod.manifestFile && mod.manifestFile.manifest;
+      if (!m || typeof m !== 'object' || !Array.isArray(m.entries)) { errors.push({ ...scope, code: 'MODALITY_MANIFEST_UNREADABLE' }); modalityResults.push({ ...scope, ok: false }); continue; }
+      const prev = prevOf(m);
+      const v = verifyModalityManifest(m, mod.imp, mod.collection, mod.rawBytes, prev ? { previous: prev } : {});
+      const okL = inLedger(m, scope); succession(mod.manifestFile.action, m, scope);
+      for (const e of v.errors) errors.push({ ...scope, ...e });
+      const nChain = v.checked.chain === 'VERIFICADO_CONTRA_ANTERIOR' ? 1 : 0; entriesChecked += v.checked.entries + nChain;
+      const ok = v.ok && okL; modalityResults.push({ ...scope, ok, datasetId: m.datasetId, sequence: m.sequence, entries: v.checked.entries + nChain, chain: v.checked.chain });
+      verified.push({ lottery: mod.lottery, ok, manifest: m, report: mod.imp.report, collection: mod.collection });
+    }
+    const scope = { scope: 'run', run: run.runId };
+    const rm = run.runManifestFile && run.runManifestFile.manifest;
+    if (!rm || typeof rm !== 'object' || !Array.isArray(rm.entries) || !run.runReport) { errors.push({ ...scope, code: 'RUN_MANIFEST_OR_REPORT_UNREADABLE' }); runResults.push({ ...scope, ok: false }); continue; }
+    const v = verifyRunManifest(rm, run.runReport, verified, prevOf(rm));
+    const okL = inLedger(rm, scope); succession(run.runManifestFile.action, rm, scope);
+    for (const e of v.errors) errors.push({ ...scope, ...e });
+    entriesChecked += v.checked.entries;
+    runResults.push({ ...scope, ok: v.ok && okL, datasetId: rm.datasetId, sequence: rm.sequence, entries: v.checked.entries, chain: v.checked.chain });
+  }
+  for (const [k, le] of ledger.byKey) if (!referenced.has(k)) errors.push({ scope: 'ledger', code: 'LEDGER_ENTRY_WITHOUT_RUN', key: k, line: le.line });
+  return { ok: errors.length === 0, ledger: { lines: ledger.lines, accepted: ledger.accepted, chainOk: ledger.ok },
+    modalityManifestsVerified: modalityResults.filter(r => r.ok).length, modalityManifestsTotal: modalityResults.length,
+    runManifestsVerified: runResults.filter(r => r.ok).length, runManifestsTotal: runResults.length, entriesChecked, errors, modalityResults, runResults };
+}
 export { ManifestLedger };
