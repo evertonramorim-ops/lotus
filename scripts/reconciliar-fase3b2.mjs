@@ -16,7 +16,7 @@ import { readFileSync, readdirSync, existsSync, appendFileSync, mkdirSync } from
 import { createHash } from 'node:crypto';
 import { join, resolve } from 'node:path';
 import { summarize, FIELD_CORRESPONDENCE, RECONCILIATION_SCHEMA, RECONCILIATION_VERSION } from '../src/historical/reconcile.js';
-import { reconcileSample, collectSamples } from '../src/historical/reconcile-sample.js';
+import { reconcileSample, collectSamples, buildXlsxRecordIndex, PROVENANCE } from '../src/historical/reconcile-sample.js';
 import { writeOnce, writeJsonOnce, privatePaths, safeJoin } from '../src/historical/store.js';
 import { parseFetchOptions, runControlledFetch, FetchOptionError, validatePlan } from '../src/historical/reconcile-fetch.js';
 
@@ -54,8 +54,9 @@ const records = {}; const meta = {};
 for (const l of ['megasena', 'lotofacil', 'quina', 'lotomania']) {
   const d = join(P.runs, lastRun, l);
   const acc = readFileSync(join(d, 'accepted-records.jsonl'), 'utf8').split('\n').filter(Boolean).map(x => JSON.parse(x));
-  const q = JSON.parse(readFileSync(join(d, 'quarantine.json'), 'utf8')).filter(e => e.candidate).map(e => ({ ...e.candidate, __quarantined: true }));
-  records[l] = new Map([...acc, ...q].map(r => [r.contest, r]));
+  const q = JSON.parse(readFileSync(join(d, 'quarantine.json'), 'utf8'));
+  // aceito único nunca é substituído por candidato em quarentena; ambiguidade preservada (buildXlsxRecordIndex)
+  records[l] = buildXlsxRecordIndex({ acceptedRecords: acc, quarantine: q });
   const rep = JSON.parse(readFileSync(join(d, 'import-report.json'), 'utf8'));
   meta[l] = { lastContest: rep.coverage.lastContest, xlsxObservedAt: rep.file.collectedAt };
 }
@@ -66,14 +67,16 @@ for (const s of samples) s.file = safeJoin(s.root === 'extra' ? extra : priv, s.
 const out = []; const quarantine = []; const allRows = [];
 for (const s0 of samples) {
   const { relFile, root, ...s } = s0; void relFile; void root;
-  const text = readFileSync(s.file, 'utf8'); const jsonSha256 = sha(Buffer.from(text, 'utf8'));
-  // decisão de classificação em função pura e testável (src/historical/reconcile-sample.js)
-  const r = reconcileSample({ sample: s, text, jsonSha256, xlsxRecords: records[s.lottery], meta: meta[s.lottery] });
+  const bytes = new Uint8Array(readFileSync(s.file));
+  // proveniência conferida (hash/tamanho/status do log) ANTES do parse; classificação em função pura (reconcile-sample.js)
+  const r = reconcileSample({ sample: s, bytes, xlsxRecords: records[s.lottery], meta: meta[s.lottery] });
   allRows.push(...r.rows); if (r.quarantine) quarantine.push(r.quarantine); out.push(r.entry);
 }
-const report = { schema: RECONCILIATION_SCHEMA, schemaVersion: RECONCILIATION_VERSION, importRun: lastRun, rejectedLogLines: rejected, fieldCorrespondence: FIELD_CORRESPONDENCE, samples: out.length, byLottery: Object.fromEntries(['megasena', 'lotofacil', 'quina', 'lotomania'].map(l => [l, { samples: out.filter(o => o.lottery === l).length, classes: summarize(out.filter(o => o.lottery === l && o.rows).flatMap(o => o.rows)) }])), classes: summarize(allRows), divergences: quarantine.length, results: out };
+const report = { schema: RECONCILIATION_SCHEMA, schemaVersion: RECONCILIATION_VERSION, importRun: lastRun, rejectedLogLines: rejected, fieldCorrespondence: FIELD_CORRESPONDENCE, samples: out.length, byLottery: Object.fromEntries(['megasena', 'lotofacil', 'quina', 'lotomania'].map(l => [l, { samples: out.filter(o => o.lottery === l).length, classes: summarize(out.filter(o => o.lottery === l && o.rows).flatMap(o => o.rows)) }])), classes: summarize(allRows), divergences: quarantine.length, provenance: provSummary(out), results: out };
+function provSummary(o) { const c = {}; for (const e of o) { const st = e.provenance ? e.provenance.status : 'NAO_CONFERIDA'; c[st] = (c[st] || 0) + 1; }
+  return { counts: c, rejected: o.filter(e => e.provenance && e.provenance.status === PROVENANCE.REJEITADA).map(e => ({ lottery: e.lottery, url: e.url, origin: e.origin, reasons: e.provenance.reasons, loggedSha256: e.provenance.loggedSha256, computedSha256: e.provenance.computedSha256, loggedBytes: e.provenance.loggedBytes, observedBytes: e.provenance.observedBytes })) }; }
 const stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+/, '');
 mkdirSync(P.reconciliation, { recursive: true });
 writeJsonOnce(safeJoin(priv, `reconciliation/reconciliation-${stamp}.json`), report);
 writeJsonOnce(safeJoin(priv, `reconciliation/quarantine-divergencias-${stamp}.json`), quarantine);
-console.log(JSON.stringify({ file: `reconciliation-${stamp}.json`, samples: out.length, byLottery: report.byLottery, classes: report.classes, divergences: quarantine.map(q => ({ lottery: q.candidate.lottery, contest: q.candidate.contest, fields: q.reasons.map(r => r.message) })), statusCounts: summarize(out.map(o => ({ class: o.status ?? o.xlsxStatus }))) }, null, 2));
+console.log(JSON.stringify({ file: `reconciliation-${stamp}.json`, samples: out.length, byLottery: report.byLottery, classes: report.classes, divergences: quarantine.map(q => ({ lottery: q.candidate.lottery, contest: q.candidate.contest, fields: q.reasons.map(r => r.message) })), statusCounts: summarize(out.map(o => ({ class: o.status ?? o.xlsxStatus }))), provenance: report.provenance.counts, provenanceRejected: report.provenance.rejected.length }, null, 2));

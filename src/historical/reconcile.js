@@ -16,7 +16,10 @@ export const RECONCILIATION_SCHEMA = 'lotus.reconciliation';
 // 2.0.0 (incompatível com 1.2.0): faixa fora da configuração sem regra histórica comprovada → SEMANTICA_DESCONHECIDA
 // (antes AUSENTE); correspondências HIPOTESE nunca EQUIVALENTE; JSON sem contraparte XLSX validado por inteiro;
 // ordem de sorteio validada contra listaDezenas; evidências com estado/tipo/literal/regra consultada.
-export const RECONCILIATION_VERSION = '2.0.0';
+// 3.0.0 (incompatível com 2.0.0): winnerLocations com conteúdo em só uma fonte → SEMANTICA_DESCONHECIDA (antes AUSENTE);
+// amostra com proveniência rejeitada (estado PROVENIENCIA_REJEITADA, sem parse); fonte XLSX ambígua (xlsxStatus AMBIGUO,
+// sem comparação); evidências provenance/xlsxSource/xlsxAmbiguity nas entradas.
+export const RECONCILIATION_VERSION = '3.0.0';
 export const JSON_ADAPTER_ID = 'caixa-json-resultado';
 // 2.0.0 (incompatível): raiz não-objeto → JsonSchemaError; campos com estado AUSENTE/NULO/PRESENTE, tipo e literal;
 // marcador numérico privado (WeakSet) sem colisão com objetos do JSON; limite em bytes UTF-8 reais.
@@ -433,7 +436,9 @@ export function compareRecords(x, j, ctx) {
   const xl = x.winnerLocations.text; const xEmpty = !xl || !xl.trim(); const jCount = j.winnerLocationsCount;
   if (wf && isInv(jState(wf, 'count'))) add('winnerLocations', C.DADO_INVALIDO, xEmpty ? null : '<texto>', wf.literal, 'listaMunicipioUFGanhadores presente com tipo incorreto (esperado lista); nunca tratado como ausência', { invalidSource: 'JSON', xlsxPresent: !xEmpty, jsonPresent: true, jsonValid: false, jsonType: wf.type, jsonLiteral: wf.literal, jsonInvalidReason: wf.invalidReason, invalidReason: wf.invalidReason, ...hypW });
   else if (xEmpty && !jCount) add('winnerLocations', C.AUSENTE, null, wf && !wf.present ? null : 0, 'sem localização de ganhadores nas duas fontes', { xlsxPresent: false, jsonPresent: !!(wf ? wf.present : jCount !== null), ...(wf ? { jsonState: wf.state } : {}), ...hypW });
-  else if (xEmpty !== !jCount) add('winnerLocations', C.AUSENTE, xEmpty ? null : '<texto>', jCount, 'conteúdo não reproduzido no relatório', hypW);
+  else if (x.__missing) add('winnerLocations', C.AUSENTE, xLabel, jCount, 'registro inexistente no XLSX (ausência do registro inteiro, não do campo)', { xlsxPresent: false, jsonPresent: true, ...hypW });
+  // uma fonte com conteúdo e a outra vazia: correspondência HIPOTESE não confirmada → semântica desconhecida (nunca ausência)
+  else if (xEmpty !== !jCount) add('winnerLocations', C.SEMANTICA, xEmpty ? null : '<texto>', jCount, `conteúdo só no ${xEmpty ? 'JSON' : 'XLSX'}; correspondência HIPOTESE: o vazio da outra fonte não prova ausência da mesma informação`, { xlsxPresent: !xEmpty, jsonPresent: !!jCount, ...hypW });
   else add('winnerLocations', C.SEMANTICA, '<texto>', jCount, 'texto livre × lista estruturada; correspondência HIPOTESE: não se afirma que representem a mesma informação', hypW);
   // observação: tipo incorreto → DADO_INVALIDO; ausente/nulo no JSON ≠ texto vazio
   const of = j.observationField; const xo = x.observation.text ?? '';
