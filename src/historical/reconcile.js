@@ -1,5 +1,5 @@
 /**
- * Reconciliação XLSX × JSON (`lotus.reconciliation` v1.0.0). Nunca sobrescreve uma fonte com a outra:
+ * Reconciliação XLSX × JSON (`lotus.reconciliation`, versão em RECONCILIATION_VERSION). Nunca sobrescreve uma fonte com a outra:
  * apenas classifica diferenças e envia divergências reais à quarentena (DIVERGENCIA_JSON_XLSX).
  * Números JSON são lidos preservando o literal (jsonnum.js) e convertidos para centavos sem float.
  * @module historical/reconcile
@@ -12,7 +12,7 @@ import { Q, REVIEW_PENDING } from './codes.js';
 import { LOTTERIES } from '../lotteries/config.js';
 
 export const RECONCILIATION_SCHEMA = 'lotus.reconciliation';
-export const RECONCILIATION_VERSION = '1.1.0';
+export const RECONCILIATION_VERSION = '1.2.0';
 export const JSON_ADAPTER_ID = 'caixa-json-resultado';
 export const JSON_ADAPTER_VERSION = '1.0.0';
 
@@ -75,13 +75,15 @@ export function adaptJsonResult(text) {
     const isObj = t !== null && typeof t === 'object' && !Array.isArray(t) && !isNum(t);
     const m = isObj ? /^(\d+) acertos?$/.exec(typeof t.descricaoFaixa === 'string' ? t.descricaoFaixa.trim() : '') : null;
     if (!m) { tierList.unmapped.push({ index: idx, element: isObj ? JSON.stringify(t, (k, v) => (isNum(v) ? v.$number : v)) : JSON.stringify(t), reason: isObj ? 'DESCRICAO_FAIXA_NAO_RECONHECIDA' : 'ELEMENTO_NAO_OBJETO' }); return; }
-    const winnersField = jsonIntField(t.numeroDeGanhadores, 0);
-    mapped.push({ index: idx, hits: Number(m[1]), description: t.descricaoFaixa, faixa: jsonIntField(t.faixa, 0).value, winners: winnersField.value, winnersField, prizeCents: cents(t.valorPremio), prizeMoney: money(t.valorPremio), prizeLiteral: isNum(t.valorPremio) ? t.valorPremio.$number : null });
+    const winnersField = jsonIntField(t.numeroDeGanhadores, 0); const faixaField = jsonIntField(t.faixa, 0);
+    mapped.push({ index: idx, hits: Number(m[1]), description: t.descricaoFaixa, faixa: faixaField.value, faixaLiteral: faixaField.literal, winners: winnersField.value, winnersField, prizeCents: cents(t.valorPremio), prizeMoney: money(t.valorPremio), prizeLiteral: isNum(t.valorPremio) ? t.valorPremio.$number : null,
+      element: JSON.stringify(t, (k, v) => (isNum(v) ? v.$number : v)) });
   });
   const count = new Map(); for (const t of mapped) count.set(t.hits, (count.get(t.hits) || 0) + 1);
-  for (const [h, c] of count) if (c > 1) tierList.duplicates.push({ hits: h, indexes: mapped.filter(t => t.hits === h).map(t => t.index) });
+  // Duplicatas: TODAS as entradas envolvidas preservadas (índice + elemento original) antes de qualquer exclusão.
+  for (const [h, c] of count) if (c > 1) { const es = mapped.filter(t => t.hits === h); tierList.duplicates.push({ hits: h, indexes: es.map(t => t.index), entries: es.map(t => ({ index: t.index, element: t.element })) }); }
   const dup = new Set(tierList.duplicates.map(d => d.hits));
-  const tiers = mapped.filter(t => !dup.has(t.hits));
+  const tiers = mapped.filter(t => !dup.has(t.hits)); // faixas únicas (uso direto); `tierEntries` mantém todas, inclusive duplicadas
   const contestField = jsonIntField(j.numero, 1);
   const dr = j.dataApuracao; let drawDateField;
   if (dr === undefined || dr === null) drawDateField = { present: false, literal: null, iso: null, valid: null, invalidReason: null };
@@ -95,7 +97,7 @@ export function adaptJsonResult(text) {
     contest: contestField.valid ? contestField.value : null, contestField,
     drawDateRaw: drawDateField.literal, drawDate: drawDateField.iso, drawDateField,
     numbers: okList(numbersField) ? numbersField.items.map(i => i.value).sort((a, b) => a - b) : null, numbersRaw: j.listaDezenas ?? null, numbersField,
-    drawOrder: okList(drawOrderField) ? drawOrderField.items.map(i => i.value) : null, drawOrderField, tiers, tierList,
+    drawOrder: okList(drawOrderField) ? drawOrderField.items.map(i => i.value) : null, drawOrderField, tiers, tierEntries: mapped, tierList,
     economic: { totalCollected: cents(j.valorArrecadado), nextPrizeEstimate: cents(j.valorEstimadoProximoConcurso), specialAccumulated: cents(j.valorAcumuladoConcursoEspecial), accumulatedTopTier: cents(j.valorAcumuladoProximoConcurso) },
     economicMoney: { totalCollected: money(j.valorArrecadado), nextPrizeEstimate: money(j.valorEstimadoProximoConcurso), specialAccumulated: money(j.valorAcumuladoConcursoEspecial), accumulatedTopTier: money(j.valorAcumuladoProximoConcurso) },
     winnerLocationsCount: Array.isArray(j.listaMunicipioUFGanhadores) ? j.listaMunicipioUFGanhadores.length : null, observation: typeof j.observacao === 'string' ? j.observacao : null,
@@ -128,16 +130,32 @@ function jState(f, valueKey) { // campo JSON adaptado
   if (!f || !f.present) return { ...NA, missing: false };
   return { present: true, valid: !!f.valid, literal: f.literal ?? null, ref: null, column: null, reason: f.valid ? null : f.invalidReason ?? 'VALOR_NAO_INTERPRETAVEL', value: f.valid ? f[valueKey] : null };
 }
-/** Evidência de invalidez: presença e validade POR FONTE (ausente → present:false, valid:null). */
+/** Evidência de invalidez: presença e validade POR FONTE (ausente → present:false, valid:null).
+ * Dezenas: transporta as células XLSX (ref, coluna, literal, motivo, lado) e os itens JSON inválidos (índice, literal, motivo). */
 function evidence(xs, js) {
   const xInv = xs.present && xs.valid === false; const jInv = js.present && js.valid === false;
   return { invalidSource: xInv && jInv ? 'AMBOS' : xInv ? 'XLSX' : jInv ? 'JSON' : null,
     xlsxPresent: xs.present, xlsxValid: xs.valid, xlsxLiteral: xs.literal, xlsxRef: xs.ref, xlsxColumn: xs.column, xlsxInvalidReason: xInv ? xs.reason : null,
+    ...(xs.cells ? { xlsxRefs: xs.cells.map(c => c.ref), xlsxCells: xs.cells, xlsxInvalidCells: xs.issues } : {}),
     jsonPresent: js.present, jsonValid: js.valid, jsonLiteral: js.literal, jsonInvalidReason: jInv ? js.reason : null,
+    ...(js.jsonItems ? { jsonInvalidItems: js.issues } : {}),
     invalidReason: xInv && jInv ? `XLSX: ${xs.reason}; JSON: ${js.reason}` : xInv ? xs.reason : jInv ? js.reason : null };
 }
 const isInv = s => s.present && s.valid === false;
 
+/** Problemas por item da lista de dezenas (ausência, item inválido, fora do intervalo, duplicata), com o lado de origem. */
+function numberIssues(items, rules, side) {
+  const out = [];
+  const loc = (it, i) => (side === 'XLSX' ? { side, index: i, ref: it.ref ?? null, column: it.column ?? null, raw: it.raw ?? null } : { side, index: i, literal: it.literal ?? null });
+  items.forEach((it, i) => {
+    if (it.absent) out.push({ ...loc(it, i), reason: 'CELULA_AUSENTE', absenceReason: it.absenceReason ?? null });
+    else if (it.value === null || !Number.isSafeInteger(it.value)) out.push({ ...loc(it, i), reason: side === 'XLSX' ? 'CELULA_INVALIDA' : 'ITEM_NAO_INTEIRO', cellInvalidReason: it.cellInvalidReason ?? null });
+    else if (rules && (it.value < rules.minNumber || it.value > rules.maxNumber)) out.push({ ...loc(it, i), value: it.value, reason: `FORA_DO_INTERVALO_${rules.minNumber}_${rules.maxNumber}` });
+  });
+  const pos = new Map(); items.forEach((it, i) => { if (!it.absent && Number.isSafeInteger(it.value)) pos.set(it.value, [...(pos.get(it.value) || []), i]); });
+  for (const [v, idx] of pos) if (idx.length > 1) for (const i of idx) out.push({ ...loc(items[i], i), value: v, reason: 'DEZENA_DUPLICADA', duplicateIndexes: idx });
+  return out.sort((p, q) => p.index - q.index);
+}
 /** Dezenas: presença, quantidade, inteiro, faixa e duplicatas segundo src/lotteries/config.js. */
 function numbersState(items, rules, literal, present, typeValid) {
   if (!present) return { present: false, valid: null, literal: null, reason: null, value: null };
@@ -156,8 +174,15 @@ function xNumbersState(x, rules) {
   if (!f) return numbersState(Array.isArray(x.numbers) ? x.numbers.map(v => ({ value: v })) : [], rules, Array.isArray(x.numbers) ? x.numbers.join(',') : null, Array.isArray(x.numbers), true);
   const literal = f.map(b => b.raw ?? '').join(',');
   if (f.every(b => b.absent)) return { present: false, valid: null, literal: null, reason: null, value: null };
-  const s = numbersState(f.map(b => ({ value: !b.absent && b.valid ? b.value : null })), rules, literal, true, true);
-  return { ...s, refs: f.map(b => b.ref ?? null) };
+  const items = f.map(b => ({ value: !b.absent && b.valid ? b.value : null, ref: b.ref ?? null, column: b.column ?? null, raw: b.raw ?? null, absent: !!b.absent, absenceReason: b.absent ? b.absenceReason ?? null : null, cellInvalidReason: !b.absent && b.valid === false ? b.invalidReason ?? null : null }));
+  const s = numbersState(items, rules, literal, true, true);
+  const cells = items.map((it, i) => ({ side: 'XLSX', index: i, ref: it.ref, column: it.column, raw: it.raw, value: it.value, absent: it.absent, valid: !it.absent && it.value !== null }));
+  return { ...s, refs: f.map(b => b.ref ?? null), cells, issues: s.valid === false ? numberIssues(items, rules, 'XLSX') : [] };
+}
+function jNumbersState(jnf, rules) {
+  const items = (jnf.items || []).map(i => ({ value: i.value, literal: i.literal ?? (i.value !== null && i.value !== undefined ? String(i.value) : null) }));
+  const s = numbersState(items, rules, jnf.literal, jnf.present, jnf.typeValid);
+  return s.valid === false && jnf.typeValid !== false && items.length ? { ...s, jsonItems: true, issues: numberIssues(items, rules, 'JSON') } : s;
 }
 
 /**
@@ -194,7 +219,7 @@ export function compareRecords(x, j, ctx) {
   structural('drawDate', xd, jd, (a, b) => a === b, { fmt: (a, b) => (a.literal === b.literal ? C.EQUIVALENTE : C.FORMATACAO) });
   const xn = xNumbersState(x, rules);
   const jnf = j.numbersField ?? { present: Array.isArray(j.numbers), items: (j.numbers || []).map(v => ({ value: v })), typeValid: true, literal: j.numbers && j.numbers.join(',') };
-  const jn = numbersState(jnf.items || [], rules, jnf.literal, jnf.present, jnf.typeValid);
+  const jn = jNumbersState(jnf, rules);
   structural('numbers', { ...xn, ref: null, column: 'Bola1..BolaN' }, { ...jn, ref: null, column: null }, (a, b) => eqArr(a, b));
   const dof = j.drawOrderField;
   if (dof && dof.present && (dof.typeValid === false || !dof.items.length || dof.items.some(i => i.value === null))) add('drawOrder', C.DADO_INVALIDO, null, dof.literal, 'ordem de sorteio JSON presente mas inválida', { invalidSource: 'JSON', jsonPresent: true, jsonValid: false, jsonLiteral: dof.literal, invalidReason: dof.typeValid === false ? 'TIPO_NAO_LISTA' : !dof.items.length ? 'LISTA_VAZIA' : 'ITEM_NAO_INTEIRO' });
@@ -221,21 +246,50 @@ export function compareRecords(x, j, ctx) {
   const listUsable = tl.present && tl.isArray;
   if (!tl.present) add('json:listaRateioPremio', C.AUSENTE, null, null, 'listaRateioPremio ausente ou nula no JSON; faixas sem lado JSON');
   else if (!tl.isArray) add('json:listaRateioPremio', C.DADO_INVALIDO, null, tl.literal, 'listaRateioPremio não é lista; faixas não comparáveis', { invalidSource: 'JSON', jsonPresent: true, jsonValid: false, jsonLiteral: tl.literal, invalidReason: 'TIPO_NAO_LISTA' });
-  const unrecognized = rules ? j.tiers.filter(t => !rules.prizeTiers.includes(t.hits)).map(t => ({ index: t.index, hits: t.hits, reason: 'FAIXA_NAO_PREVISTA_NA_MODALIDADE' })) : [];
+  const unrecognized = rules ? (j.tierEntries ?? j.tiers).filter(t => !rules.prizeTiers.includes(t.hits)).map(t => ({ index: t.index, hits: t.hits, reason: 'FAIXA_NAO_PREVISTA_NA_MODALIDADE' })) : [];
   if (tl.unmapped.length || tl.duplicates.length || unrecognized.length) add('json:listaRateioPremio', C.DADO_INVALIDO, null, `${tl.unmapped.length} não mapeada(s), ${tl.duplicates.length} duplicada(s), ${unrecognized.length} não prevista(s)`, 'entradas preservadas e excluídas da comparação automática', { invalidSource: 'JSON', jsonPresent: true, jsonValid: false, invalidReason: 'ESTRUTURA_DE_FAIXAS_INVALIDA', unmapped: tl.unmapped, duplicates: tl.duplicates, unrecognized });
   const ambiguous = tl.unmapped.length > 0;
-  const dupSet = new Set(tl.duplicates.map(d => d.hits));
-  const jTiers = j.tiers; // faixas não previstas seguem com linhas próprias (só JSON → nunca divergência), sinalizadas acima
-  const hitsAll = [...new Set([...x.prizeTiers.map(t => t.hits), ...jTiers.map(t => t.hits), ...[...dupSet].filter(h => x.prizeTiers.some(t => t.hits === h))])].sort((a, b) => b - a);
-  for (const h of hitsAll) {
-    const xt = x.prizeTiers.find(t => t.hits === h); const jt = jTiers.find(t => t.hits === h);
-    const xw = xt ? xState(xt.winners, 'value') : NA; const xp = xt ? xState(xt.prize, 'cents') : NA;
-    if (dupSet.has(h)) { // faixa duplicada no JSON: lado JSON ambíguo → DADO_INVALIDO nos dois campos, com evidência XLSX completa
-      const js = { present: true, valid: false, literal: '<faixa duplicada no JSON>', reason: 'FAIXA_DUPLICADA', ref: null, column: null };
-      add(`tier[${h}].winners`, C.DADO_INVALIDO, xw.literal, js.literal, 'faixa duplicada em listaRateioPremio; sem comparação', evidence(xw, js));
-      add(`tier[${h}].prize`, C.DADO_INVALIDO, xp.literal, js.literal, 'faixa duplicada em listaRateioPremio; sem comparação', { ...evidence(xp, js), ...(isInv(xp) ? { xlsxMoneyInvalid: true } : {}), ...regFlags });
-      continue;
+  // União COMPLETA XLSX ∪ JSON: todas as entradas JSON mapeadas (inclusive duplicadas e não previstas) entram na união.
+  const jEntries = j.tierEntries ?? j.tiers;
+  const byHits = new Map(); for (const e of jEntries) byHits.set(e.hits, [...(byHits.get(e.hits) || []), e]);
+  const hitsAll = [...new Set([...x.prizeTiers.map(t => t.hits), ...byHits.keys()])].sort((a, b) => b - a);
+  const isUnrec = h => !!rules && !rules.prizeTiers.includes(h);
+  const jwOf = e => jState(e.winnersField ?? { present: e.winners !== null, valid: true, value: e.winners, literal: e.winners }, 'value');
+  const jpOf = e => jState({ ...e.prizeMoney, valid: e.prizeMoney.present ? e.prizeMoney.valid : null }, 'cents');
+  const fieldEv = st => ({ present: st.present, literal: st.literal, valid: st.valid, invalidReason: isInv(st) ? st.reason : null });
+  /** Evidência por entrada JSON da faixa: índice, descrição, faixa, acertos, ganhadores e prêmio (literal, validade, motivo). */
+  const entryEv = e => ({ index: e.index, description: e.description ?? null, faixa: e.faixaLiteral ?? (e.faixa ?? null), hits: e.hits, element: e.element ?? null, winners: fieldEv(jwOf(e)), prize: fieldEv(jpOf(e)) });
+  /**
+   * Faixa duplicada no JSON — precedência POR CAMPO:
+   *   valor presente e inválido (XLSX e/ou qualquer entrada JSON) → VALOR_INVALIDO (prêmio) / DADO_INVALIDO (ganhadores),
+   *     com invalidSource derivado SOMENTE da invalidez demonstrada dos valores (AMBOS só se os dois lados têm valor inválido);
+   *   valores individualmente válidos e ao menos uma entrada com o campo → DADO_INVALIDO (associação ambígua, origem JSON);
+   *   nenhuma entrada JSON traz o campo → classe de ausência correspondente.
+   * A ambiguidade estrutural é registrada à parte (jsonTierIssue) e nunca apaga a validade individual dos valores.
+   */
+  const dupField = (h, kind, xt, xs, ents) => {
+    const field = `tier[${h}].${kind}`; const isMoney = kind === 'prize';
+    const jss = ents.map(e => (isMoney ? jpOf(e) : jwOf(e)));
+    const jBad = jss.map((st, i) => ({ st, e: ents[i] })).filter(o => isInv(o.st));
+    const jAny = jss.some(st => st.present);
+    const jLit = jss.map((st, i) => `[${ents[i].index}] ${st.present ? st.literal : '<ausente>'}`).join('; ');
+    const jComb = { present: jAny, valid: jAny ? jBad.length === 0 : null, literal: jAny ? jLit : null, ref: null, column: null, reason: jBad.length ? jBad.map(o => `[${o.e.index}] ${o.st.reason}`).join('; ') : null };
+    const issue = { jsonTierIssue: { source: 'JSON', reasons: ['FAIXA_DUPLICADA', ...(isUnrec(h) ? ['FAIXA_NAO_PREVISTA_NA_MODALIDADE'] : [])], indexes: ents.map(e => e.index) }, jsonEntries: ents.map(entryEv) };
+    const xv = xt ? xs.literal : '<faixa inexistente no XLSX>'; const extra = isMoney ? regFlags : {};
+    if (isInv(xs) || jBad.length) {
+      const ev = evidence(xs, jComb);
+      return add(field, isMoney ? C.VALOR_INVALIDO : C.DADO_INVALIDO, xv, jLit, `${isMoney ? 'valor monetário' : 'ganhadores'} presente(s) mas inválido(s) (origem ${ev.invalidSource}) em faixa duplicada no JSON; sem comparação, nunca DIVERGENCIA_REAL`, { ...ev, ...issue, ...extra });
     }
+    if (jAny) {
+      const ev = evidence(xs, jComb);
+      return add(field, C.DADO_INVALIDO, xv, jLit, 'faixa duplicada em listaRateioPremio: valores individualmente válidos, associação ambígua; sem comparação', { ...ev, invalidSource: 'JSON', jsonInvalidReason: 'FAIXA_DUPLICADA_ASSOCIACAO_AMBIGUA', invalidReason: 'FAIXA_DUPLICADA_ASSOCIACAO_AMBIGUA', ...issue, ...extra });
+    }
+    return add(field, C.AUSENTE, xv, null, xs.present ? 'nenhuma das entradas duplicadas no JSON traz o campo' : 'ausente nas duas fontes (entradas duplicadas no JSON sem o campo)', { xlsxPresent: xs.present, xlsxValid: xs.valid, jsonPresent: false, jsonValid: null, ...issue, ...extra });
+  };
+  for (const h of hitsAll) {
+    const xt = x.prizeTiers.find(t => t.hits === h); const ents = byHits.get(h) || []; const jt = ents.length === 1 ? ents[0] : null;
+    const xw = xt ? xState(xt.winners, 'value') : NA; const xp = xt ? xState(xt.prize, 'cents') : NA;
+    if (ents.length > 1) { dupField(h, 'winners', xt, xw, ents); dupField(h, 'prize', xt, xp, ents); continue; }
     if (xt && !jt) {
       // Linha de faixa (listagem) preservada para semântica documentada; campos têm linhas próprias abaixo.
       if (listUsable) {
@@ -252,15 +306,17 @@ export function compareRecords(x, j, ctx) {
       money(`tier[${h}].prize`, xp, jAbs, { jMissingClass, jMissingNote: why[1] });
       continue;
     }
-    const jw = jState(jt.winnersField ?? { present: jt.winners !== null, valid: true, value: jt.winners, literal: jt.winners }, 'value');
-    const jp = jState({ ...jt.prizeMoney, valid: jt.prizeMoney.present ? jt.prizeMoney.valid : null }, 'cents');
+    const jw = jwOf(jt); const jp = jpOf(jt);
+    const n0 = rows.length;
     if (!xt) {
       structural(`tier[${h}].winners`, { ...NA }, jw, () => false, { xAbsentNote: 'faixa só no JSON' });
       money(`tier[${h}].prize`, NA, jp, { xMissingLabel: '<faixa inexistente no XLSX>', xAbsentNote: 'faixa só no JSON' });
-      continue;
+    } else {
+      structural(`tier[${h}].winners`, xw, jw, (a, b) => a === b, { xAbsentWithJ: C.SEMANTICA, xAbsentNote: 'XLSX ausente ("-"/vazio) e faixa listada no JSON' });
+      money(`tier[${h}].prize`, xp, jp, { xAbsentWithJ: C.SEMANTICA, xAbsentNote: 'prêmio XLSX ausente ("-"/vazio) e JSON lista a faixa com valor; sem comparação' });
     }
-    structural(`tier[${h}].winners`, xw, jw, (a, b) => a === b, { xAbsentWithJ: C.SEMANTICA, xAbsentNote: 'XLSX ausente ("-"/vazio) e faixa listada no JSON' });
-    money(`tier[${h}].prize`, xp, jp, { xAbsentWithJ: C.SEMANTICA, xAbsentNote: 'prêmio XLSX ausente ("-"/vazio) e JSON lista a faixa com valor; sem comparação' });
+    // Faixa não prevista para a modalidade: evidência estrutural (entrada JSON, índice, motivo) anexada às duas linhas por campo.
+    if (isUnrec(h)) for (const r of rows.slice(n0)) Object.assign(r, { jsonTierIssue: { source: 'JSON', reasons: ['FAIXA_NAO_PREVISTA_NA_MODALIDADE'], indexes: [jt.index] }, jsonEntries: [entryEv(jt)] });
   }
   for (const k of ['totalCollected', 'nextPrizeEstimate', 'specialAccumulated', 'accumulatedTopTier']) {
     const xm = x.economic[k]; const jm = j.economicMoney ? j.economicMoney[k] : { present: j.economic[k] !== null, literal: j.economic[k], cents: j.economic[k], valid: true };
