@@ -28,7 +28,9 @@ const qe = o => createQuarantineEntry(clean(o));
 export const IMPORT_REPORT_SCHEMA = 'lotus.import-report';
 // 2.0.0 (incompatível): coverage.missing (lista de concursos) → coverage.missingRanges [{from,to,count}] + missingCount
 // (formato lotus.gap-ranges/1.0.0); uma entrada de quarentena CONCURSO_AUSENTE por INTERVALO; counts.invalidDuplicates.
-export const IMPORT_REPORT_SCHEMA_VERSION = '2.0.0';
+// 2.1.0 (aditivo): chronologyExclusions (V13 1.1.0) — concursos fora da cronologia por falta de registro elegível
+// ou por datas conflitantes entre elegíveis, com as linhas candidatas.
+export const IMPORT_REPORT_SCHEMA_VERSION = '2.1.0';
 
 /** Cria envelope (camada A) + registro de coleta a partir dos bytes e metadados HTTP. */
 export function captureRaw(bytes, meta) {
@@ -127,9 +129,10 @@ function finish({ base, collection, status, quarantine, accepted, items, ds, ext
       conflictingContests: ds ? ds.conflicts.length : 0, invalidDuplicates: ds ? ds.invalidDuplicates.length : 0, missingContests: ds ? ds.missingCount : 0, missingRanges: ds ? ds.gapRanges.length : 0, dateAnomalies: ds ? ds.dateAnomalies.length : 0,
     },
     quarantineReasonCounts: sortObj(codeCounts), annotationCounts: sortObj(annCounts), coverage,
+    chronologyExclusions: ds ? ds.chronologyExclusions : [],
   };
   void spec;
-  return { status, report, accepted, quarantine, duplicatesIdentical: ds ? ds.duplicatesIdentical : [], conflicts: ds ? ds.conflicts : [], invalidDuplicates: ds ? ds.invalidDuplicates : [], dateAnomalies: ds ? ds.dateAnomalies : [], gapRanges: ds ? ds.gapRanges : [], missingCount: ds ? ds.missingCount : 0, extraction };
+  return { status, report, accepted, quarantine, duplicatesIdentical: ds ? ds.duplicatesIdentical : [], conflicts: ds ? ds.conflicts : [], invalidDuplicates: ds ? ds.invalidDuplicates : [], dateAnomalies: ds ? ds.dateAnomalies : [], chronologyExclusions: ds ? ds.chronologyExclusions : [], gapRanges: ds ? ds.gapRanges : [], missingCount: ds ? ds.missingCount : 0, extraction };
 }
 
 const sortObj = o => Object.fromEntries(Object.keys(o).sort().map(k => [k, o[k]]));

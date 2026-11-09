@@ -27,7 +27,7 @@ export const VALIDATORS = Object.freeze({
   V10: { name: 'integridade-origem', version: '1.0.0', rule: 'rawSha256 do registro = SHA-256 do arquivo bruto; todo campo tipado aponta para célula; adaptador/parser coerentes' },
   V11: { name: 'duplicatas', version: '1.1.0', rule: 'Mesmo concurso: só linhas ELEGÍVEIS (sem problema bloqueante individual) disputam o registro. Elegíveis com conteúdo completo idêntico (valores, tipos, fórmulas, valores em cache, validade) → duplicata registrada, mantida a de menor linha; elegíveis diferentes → conflito. Linha inelegível nunca descarta nem bloqueia uma elegível: vai à quarentena pelos próprios motivos, com o contexto da duplicata como evidência. Resultado independente da ordem física.' },
   V12: { name: 'lacunas', version: '1.1.0', rule: 'Números ausentes entre 1 e o maior concurso presente → CONCURSO_AUSENTE, agrupados em intervalos compactos [{from,to,count}] calculados em O(registros) (lacuna não resolvida; não presume erro da fonte); sem limite histórico arbitrário' },
-  V13: { name: 'datas-monotonicas', version: '1.0.0', rule: 'Ordenado por concurso, data não pode recuar; outlier isolado vai à quarentena; sem reordenar nem corrigir' },
+  V13: { name: 'datas-monotonicas', version: '1.1.0', rule: 'Ordenado por concurso, data não pode recuar; data do concurso tomada de registro elegível (sem elegível ou com datas conflitantes entre elegíveis: fora da cronologia, com evidência); outlier isolado vai à quarentena; sem reordenar nem corrigir' },
   V14: { name: 'conflitos', version: '1.0.0', rule: 'Comparação campo a campo entre registros do mesmo concurso (duplicatas ou fontes distintas)' },
   V16: { name: 'formulas', version: '1.0.0', rule: 'Célula com fórmula (<f>) em campo mapeado (concurso, data, dezena, ganhadores, prêmio, econômico, texto) → FORMULA_EM_CAMPO_HISTORICO (bloqueante); fórmula nunca é avaliada e o valor em cache nunca é aceito' },
   V15: { name: 'esquema', version: '1.0.0', rule: 'Cabeçalhos/planilha diferentes da especificação do adaptador → SCHEMA_INESPERADO' },
@@ -35,7 +35,7 @@ export const VALIDATORS = Object.freeze({
 export const VALIDATORS_ID = 'lotus.historical-validators';
 // 1.2.0: V11 (política de duplicatas com elegibilidade e conteúdo completo) e V12 (lacunas em intervalos) — formatos
 // de saída de validateDataset alterados (gapRanges/missingCount; duplicatesIdentical/conflicts/invalidDuplicates).
-export const VALIDATORS_VERSION = '1.2.0';
+export const VALIDATORS_VERSION = '1.3.0'; // 1.3.0: V13 1.1.0 (cronologia por registro elegível)
 export const GAP_FORMAT = 'lotus.gap-ranges/1.0.0';
 /** Limite padrão de expansão de intervalos de lacunas em lista de concursos (expansão é sempre explícita). */
 export const GAP_EXPANSION_MAX = 100000;
@@ -169,7 +169,7 @@ export function fieldDiff(a, b, path = '$', out = []) {
 
 /**
  * V11–V15 sobre o conjunto. @param {{rec:object, row:number}[]} items registros normalizados com resultado individual
- * @returns {{duplicatesIdentical:object[], conflicts:object[], invalidDuplicates:object[], gapRanges:{from:number,to:number,count:number}[], missingCount:number, gapFormat:string, dateAnomalies:object[], contestsPresent:number[]}}
+ * @returns {{duplicatesIdentical:object[], conflicts:object[], invalidDuplicates:object[], gapRanges:{from:number,to:number,count:number}[], missingCount:number, gapFormat:string, dateAnomalies:object[], chronologyExclusions:object[], contestsPresent:number[]}}
  */
 export function validateDataset(items, lottery) {
   void lottery;
@@ -199,8 +199,19 @@ export function validateDataset(items, lottery) {
   }
   const present = [...groups.keys()].sort((a, b) => a - b);
   const gapRanges = gapRangesOf(present); const missingCount = gapRanges.reduce((s, r) => s + r.count, 0);
-  // V13: uma data por concurso (primeira ocorrência), apenas datas válidas
-  const seq = present.map(c => ({ contest: c, date: groups.get(c)[0].rec.drawDate, row: groups.get(c)[0].rec.source.row, ref: groups.get(c)[0].rec.drawDateField.ref, raw: groups.get(c)[0].rec.drawDateField.raw })).filter(x => x.date);
+  // V13 1.1.0: uma data por concurso a partir de registro ELEGÍVEL (independe da ordem física); sem elegível ou com
+  // datas conflitantes entre elegíveis → concurso fora da cronologia, com evidência (nunca a data de linha inválida).
+  const seq = []; const chronologyExclusions = [];
+  const dref = it => ({ row: rowOf(it), date: it.rec.drawDate ?? null, raw: it.rec.drawDateField ? it.rec.drawDateField.raw ?? null : null, ref: it.rec.drawDateField ? it.rec.drawDateField.ref ?? null : null, eligible: eligible(it) });
+  for (const c of present) {
+    const list = [...groups.get(c)].sort((a, b) => rowOf(a) - rowOf(b)); const el = list.filter(eligible);
+    if (!el.length) { chronologyExclusions.push({ contest: c, reason: 'SEM_REGISTRO_ELEGIVEL', candidates: list.map(dref), validatorId: 'V13', validatorVersion: VALIDATORS.V13.version }); continue; }
+    const dates = [...new Set(el.map(it => it.rec.drawDate ?? null))];
+    if (dates.length > 1) { chronologyExclusions.push({ contest: c, reason: 'DATAS_CONFLITANTES_ENTRE_ELEGIVEIS', candidates: list.map(dref), validatorId: 'V13', validatorVersion: VALIDATORS.V13.version }); continue; }
+    if (!dates[0]) continue; // elegível sem data válida: nada a ordenar (mesmo critério da versão anterior)
+    const rep = el[0]; // menor linha entre elegíveis com a MESMA data: escolha determinística, data idêntica em todas
+    seq.push({ contest: c, date: dates[0], row: rowOf(rep), ref: rep.rec.drawDateField.ref, raw: rep.rec.drawDateField.raw, ...(el.length > 1 ? { eligibleRows: el.map(rowOf) } : {}) });
+  }
   const outliers = new Set(); const dateAnomalies = [];
   for (let i = 0; i < seq.length; i++) {
     const p = seq[i - 1], c = seq[i], n = seq[i + 1];
@@ -213,7 +224,7 @@ export function validateDataset(items, lottery) {
     for (const k of [i - 1, i]) if (!dateAnomalies.some(d => d.contest === seq[k].contest)) dateAnomalies.push({ contest: seq[k].contest, row: seq[k].row, ref: seq[k].ref, raw: seq[k].raw, interpreted: seq[k].date, pair: [seq[i - 1].contest, seq[i].contest], classification: 'PAIR_INVERSION', validatorId: 'V13', validatorVersion: VALIDATORS.V13.version });
   }
   void lottery;
-  return { duplicatesIdentical, conflicts, invalidDuplicates, gapRanges, missingCount, gapFormat: GAP_FORMAT, dateAnomalies, contestsPresent: present };
+  return { duplicatesIdentical, conflicts, invalidDuplicates, gapRanges, missingCount, gapFormat: GAP_FORMAT, dateAnomalies, chronologyExclusions, contestsPresent: present };
 }
 
 /** V15 — alertas de esquema → motivo SCHEMA_INESPERADO (um por arquivo). */
