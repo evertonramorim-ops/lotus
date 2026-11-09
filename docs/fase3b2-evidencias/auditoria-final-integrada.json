@@ -1,0 +1,234 @@
+{
+ "nota": "SYNTHETIC_DATA nos testes; dados reais apenas agregados (sem hashes privados, sem caminhos locais). completenessClaim=NAO_DECLARADA.",
+ "rodada": "auditoria integrada final da Fase 3b.2 (PR #4)",
+ "headInicial": "2389cd8b16b7d20aff55aefa5519b5e3207d47f5",
+ "headCodigo": "9eac1ca938de09e5f37085329b04c3add8beb28f",
+ "ambiente": {
+  "node": "v24.22.1",
+  "npm": "11.21.1",
+  "comando": "env -i PATH=\"$PATH\" HOME=/tmp unshare -rn npm test (clone limpo, rede desabilitada)"
+ },
+ "suite": {
+  "tests": 658,
+  "pass": 658,
+  "fail": 0,
+  "skipped": 0,
+  "anteriores": 642,
+  "novos": 16
+ },
+ "falhaAntes": {
+  "arquivo": "test/fase3b2/audit-final-integrada.test.js",
+  "base": "2389cd8",
+  "tests": 16,
+  "falham": 15,
+  "passam": 1,
+  "passaNoAntigo": "3.1 (lacuna de teste; V13 já correto)",
+  "detalhe": [
+   "✖ 1.1: duplicatas físicas IDÊNTICAS da mesma linha em quarentena contam como UMA candidata (QUARENTENA, não AMBIGUO), em qualquer ordem",
+   "✖ 1.1: as 5 situações da seleção, com os arrays em TODAS as ordens → resultado idêntico (aceito nunca substituído)",
+   "✖ 2.1 (1): XLSX ambíguo + JSON válido → FONTE_AMBIGUA (nunca DADO_INVALIDO); classe real do JSON preservada; candidatas e motivo preservados",
+   "✖ 2.1 (2) e (4): XLSX ambíguo + campo JSON inválido → classe de invalidez preservada com origem JSON (nunca AMBOS por causa da ambiguidade)",
+   "✖ 2.1 (3): XLSX ambíguo + JSON com tipo incorreto → DADO_INVALIDO de origem JSON; campos válidos FONTE_AMBIGUA",
+   "✖ 2.1 (5): AMBOS somente com invalidez COMPROVADA em todas as candidatas XLSX e no JSON (evidência por candidata); uma candidata válida → JSON",
+   "✖ 2.2/3.4: bytes UTF-8 inválidos com hash CORRESPONDENTE e JSON aceito após substituição permissiva → CODIFICACAO_INVALIDA, sem parse nem comparação",
+   "✖ 2.4/3.5: collectSamples — utc válido, ausente, nulo, tipo incorreto e string inválida (3b.2 e 3b.1): só a linha ruim é rejeitada, com origem/linha/motivo; as válidas seguem",
+   "✖ 2.4/3.5: planImportFromLog (importação 3b.1) — utc inválido rejeita só a linha, com número e motivo; as válidas seguem",
+   "✔ 3.1: dois elegíveis do mesmo concurso, MESMA data válida e conteúdo divergente → conflito V11+V14 registrado, data comum não é conflito, nada declarado idêntico, independente da ordem",
+   "✖ 1.5/3.2: winnerLocations sem registro XLSX → ausência da FONTE (registro inexistente), nunca EQUIVALENTE nem conclusão semântica (com e sem localidades no JSON)",
+   "✖ 2.3/3.3: execução posterior com createdAt RETROATIVO → verificação pela sequência do ledger (nunca runId/pasta), sem falsa inconsistência; aviso de createdAt",
+   "✖ 2.3/3.3: seleção da execução da reconciliação offline = NEW da última sequence do ledger (não a última por nome)",
+   "✖ 2.3/3.3 + 2.4 (scripts): 3 importações reais do script, a 3ª com --created-at retroativo → verificador ok na ordem do ledger; reconciliação usa a execução retroativa (sequence 2); linha 3b.1 com utc inválido não aborta",
+   "✖ 4 (1–4, 6): confinamento — normal ok; \"../\" recusado; diretório intermediário e arquivo final simbólicos recusados em leitura, escrita e acréscimo; nada externo lido/criado/alterado",
+   "✖ 4 (5, 6): scripts — log com \"raw/../../…\" e links simbólicos: importador recusa sem ler/copiar o externo; reconciliação recusa a amostra; verificador recusa runs simbólico; nada externo alterado"
+  ]
+ },
+ "reprodutibilidade": {
+  "processos": 2,
+  "identico": true,
+  "processosDistintos": true,
+  "logicalSha256": "25bd11f5a629982023f14be2ff19fc8938909ddb1718f6eed0153cea540fc14d",
+  "runRootHash": "b02c77455f18751118b201e99b2ea16884cdcd9ef67e4bf0c6bd9833695abb59",
+  "igualA10e": true
+ },
+ "fixtures": "OK: fixtures idênticas",
+ "manifestosSinteticos": {
+  "imports": [
+   {
+    "runId": "import-20260305T000000Z",
+    "action": "NEW",
+    "sequence": 1
+   },
+   {
+    "runId": "import-20260306T000000Z",
+    "action": "UNCHANGED_REPLAY",
+    "sequence": 1
+   },
+   {
+    "runId": "import-20260101T000000Z",
+    "action": "NEW",
+    "sequence": 2
+   },
+   {
+    "runId": "import-20260102T000000Z",
+    "action": "UNCHANGED_REPLAY",
+    "sequence": 2
+   },
+   {
+    "runId": "import-20260201T000000Z",
+    "action": "NEW",
+    "sequence": 3
+   }
+  ],
+  "positivo": {
+   "exit": 0,
+   "ok": true,
+   "codes": [],
+   "warnings": [
+    "RUN_CREATED_AT_NOT_MONOTONIC"
+   ]
+  },
+  "runReportAdulterado": {
+   "exit": 1,
+   "ok": false,
+   "codes": [
+    "ENTRY_HASH_MISMATCH",
+    "RUN_REPORT_CONTENT_MISMATCH"
+   ],
+   "warnings": [
+    "RUN_CREATED_AT_NOT_MONOTONIC"
+   ]
+  },
+  "linhaDoLedgerRemovida": {
+   "exit": 1,
+   "ok": false,
+   "codes": [
+    "CHAIN_NOT_VERIFIABLE",
+    "LEDGER_CHAIN_BROKEN",
+    "LEDGER_SEQUENCE_GAP",
+    "MANIFEST_NOT_IN_VALID_LEDGER",
+    "RUN_MODALITY_NOT_VERIFIED"
+   ],
+   "warnings": [
+    "RUN_CREATED_AT_NOT_MONOTONIC"
+   ]
+  },
+  "ledgerTrocaEntreDatasetsDiferentes_semEfeito": {
+   "exit": 0,
+   "ok": true,
+   "codes": [],
+   "warnings": [
+    "RUN_CREATED_AT_NOT_MONOTONIC"
+   ]
+  },
+  "ledgerExecucoesSeq1eSeq2Trocadas": {
+   "exit": 1,
+   "ok": false,
+   "codes": [
+    "CHAIN_NOT_VERIFIABLE",
+    "LEDGER_CHAIN_UNEXPECTED",
+    "LEDGER_FIRST_SEQUENCE_NOT_1",
+    "LEDGER_LINE_REJECTED",
+    "MANIFEST_NOT_IN_VALID_LEDGER",
+    "RUN_REPLAY_INCONSISTENT",
+    "RUN_SEQUENCE_INCONSISTENT"
+   ],
+   "warnings": []
+  },
+  "replayDeclaradoNew": {
+   "exit": 1,
+   "ok": false,
+   "codes": [
+    "RUN_SEQUENCE_INCONSISTENT"
+   ],
+   "warnings": [
+    "RUN_CREATED_AT_NOT_MONOTONIC"
+   ]
+  },
+  "chainPreviousAdulterado": {
+   "exit": 1,
+   "ok": false,
+   "codes": [
+    "CHAIN_PREVIOUS_MISMATCH",
+    "MANIFEST_DIFFERS_FROM_LEDGER",
+    "ROOT_HASH_MISMATCH"
+   ],
+   "warnings": [
+    "RUN_CREATED_AT_NOT_MONOTONIC"
+   ]
+  },
+  "registroAceitoAdulterado": {
+   "exit": 1,
+   "ok": false,
+   "codes": [
+    "ENTRY_HASH_MISMATCH",
+    "RUN_MODALITY_NOT_VERIFIED"
+   ],
+   "warnings": [
+    "RUN_CREATED_AT_NOT_MONOTONIC"
+   ]
+  },
+  "reconciliacaoSeleciona": {
+   "importRun": "import-20260201T000000Z",
+   "importRunSequence": 3
+  }
+ },
+ "dadosReais": {
+  "modo": "somente leitura; reconciliação com unshare -rn e saída em diretório temporário (--out)",
+  "verificador": {
+   "ok": true,
+   "ledgerLinhas": 10,
+   "modalidade": "12/12",
+   "execucao": "3/3",
+   "entradasConferidas": 51227,
+   "erros": 0,
+   "avisos": 0
+  },
+  "reconciliacao": {
+   "versao": "4.0.0",
+   "amostras": 54,
+   "proveniencia": {
+    "VERIFICADA_POR_HASH": 54
+   },
+   "codificacaoInvalida": 0,
+   "linhasDeLogRecusadas": 0,
+   "arquivosRecusados": 0,
+   "execucaoSelecionadaSequence": 2,
+   "linhas": 2175,
+   "mudancasDeClasseVs300": 0,
+   "linhasComNovoAbsenceScope": 2,
+   "classes": {
+    "AUSENTE_EM_UMA_FONTE": 1274,
+    "DIFERENCA_FORMATACAO": 1,
+    "DIFERENCA_REPRESENTACAO": 7,
+    "DIFERENCA_TEMPORAL": 2,
+    "EQUIVALENTE": 736,
+    "SEMANTICA_DESCONHECIDA": 155
+   },
+   "estados": {
+    "ACEITO": 51,
+    "AUSENTE": 2,
+    "QUARENTENA": 1
+   },
+   "fonteAmbigua": 0
+  },
+  "reprodutibilidadeReal": {
+   "identico": true,
+   "quinaEmQuarentena": 1,
+   "gravado": false
+  },
+  "arquivosPrivados": {
+   "total": 150,
+   "sha256AntesIgualDepois": true
+  },
+  "requestLogLinhas": 37,
+  "requisicoesCaixa": 0,
+  "reimportacao": false
+ },
+ "confinamento": {
+  "lstatComponentes": true,
+  "O_NOFOLLOW": true,
+  "procSelfFd": true,
+  "plataforma": "linux",
+  "absoluto": false
+ }
+}

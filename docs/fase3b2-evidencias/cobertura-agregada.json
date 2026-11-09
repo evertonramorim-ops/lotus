@@ -1,0 +1,315 @@
+{
+  "nota": "Somente estatísticas agregadas. Nenhum dado bruto da Caixa é versionado. completenessClaim=NAO_DECLARADA.",
+  "importacao": {
+    "megasena": {
+      "status": "IMPORTED",
+      "aceitos": 3080,
+      "quarentena": 0,
+      "concursos": "1-3080",
+      "contiguo": true,
+      "anotacoes": {
+        "ZERO_LITERAL": 1069
+      }
+    },
+    "lotofacil": {
+      "status": "IMPORTED",
+      "aceitos": 3819,
+      "quarentena": 0,
+      "concursos": "1-3819",
+      "contiguo": true,
+      "anotacoes": {
+        "ZERO_LITERAL": 428
+      }
+    },
+    "quina": {
+      "status": "IMPORTED",
+      "aceitos": 7156,
+      "quarentena": 1,
+      "motivoQuarentena": {
+        "DATA_NAO_MONOTONICA": 1
+      },
+      "concursos": "1-7157",
+      "contiguo": true,
+      "anotacoes": {
+        "ZERO_LITERAL": 2054,
+        "CURRENCY_PRE_REAL": 28
+      }
+    },
+    "lotomania": {
+      "status": "IMPORTED",
+      "aceitos": 2994,
+      "quarentena": 0,
+      "concursos": "1-2994",
+      "contiguo": true,
+      "anotacoes": {
+        "ZERO_LITERAL": 932,
+        "ABSENT_BY_PERIOD_RULE": 1652
+      }
+    }
+  },
+  "reimportacao": "UNCHANGED_REPLAY nas 4 modalidades (idempotente)",
+  "reconciliacao": {
+    "requisicoesGET": 37,
+    "limite": 50,
+    "intervaloMs": 6000,
+    "status403ou429": 0,
+    "amostras": 54,
+    "classesCampo": {
+      "EQUIVALENTE": 871,
+      "AUSENTE_EM_UMA_FONTE": 1155,
+      "DIFERENCA_REPRESENTACAO": 30,
+      "DIFERENCA_FORMATACAO": 1,
+      "DIFERENCA_TEMPORAL": 2,
+      "SEMANTICA_DESCONHECIDA": 8,
+      "DIVERGENCIA_REAL": 0
+    },
+    "nota": "execução ao vivo (37 GET); classes abaixo com a lógica de 3099934"
+  },
+  "auditoriaCorretiva": {
+    "reimportacao": "nova execução anexada ao ledger (5→10 linhas; 5 linhas anteriores preservadas byte a byte); manifestos sequence 2 (action NEW) porque VALIDATORS_VERSION passou a 1.1.0 (V16) e os aceitos pré-Real ganharam unidadeMonetariaVerificada:false",
+    "contagensInalteradas": true,
+    "formulasEncontradasNosArquivosReais": 0,
+    "quinaQuarentena": {
+      "DATA_NAO_MONOTONICA": 1
+    },
+    "reprodutibilidadeReal": "idêntica em 2 processos (hashes apenas no relatório privado)"
+  },
+  "reconciliacaoOfflineAuditoriaFinal": {
+    "requisicoesNovas": 0,
+    "fonte": "somente JSON arquivado da execução ao vivo",
+    "amostras": 54,
+    "classesCampo": {
+      "EQUIVALENTE": 850,
+      "AUSENTE_EM_UMA_FONTE": 1155,
+      "DIFERENCA_REPRESENTACAO": 30,
+      "DIFERENCA_FORMATACAO": 1,
+      "DIFERENCA_TEMPORAL": 2,
+      "SEMANTICA_DESCONHECIDA": 29,
+      "DIVERGENCIA_REAL": 0,
+      "VALOR_INVALIDO": 0
+    },
+    "transicoes": {
+      "EQUIVALENTE->SEMANTICA_DESCONHECIDA (monetários pré-Real)": 21
+    },
+    "quina380": "QUARENTENA, data original preservada"
+  },
+  "reconciliacaoOfflineAuditoriaComplementar": {
+    "requisicoesNovas": 0,
+    "amostras": 54,
+    "classesCampo": {
+      "EQUIVALENTE": 850,
+      "AUSENTE_EM_UMA_FONTE": 1155,
+      "DIFERENCA_REPRESENTACAO": 30,
+      "DIFERENCA_FORMATACAO": 1,
+      "DIFERENCA_TEMPORAL": 2,
+      "SEMANTICA_DESCONHECIDA": 29,
+      "DIVERGENCIA_REAL": 0,
+      "VALOR_INVALIDO": 0
+    },
+    "transicoes": {},
+    "nota": "contagem idêntica à auditoria final; nenhum caso real nos novos cenários",
+    "quina380": "QUARENTENA, data original preservada"
+  },
+  "reconciliacaoOfflineAuditoriaConsolidada": {
+    "versaoReconciliacao": "1.1.0",
+    "requisicoesNovas": 0,
+    "amostras": 54,
+    "classesCampo": {
+      "EQUIVALENTE": 850,
+      "AUSENTE_EM_UMA_FONTE": 1169,
+      "DIFERENCA_REPRESENTACAO": 30,
+      "DIFERENCA_FORMATACAO": 1,
+      "DIFERENCA_TEMPORAL": 2,
+      "SEMANTICA_DESCONHECIDA": 45,
+      "DIVERGENCIA_REAL": 0,
+      "VALOR_INVALIDO": 0,
+      "DADO_INVALIDO": 0
+    },
+    "transicoes": {
+      "novas linhas tier[k].winners/prize de faixas só no XLSX: AUSENTE_EM_UMA_FONTE": 14,
+      "idem: SEMANTICA_DESCONHECIDA": 16,
+      "linhas existentes com classe alterada": 0
+    },
+    "statusAmostras": {
+      "ACEITO": 51,
+      "AUSENTE": 2,
+      "QUARENTENA": 1
+    },
+    "quina380": "QUARENTENA, data original preservada"
+  },
+  "reconciliacaoOfflineFechamentoConsolidado": {
+    "versaoReconciliacao": "1.2.0",
+    "commitCodigo": "f55363f",
+    "requisicoesNovas": 0,
+    "rede": "desabilitada no processo (unshare -rn); somente JSON já arquivado",
+    "amostras": 54,
+    "linhas": 2097,
+    "classesCampo": {
+      "EQUIVALENTE": 850,
+      "AUSENTE_EM_UMA_FONTE": 1169,
+      "DIFERENCA_REPRESENTACAO": 30,
+      "DIFERENCA_FORMATACAO": 1,
+      "DIFERENCA_TEMPORAL": 2,
+      "SEMANTICA_DESCONHECIDA": 45,
+      "DIVERGENCIA_REAL": 0,
+      "VALOR_INVALIDO": 0,
+      "DADO_INVALIDO": 0
+    },
+    "transicoes": {
+      "linhas com classe alterada em relação à 1.1.0": 0,
+      "linhas novas ou removidas": 0,
+      "linhas com jsonTierIssue (faixa duplicada ou não prevista)": 0
+    },
+    "statusAmostras": {
+      "ACEITO": 51,
+      "AUSENTE": 2,
+      "QUARENTENA": 1
+    },
+    "requestLogLinhas": 37,
+    "quina380": "QUARENTENA, data original preservada"
+  },
+  "reconciliacaoOfflineAuditoriaIntegral": {
+    "versaoReconciliacao": "2.0.0",
+    "versaoAdaptadorJson": "2.0.0",
+    "commitCodigo": "2c7b2dd",
+    "requisicoesNovas": 0,
+    "rede": "desabilitada no processo (unshare -rn); somente JSON já arquivado",
+    "amostras": 54,
+    "linhas": 2175,
+    "classesCampo": {
+      "EQUIVALENTE": 736,
+      "AUSENTE_EM_UMA_FONTE": 1274,
+      "DIFERENCA_REPRESENTACAO": 7,
+      "DIFERENCA_FORMATACAO": 1,
+      "DIFERENCA_TEMPORAL": 2,
+      "SEMANTICA_DESCONHECIDA": 155,
+      "DIVERGENCIA_REAL": 0,
+      "VALOR_INVALIDO": 0,
+      "DADO_INVALIDO": 0
+    },
+    "transicoes": {
+      "economic.specialAccumulated: EQUIVALENTE->SEMANTICA_DESCONHECIDA (correspondência HIPOTESE, 3.5)": 38,
+      "economic.accumulatedTopTier: EQUIVALENTE->SEMANTICA_DESCONHECIDA (correspondência HIPOTESE, 3.5)": 49,
+      "winnerLocations: DIFERENCA_REPRESENTACAO->SEMANTICA_DESCONHECIDA (HIPOTESE, ambos com conteúdo)": 23,
+      "winnerLocations: EQUIVALENTE->AUSENTE_EM_UMA_FONTE (ambos vazios: ausência, não equivalência)": 29,
+      "linhas novas nas 2 amostras sem registro XLSX (lotofacil 3820, quina 7158; JSON validado por inteiro, 3.1)": 78,
+      "linhas novas: AUSENTE_EM_UMA_FONTE": 76,
+      "linhas novas: EQUIVALENTE (observation, ausente nas duas fontes)": 2,
+      "linhas removidas": 0,
+      "linhas de faixa fora da configuração atual": 0,
+      "ordens de sorteio coerentes com listaDezenas": 54
+    },
+    "statusAmostras": {
+      "ACEITO": 51,
+      "AUSENTE": 2,
+      "QUARENTENA": 1
+    },
+    "linhasDeLogRecusadas": 0,
+    "requestLogLinhas": 37,
+    "quina380": "QUARENTENA, data original preservada"
+  },
+  "verificacaoManifestosReais": {
+    "commitCodigo": "2c7b2dd",
+    "modo": "somente leitura, rede desabilitada (unshare -rn), sem reimportação",
+    "manifestosVerificados": 12,
+    "falhas": 0,
+    "detalhe": "3 execuções × 4 modalidades; conteúdo real: bytes do XLSX, coleta, relatório, quarentena, duplicatas e cada registro aceito (hash recalculado); sequence 2 encadeada ao sequence 1 do ledger (VERIFICADO_CONTRA_ANTERIOR); controle negativo em memória (bytes, registro e quarentena alterados; sem anterior) detectado",
+    "entradasPorModalidade": {
+      "megasena": {
+        "entradas": 3085,
+        "aceitos": 3080
+      },
+      "lotofacil": {
+        "entradas": 3824,
+        "aceitos": 3819
+      },
+      "quina": {
+        "entradas": 7161,
+        "aceitos": 7156
+      },
+      "lotomania": {
+        "entradas": 2999,
+        "aceitos": 2994
+      }
+    }
+  },
+  "parserXlsx110SobreArquivosReais": {
+    "modo": "somente leitura",
+    "celulasIdenticasAo100": true,
+    "celulas": {
+      "megasena": 61620,
+      "lotofacil": 126060,
+      "quina": 150318,
+      "lotomania": 122795
+    },
+    "relacoesExternas": 0,
+    "efeito": "ignoredParts 16→13 (customXml/_rels/item1..3.xml.rels agora validadas)"
+  },
+  "integracaoFinal": {
+    "head_base": "88fba95",
+    "reconciliacaoOffline": {
+      "versao": "3.0.0",
+      "modo": "rede desabilitada (unshare -rn), 0 requisições; request_log com 37 linhas",
+      "amostras": 54,
+      "linhas": 2175,
+      "classes": {
+        "EQUIVALENTE": 736,
+        "AUSENTE_EM_UMA_FONTE": 1274,
+        "SEMANTICA_DESCONHECIDA": 155,
+        "DIFERENCA_REPRESENTACAO": 7,
+        "DIFERENCA_TEMPORAL": 2,
+        "DIFERENCA_FORMATACAO": 1,
+        "DIVERGENCIA_REAL": 0,
+        "VALOR_INVALIDO": 0,
+        "DADO_INVALIDO": 0
+      },
+      "mudancasDeClasseVsAnterior": 0,
+      "linhasComparadas": "2175 de 2175 com a mesma classe por campo",
+      "estados": {
+        "ACEITO": 51,
+        "AUSENTE": 2,
+        "QUARENTENA": 1
+      },
+      "selecaoXlsx": {
+        "ACEITO": 51,
+        "QUARENTENA": 1,
+        "semRegistro": 2,
+        "AMBIGUO": 0,
+        "aceitosComCandidatoEmQuarentenaDoMesmoConcurso": 0
+      },
+      "winnerLocations": {
+        "SEMANTICA_DESCONHECIDA": 23,
+        "AUSENTE_EM_UMA_FONTE": 31,
+        "conteudoEmApenasUmaFonte": 0
+      },
+      "proveniencia": {
+        "VERIFICADA_POR_HASH": 54,
+        "NAO_VERIFICADA_SEM_HASH_NO_LOG": 0,
+        "REJEITADA": 0,
+        "origem": {
+          "FASE3B2": 37,
+          "FASE3B1": 17
+        }
+      }
+    },
+    "verificacaoCompletaManifestos": {
+      "modo": "somente leitura, rede desabilitada, sem reimportação",
+      "ledger": {
+        "linhas": 10,
+        "aceitas": 10,
+        "cadeiaValida": true
+      },
+      "manifestosModalidade": {
+        "verificados": 12,
+        "total": 12
+      },
+      "manifestosExecucao": {
+        "verificados": 3,
+        "total": 3
+      },
+      "entradasConferidas": 51227,
+      "erros": 0,
+      "observacao": "12 = 3 execuções × 4 modalidades (a execução UNCHANGED_REPLAY reapresenta os manifestos sequence 1); distintos no ledger: 8 de modalidade + 2 de execução"
+    }
+  }
+}

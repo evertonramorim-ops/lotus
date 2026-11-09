@@ -1,0 +1,79 @@
+# === Auditoria integrada final (base 2389cd8) ===
+# Node v24.22.1 · npm 11.21.1 · clone limpo de phase-3b2-historical-import @ 9eac1ca (código; o commit seguinte só altera docs/evidências)
+# comando: env -i PATH="$PATH" HOME=/tmp unshare -rn npm test   (rede desabilitada no processo)
+ℹ tests 658
+ℹ pass 658
+ℹ fail 0
+ℹ skipped 0
+# novo: test/fase3b2/audit-final-integrada.test.js — 16 testes (§1.1: 2 · §2.1: 4 · §2.2: 1 · §2.4: 2 · §3.1: 1 · §1.5/3.2: 1 · §2.3: 3 · §4: 2), 16/16 passam
+# falha-antes: o mesmo arquivo copiado para 2389cd8 → 15/16 falham; 3.1 passa (lacuna de teste, sem defeito)
+#   (§4 reproduzido: o importador antigo LEU e COPIOU um arquivo externo via "raw/../../…"; §2.4: RangeError: Invalid time value)
+# testes antigos: nenhuma expectativa alterada nesta rodada (642 anteriores passam)
+# npm run reprodutibilidade:fase3b2 → exit 0, idêntico em 2 processos; logical 25bd11f5…c14d, run root b02c7745…bb59 (iguais à 10e)
+# npm run fixtures:fase3b2 -- --check → exit 0, "OK: fixtures idênticas"
+
+# === Correção integrada final (base 88fba95) ===
+# Node v24.22.1 · npm 11.21.1 · clone limpo de phase-3b2-historical-import @ 6f905f7 (código; o commit seguinte só altera docs/evidências)
+# comando: env -i PATH="$PATH" HOME=/tmp unshare -rn npm test   (rede desabilitada no processo)
+ℹ tests 642
+ℹ pass 642
+ℹ fail 0
+ℹ skipped 0
+# novo: test/fase3b2/audit-integracao-final.test.js — 16 testes (§1: 3 · §2: 4 · §3: 6 · §4: 2 · §5: 1), 16/16 passam
+# falha-antes: o mesmo arquivo copiado para um worktree em 88fba95 → 16/16 falham
+#   (§2 reproduzido diretamente: no código antigo a anomalia V13 aparece ou não conforme a ordem física da duplicata com fórmula)
+# testes antigos: nenhuma expectativa alterada nesta rodada
+# npm run reprodutibilidade:fase3b2 → exit 0, idêntico em 2 processos; logical 25bd11f5…c14d, run root b02c7745…bb59
+#   (antes, em 88fba95: 6ac44b89…5b51 / a25cfe76…e465 — mudança esperada: validadores 1.3.0, relatório de importação 2.1.0)
+# npm run fixtures:fase3b2 -- --check → exit 0, "OK: fixtures idênticas"
+
+# === Rodada anterior (auditoria integral, base f8f970d) — mantida como histórico ===
+# Node v24.22.1 · npm 11.21.1 · clone limpo (git clone novo, sem node_modules) de phase-3b2-historical-import @ 2c7b2dd (código; o commit seguinte só altera docs)
+# comando: env -i PATH="$PATH" HOME=/tmp unshare -rn npm test   (rede desabilitada no processo)
+ℹ tests 626
+ℹ suites 0
+ℹ pass 626
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3160.456727
+
+# por arquivo (fase3b2) — comando: env -i PATH="$PATH" HOME=/tmp unshare -rn node --test test/fase3b2/<arquivo>.test.js
+audit-complementar-reconcile: tests 11 pass 11 fail 0 skipped 0
+audit-consolidada-reconcile: tests 125 pass 125 fail 0 skipped 0
+audit-fechamento-reconcile: tests 15 pass 15 fail 0 skipped 0
+audit-fetch-limits: tests 9 pass 9 fail 0 skipped 0
+audit-final-reconcile: tests 7 pass 7 fail 0 skipped 0
+audit-formulas: tests 9 pass 9 fail 0 skipped 0
+audit-integral-fetch-paths: tests 5 pass 5 fail 0 skipped 0
+audit-integral-import: tests 7 pass 7 fail 0 skipped 0
+audit-integral-invariantes: tests 13 pass 13 fail 0 skipped 0
+audit-integral-manifest: tests 12 pass 12 fail 0 skipped 0
+audit-integral-reconcile: tests 15 pass 15 fail 0 skipped 0
+audit-integral-xlsx: tests 7 pass 7 fail 0 skipped 0
+audit-json-money: tests 6 pass 6 fail 0 skipped 0
+audit-provenance-link: tests 8 pass 8 fail 0 skipped 0
+import-validation: tests 14 pass 14 fail 0 skipped 0
+manifest-preservation: tests 7 pass 7 fail 0 skipped 0
+offline-security: tests 3 pass 3 fail 0 skipped 0
+reconcile: tests 5 pass 5 fail 0 skipped 0
+xlsx-parser: tests 8 pass 8 fail 0 skipped 0
+
+# fases anteriores (test/*.test.js, test/fase2, test/fase3a): nenhum arquivo alterado (git diff f8f970d 2c7b2dd -- test/ só toca test/fase3b2)
+
+# npm run reprodutibilidade:fase3b2 → exit 0, idêntico em 2 processos distintos; logical 6ac44b89…5b51, run root a25cfe76…e465
+#   (antes, em f8f970d: logical 7ca43692…d482, run root 4602d296…dc00 — mudança esperada: versões do parser 1.1.0,
+#    validadores 1.2.0, relatório 2.0.0 e novos campos de contagem; ver reprodutibilidade-sintetica.json)
+# npm run fixtures:fase3b2 -- --check → exit 0, "OK: fixtures idênticas"
+
+# falha-antes (testes novos copiados para um worktree em f8f970d; fetch global substituído por stub que falha):
+#   audit-integral-reconcile 13/15 · audit-integral-fetch-paths 5/5 · audit-integral-import 6/7 · audit-integral-manifest 9/12
+#   audit-integral-xlsx 5/7 · audit-integral-invariantes 11/13 → 49 de 59 falham no código anterior
+#   (em f8f970d o script antigo TENTOU GET para planos adulterados — interceptado pelo stub; nenhuma requisição saiu)
+
+# testes antigos com expectativa alterada (justificativa no próprio teste, marcador [3b.2-integral …]):
+#   audit-complementar 9 · audit-final regressões 3 e 4 · audit-consolidada listaRateioPremio (tier[2].prize) — regra 2.1
+#   audit-consolidada econômico accumulatedTopTier/specialAccumulated XLSX valido × JSON valido — regra 3.5
+#   audit-fechamento 1, 2, 10, 11 — formas de evidência (motivo renomeado, estado/tipo, serialização fiel, concurso ausente/nulo validado)
+#   import-validation V12 — formato de lacunas versionado; manifest-preservation (2 testes) — res.bytes inexistente / hash declarado
