@@ -19,7 +19,11 @@ export const RECONCILIATION_SCHEMA = 'lotus.reconciliation';
 // 3.0.0 (incompatível com 2.0.0): winnerLocations com conteúdo em só uma fonte → SEMANTICA_DESCONHECIDA (antes AUSENTE);
 // amostra com proveniência rejeitada (estado PROVENIENCIA_REJEITADA, sem parse); fonte XLSX ambígua (xlsxStatus AMBIGUO,
 // sem comparação); evidências provenance/xlsxSource/xlsxAmbiguity nas entradas.
-export const RECONCILIATION_VERSION = '3.0.0';
+// 4.0.0 (incompatível com 3.0.0): nova classe FONTE_AMBIGUA — fonte XLSX ambígua deixa de ser DADO_INVALIDO de origem XLSX;
+// campo JSON inválido com XLSX ambíguo mantém origem JSON (AMBOS só com invalidez comprovada em TODAS as candidatas XLSX);
+// novo estado de amostra CODIFICACAO_INVALIDA (UTF-8 estrito, sem parse); winnerLocations com registro XLSX inexistente
+// avaliado antes de "ambas vazias" (absenceScope REGISTRO_XLSX_INEXISTENTE); linhas de log com timestamp inválido rejeitadas.
+export const RECONCILIATION_VERSION = '4.0.0';
 export const JSON_ADAPTER_ID = 'caixa-json-resultado';
 // 2.0.0 (incompatível): raiz não-objeto → JsonSchemaError; campos com estado AUSENTE/NULO/PRESENTE, tipo e literal;
 // marcador numérico privado (WeakSet) sem colisão com objetos do JSON; limite em bytes UTF-8 reais.
@@ -28,6 +32,8 @@ export const JSON_ADAPTER_VERSION = '2.0.0';
 export const CLASSES = Object.freeze({
   EQUIVALENTE: 'EQUIVALENTE', FORMATACAO: 'DIFERENCA_FORMATACAO', REPRESENTACAO: 'DIFERENCA_REPRESENTACAO', AUSENTE: 'AUSENTE_EM_UMA_FONTE',
   DIVERGENCIA: 'DIVERGENCIA_REAL', TEMPORAL: 'DIFERENCA_TEMPORAL', SEMANTICA: 'SEMANTICA_DESCONHECIDA', VALOR_INVALIDO: 'VALOR_INVALIDO', DADO_INVALIDO: 'DADO_INVALIDO',
+  // 4.0.0: fonte XLSX sem registro único (várias candidatas) → comparação impossível; NÃO é dado inválido nem ausência.
+  FONTE_AMBIGUA: 'FONTE_AMBIGUA',
 });
 const C = CLASSES;
 
@@ -435,8 +441,9 @@ export function compareRecords(x, j, ctx) {
   const wf = j.winnerLocationsField; const hypW = { correspondence: 'HIPOTESE' };
   const xl = x.winnerLocations.text; const xEmpty = !xl || !xl.trim(); const jCount = j.winnerLocationsCount;
   if (wf && isInv(jState(wf, 'count'))) add('winnerLocations', C.DADO_INVALIDO, xEmpty ? null : '<texto>', wf.literal, 'listaMunicipioUFGanhadores presente com tipo incorreto (esperado lista); nunca tratado como ausência', { invalidSource: 'JSON', xlsxPresent: !xEmpty, jsonPresent: true, jsonValid: false, jsonType: wf.type, jsonLiteral: wf.literal, jsonInvalidReason: wf.invalidReason, invalidReason: wf.invalidReason, ...hypW });
+  // registro XLSX inexistente: ausência da FONTE (registro inteiro), avaliada antes de "ambas vazias" — nunca conclusão sobre o campo
+  else if (x.__missing) add('winnerLocations', C.AUSENTE, xLabel, wf && !wf.present ? null : jCount, 'registro inexistente no XLSX (ausência do registro inteiro, não do campo); nenhuma conclusão semântica', { xlsxPresent: false, xlsxRecordPresent: false, absenceScope: 'REGISTRO_XLSX_INEXISTENTE', jsonPresent: !!(wf ? wf.present : jCount !== null), jsonCount: jCount, ...(wf ? { jsonState: wf.state } : {}), ...hypW });
   else if (xEmpty && !jCount) add('winnerLocations', C.AUSENTE, null, wf && !wf.present ? null : 0, 'sem localização de ganhadores nas duas fontes', { xlsxPresent: false, jsonPresent: !!(wf ? wf.present : jCount !== null), ...(wf ? { jsonState: wf.state } : {}), ...hypW });
-  else if (x.__missing) add('winnerLocations', C.AUSENTE, xLabel, jCount, 'registro inexistente no XLSX (ausência do registro inteiro, não do campo)', { xlsxPresent: false, jsonPresent: true, ...hypW });
   // uma fonte com conteúdo e a outra vazia: correspondência HIPOTESE não confirmada → semântica desconhecida (nunca ausência)
   else if (xEmpty !== !jCount) add('winnerLocations', C.SEMANTICA, xEmpty ? null : '<texto>', jCount, `conteúdo só no ${xEmpty ? 'JSON' : 'XLSX'}; correspondência HIPOTESE: o vazio da outra fonte não prova ausência da mesma informação`, { xlsxPresent: !xEmpty, jsonPresent: !!jCount, ...hypW });
   else add('winnerLocations', C.SEMANTICA, '<texto>', jCount, 'texto livre × lista estruturada; correspondência HIPOTESE: não se afirma que representem a mesma informação', hypW);
